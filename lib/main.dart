@@ -61,24 +61,22 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
-    _tabController.addListener(() {
-      setState(() {
-        _selectedIndex = _tabController.index;
-      });
-    });
+    _tabController.addListener(_handleTabSelection);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabSelection);
     _tabController.dispose();
     super.dispose();
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      _tabController.animateTo(index);
-    });
+  void _handleTabSelection() {
+    if (_tabController.indexIsChanging) {
+      setState(() {
+        _selectedIndex = _tabController.index;
+      });
+    }
   }
 
   @override
@@ -91,21 +89,17 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(_pageTitles[_selectedIndex]),
-            ),
-            IconButton(
-              icon: const Icon(Icons.search),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.send),
-              onPressed: () {},
-            ),
-          ],
-        ),
+        title: Text(_pageTitles[_selectedIndex]),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.send),
+            onPressed: () {},
+          ),
+        ],
       ),
       drawer: _buildSidebar(),
       body: TabBarView(
@@ -152,28 +146,32 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: const TextStyle(color: Colors.white)),
       onTap: () {
-        _onItemTapped(index);
+        _tabController.animateTo(index);
         Navigator.pop(context);
       },
     );
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      backgroundColor: const Color(0xFF1A1A1A),
-      selectedItemColor: Theme.of(context).primaryColor,
-      unselectedItemColor: Colors.grey,
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-      type: BottomNavigationBarType.fixed,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
-        BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Learning'),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'),
-        BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-      ],
+    return Theme(
+      data: Theme.of(context).copyWith(
+        canvasColor: const Color(0xFF1A1A1A),
+      ),
+      child: BottomNavigationBar(
+        selectedItemColor: Theme.of(context).primaryColor,
+        unselectedItemColor: Colors.grey,
+        currentIndex: _selectedIndex,
+        onTap: (index) => _tabController.animateTo(index),
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
+          BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Learning'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
     );
   }
 }
