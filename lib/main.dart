@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'pages/Event/events_page.dart';
+import 'pages/Job/job_page.dart';
+import 'pages/Learning/learning_page.dart';
+import 'pages/Post/home_page.dart';
+import 'pages/Shop/shop_page.dart';
+import 'pages/User/profile_page.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -41,12 +47,20 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<String> _pageTitles = ['Home', 'Community', 'Search', 'Notifications', 'More'];
+  final List<String> _pageTitles = ['Home', 'Jobs', 'Learning', 'Shop', 'Profile','Events'];
+  final List<Widget> _pages = [
+    HomePage(),
+    JobPage(),
+    LearningPage(),
+    ShopPage(),
+    UserPage(),
+    EventPage(),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -87,13 +101,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       drawer: _buildSidebar(),
       body: TabBarView(
         controller: _tabController,
-        children: [
-          _buildPage('Home'),
-          _buildPage('Community'),
-          _buildPage('Search'),
-          _buildPage('Notifications'),
-          _buildPage('More'),
-        ],
+        children: _pages,
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -119,10 +127,11 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
               ),
             ),
             _buildDrawerItem(Icons.home, 'Home', 0),
-            _buildDrawerItem(Icons.people, 'Community', 1),
-            _buildDrawerItem(Icons.search, 'Search', 2),
-            _buildDrawerItem(Icons.notifications, 'Notifications', 3),
-            _buildDrawerItem(Icons.more_horiz, 'More', 4),
+            _buildDrawerItem(Icons.work, 'Jobs', 1),
+            _buildDrawerItem(Icons.school, 'Learning', 2),
+            _buildDrawerItem(Icons.shopping_cart, 'Shop', 3),
+            _buildDrawerItem(Icons.person, 'Profile', 5),
+            _buildDrawerItem(Icons.event, 'Events', 4)
           ],
         ),
       ),
@@ -156,19 +165,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         indicatorColor: Colors.transparent,
         tabs: [
           Tab(icon: Icon(Icons.home, color: _selectedIndex == 0 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.people, color: _selectedIndex == 1 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.search, color: _selectedIndex == 2 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.notifications, color: _selectedIndex == 3 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.more_horiz, color: _selectedIndex == 4 ? Theme.of(context).primaryColor : Colors.grey)),
+          Tab(icon: Icon(Icons.work, color: _selectedIndex == 1 ? Theme.of(context).primaryColor : Colors.grey)),
+          Tab(icon: Icon(Icons.school, color: _selectedIndex == 2 ? Theme.of(context).primaryColor : Colors.grey)),
+          Tab(icon: Icon(Icons.shopping_cart, color: _selectedIndex == 3 ? Theme.of(context).primaryColor : Colors.grey)),
+          Tab(icon: Icon(Icons.person, color: _selectedIndex == 5 ? Theme.of(context).primaryColor : Colors.grey)),
+          Tab(icon: Icon(Icons.event, color: _selectedIndex == 4 ? Theme.of(context).primaryColor : Colors.grey)),
+
         ],
         onTap: _onItemTapped,
       ),
-    );
-  }
-
-  Widget _buildPage(String title) {
-    return Center(
-      child: Text(title, style: const TextStyle(fontSize: 24, color: Colors.white)),
     );
   }
 }
