@@ -49,6 +49,7 @@ class _EventPageState extends State<EventPage> {
         itemBuilder: (context, index) {
           return Card(
             margin: EdgeInsets.all(8.0),
+            color: Colors.blueAccent,
             child: Column(
               children: [
                 Image.asset(
@@ -68,9 +69,13 @@ class _EventPageState extends State<EventPage> {
                   },
                 ),
                 ListTile(
-                  title: Text(events[index].title),
+                  title: Text(
+                    events[index].title,
+                    style: TextStyle(color: Colors.white),
+                  ),
                   subtitle: Text(
                     '${events[index].date.toString().split(' ')[0]}\n${events[index].description}',
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ],
@@ -78,6 +83,7 @@ class _EventPageState extends State<EventPage> {
           );
         },
       ),
+
     );
   }
 }
