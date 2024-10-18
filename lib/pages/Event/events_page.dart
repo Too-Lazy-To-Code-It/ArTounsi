@@ -9,7 +9,7 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   List<Event> events = [
-    Event('Art Exhibition', 'assets/images/event1.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'),
+    Event('Art Exhibition', 'assets/images/1692849792746760.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'),
     Event('Digital Art Workshop', 'assets/images/event2.jpg', DateTime(2023, 8, 1), 'Learn digital art techniques.'),
   ];
 
@@ -51,6 +51,16 @@ class _EventPageState extends State<EventPage> {
                   height: 200,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    print('Error loading image: ${events[index].imageUrl}');
+                    return Container(
+                      height: 200,
+                      color: Colors.grey,
+                      child: Center(
+                        child: Text('Failed to load image'),
+                      ),
+                    );
+                  },
                 ),
                 ListTile(
                   title: Text(events[index].title),
