@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'add_event_page.dart';
 import '../../entities/Event/Events.dart';
 
-
 class EventPage extends StatefulWidget {
   @override
   _EventPageState createState() => _EventPageState();
@@ -11,8 +10,7 @@ class EventPage extends StatefulWidget {
 class _EventPageState extends State<EventPage> {
   List<Event> events = [
     Event('Art Exhibition', 'assets/images/event1.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'),
-    Event('Digital Art Workshop','assets/images/event2.jpg', DateTime(2023, 8, 1), 'Learn digital art techniques.'),
-
+    Event('Digital Art Workshop', 'assets/images/event2.jpg', DateTime(2023, 8, 1), 'Learn digital art techniques.'),
   ];
 
   void _navigateToAddEventPage() async {
@@ -48,7 +46,7 @@ class _EventPageState extends State<EventPage> {
             margin: EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Image.network(
+                Image.asset(
                   events[index].imageUrl,
                   height: 200,
                   width: double.infinity,
