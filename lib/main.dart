@@ -13,22 +13,22 @@ void main() {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
-  runApp(MyApp());
+  runApp(ArTounsi());
 }
 
-class MyApp extends StatelessWidget {
+class ArTounsi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ArtStation Clone',
+      title: 'ArTounsi',
       theme: ThemeData(
         primaryColor: const Color(0xFF13AFF0),
         scaffoldBackgroundColor: const Color(0xFF0A0A0A),
         textTheme: GoogleFonts.interTextTheme(
           Theme.of(context).textTheme.apply(
-            bodyColor: Colors.white,
-            displayColor: Colors.white,
-          ),
+                bodyColor: Colors.white,
+                displayColor: Colors.white,
+              ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -42,12 +42,19 @@ class MainScreen extends StatefulWidget {
   _MainScreenState createState() => _MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateMixin {
+class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  late TabController _tabController;
+  final PageController _pageController = PageController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<String> _pageTitles = ['Home', 'Jobs', 'Learning', 'Shop', 'Events', 'Profile'];
+  final List<String> _pageTitles = [
+    'Home',
+    'Jobs',
+    'Learning',
+    'Shop',
+    'Events',
+    'Profile'
+  ];
   final List<Widget> _pages = [
     HomePage(),
     JobPage(),
@@ -58,53 +65,65 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 6, vsync: this);
-    _tabController.addListener(_handleTabSelection);
-  }
-
-  @override
   void dispose() {
-    _tabController.removeListener(_handleTabSelection);
-    _tabController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
-  void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      setState(() {
-        _selectedIndex = _tabController.index;
-      });
-    }
+  void _onItemTapped(int index) {
+    _pageController.jumpToPage(index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A1A),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          color: const Color(0xFF1A1A1A),
+          child: SafeArea(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                ),
+                Text(
+                  _pageTitles[_selectedIndex],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    fontSize: 20,
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.search, color: Colors.white),
+                      onPressed: () {},
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.send, color: Colors.white),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
-        title: Text(_pageTitles[_selectedIndex]),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: () {},
-          ),
-        ],
       ),
       drawer: _buildSidebar(),
-      body: TabBarView(
-        controller: _tabController,
+      body: PageView(
+        controller: _pageController,
         children: _pages,
+        onPageChanged: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -122,7 +141,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                 color: Theme.of(context).primaryColor,
               ),
               child: const Text(
-                'ArtStation',
+                'ArTounsi',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -146,7 +165,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: const TextStyle(color: Colors.white)),
       onTap: () {
-        _tabController.animateTo(index);
+        _onItemTapped(index);
         Navigator.pop(context);
       },
     );
@@ -161,13 +180,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
         selectedItemColor: Theme.of(context).primaryColor,
         unselectedItemColor: Colors.grey,
         currentIndex: _selectedIndex,
-        onTap: (index) => _tabController.animateTo(index),
+        onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
+        elevation: 0, // Set this to 0 to remove the shadow/white line
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Learning'),
-          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart), label: 'Shop'),
           BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
