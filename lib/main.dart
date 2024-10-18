@@ -47,20 +47,25 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   late TabController _tabController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<String> _pageTitles = ['Home', 'Jobs', 'Learning', 'Shop', 'Profile','Events'];
+  final List<String> _pageTitles = ['Home', 'Jobs', 'Learning', 'Shop', 'Events', 'Profile'];
   final List<Widget> _pages = [
     HomePage(),
     JobPage(),
     LearningPage(),
     ShopPage(),
-    UserPage(),
     EventPage(),
+    UserPage(),
   ];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
+    _tabController.addListener(() {
+      setState(() {
+        _selectedIndex = _tabController.index;
+      });
+    });
   }
 
   @override
@@ -86,17 +91,21 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           icon: const Icon(Icons.menu),
           onPressed: () => _scaffoldKey.currentState?.openDrawer(),
         ),
-        title: Text(_pageTitles[_selectedIndex]),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.send),
-            onPressed: () {},
-          ),
-        ],
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(_pageTitles[_selectedIndex]),
+            ),
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.send),
+              onPressed: () {},
+            ),
+          ],
+        ),
       ),
       drawer: _buildSidebar(),
       body: TabBarView(
@@ -130,8 +139,8 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
             _buildDrawerItem(Icons.work, 'Jobs', 1),
             _buildDrawerItem(Icons.school, 'Learning', 2),
             _buildDrawerItem(Icons.shopping_cart, 'Shop', 3),
+            _buildDrawerItem(Icons.event, 'Events', 4),
             _buildDrawerItem(Icons.person, 'Profile', 5),
-            _buildDrawerItem(Icons.event, 'Events', 4)
           ],
         ),
       ),
@@ -150,30 +159,21 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
   }
 
   Widget _buildBottomNavigationBar() {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1A1A1A),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: TabBar(
-        controller: _tabController,
-        indicatorColor: Colors.transparent,
-        tabs: [
-          Tab(icon: Icon(Icons.home, color: _selectedIndex == 0 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.work, color: _selectedIndex == 1 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.school, color: _selectedIndex == 2 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.shopping_cart, color: _selectedIndex == 3 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.person, color: _selectedIndex == 5 ? Theme.of(context).primaryColor : Colors.grey)),
-          Tab(icon: Icon(Icons.event, color: _selectedIndex == 4 ? Theme.of(context).primaryColor : Colors.grey)),
-
-        ],
-        onTap: _onItemTapped,
-      ),
+    return BottomNavigationBar(
+      backgroundColor: const Color(0xFF1A1A1A),
+      selectedItemColor: Theme.of(context).primaryColor,
+      unselectedItemColor: Colors.grey,
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      type: BottomNavigationBarType.fixed,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
+        BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Learning'),
+        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'),
+        BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+      ],
     );
   }
 }
