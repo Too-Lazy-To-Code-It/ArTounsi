@@ -1,3 +1,4 @@
+import 'package:artounsi/pages/Event/add_event_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,14 +59,16 @@ class _MainScreenState extends State<MainScreen> {
     'Shop',
     'Events',
     'Profile'
+    'AddEvent'
   ];
   final List<Widget> _pages = [
     HomePage(),
-    add_event_page(),
+    jobpage(),
     LearningPage(),
     ShopPage(),
     EventPage(),
     UserPage(),
+    add_event()
   ];
 
   @override

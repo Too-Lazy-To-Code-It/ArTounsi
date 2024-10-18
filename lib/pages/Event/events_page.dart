@@ -9,14 +9,15 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   List<Event> events = [
-    Event('Art Exhibition', 'assets/images/1692849792746760.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'),
+    Event('Art Exhibition', 'assets/images/event1.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'),
     Event('Digital Art Workshop', 'assets/images/event2.jpg', DateTime(2023, 8, 1), 'Learn digital art techniques.'),
+
   ];
 
   void _navigateToAddEventPage() async {
     final result = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => add_event_page()),
+      MaterialPageRoute(builder: (context) => add_event()),
     );
 
     if (result != null && result is Event) {

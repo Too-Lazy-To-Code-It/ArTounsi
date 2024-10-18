@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../entities/Event/Events.dart';
 
-class add_event_page extends StatefulWidget {
+class add_event extends StatefulWidget {
   @override
-  _add_event_pageState createState() => _add_event_pageState();
+  _add_eventState createState() => _add_eventState();
 }
 
-class _add_event_pageState extends State<add_event_page> {
+class _add_eventState extends State<add_event> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
