@@ -13,10 +13,12 @@ void main() {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
   ));
-  runApp(ArTounsi());
+  runApp(const ArTounsi());
 }
 
 class ArTounsi extends StatelessWidget {
+  const ArTounsi({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -32,12 +34,14 @@ class ArTounsi extends StatelessWidget {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      home: MainScreen(),
+      home: const MainScreen(),
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -71,7 +75,14 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
-    _pageController.jumpToPage(index);
+    setState(() {
+      _selectedIndex = index;
+    });
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   @override
@@ -79,7 +90,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       key: _scaffoldKey,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
+        preferredSize: const Size.fromHeight(kToolbarHeight),
         child: Container(
           color: const Color(0xFF1A1A1A),
           child: SafeArea(
@@ -124,6 +135,7 @@ class _MainScreenState extends State<MainScreen> {
             _selectedIndex = index;
           });
         },
+        physics: const NeverScrollableScrollPhysics(),
       ),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
@@ -182,7 +194,7 @@ class _MainScreenState extends State<MainScreen> {
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         type: BottomNavigationBarType.fixed,
-        elevation: 0, // Set this to 0 to remove the shadow/white line
+        elevation: 1,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
