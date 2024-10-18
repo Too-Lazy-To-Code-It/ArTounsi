@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class JobPage extends StatelessWidget {
+class add_event_page extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(

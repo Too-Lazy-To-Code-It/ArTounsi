@@ -61,7 +61,7 @@ class _MainScreenState extends State<MainScreen> {
   ];
   final List<Widget> _pages = [
     HomePage(),
-    JobPage(),
+    add_event_page(),
     LearningPage(),
     ShopPage(),
     EventPage(),
