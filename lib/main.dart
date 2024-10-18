@@ -199,8 +199,7 @@ class _MainScreenState extends State<MainScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.work), label: 'Jobs'),
           BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Learning'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart), label: 'Shop'),
+          BottomNavigationBarItem(icon: Icon(Icons.shopping_cart), label: 'Shop'),
           BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Events'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
