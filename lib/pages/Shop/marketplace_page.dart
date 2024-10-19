@@ -61,7 +61,11 @@ class MarketplacePage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => MarketplaceDetailPage(product: products[index]),
+                builder: (context) => MarketplaceDetailPage(
+                  product: products[index],
+                  allProducts: products,
+                  currentIndex: index,
+                ),
               ),
             );
           },
