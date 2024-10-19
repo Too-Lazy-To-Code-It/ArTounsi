@@ -22,20 +22,12 @@ class EventDetailsPage extends StatelessWidget {
               height: 250,
               width: double.infinity,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 250,
-                  color: Colors.grey,
-                  child: Center(
-                    child: Text('Failed to load image'),
-                  ),
-                );
-              },
             ),
             SizedBox(height: 16),
             Text(
+
               event.title,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueAccent),
             ),
             SizedBox(height: 8),
             Text(
@@ -51,7 +43,6 @@ class EventDetailsPage extends StatelessWidget {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  // Handle event joining logic here
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('You have joined the event!')),
                   );
