@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'blog_page.dart';
+import '../Post/blog_page.dart';
+import '../Post/blog_page.dart';
 
 class CustomSidebar extends StatelessWidget {
   final Function(int) onItemTapped;
