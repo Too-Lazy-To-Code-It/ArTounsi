@@ -1,13 +1,8 @@
 import 'package:artounsi/pages/Event/add_event_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'pages/Event/events_page.dart';
-import 'pages/Job/job_page.dart';
-import 'pages/Learning/learning_page.dart';
-import 'pages/Post/home_page.dart';
-import 'pages/Shop/shop_page.dart';
-import 'pages/User/profile_page.dart';
+import 'theme/app_theme.dart';
+import 'pages/MainScreen/main_screen.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
@@ -18,26 +13,17 @@ void main() {
 }
 
 class ArTounsi extends StatelessWidget {
-  const ArTounsi({super.key});
+  const ArTounsi({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ArTounsi',
-      theme: ThemeData(
-        primaryColor: const Color(0xFF13AFF0),
-        scaffoldBackgroundColor: const Color(0xFF0A0A0A),
-        textTheme: GoogleFonts.interTextTheme(
-          Theme.of(context).textTheme.apply(
-                bodyColor: Colors.white,
-                displayColor: Colors.white,
-              ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      theme: AppTheme.darkTheme,
       home: const MainScreen(),
     );
   }
+<<<<<<< HEAD
 }
 
 class MainScreen extends StatefulWidget {
@@ -210,4 +196,6 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+=======
+>>>>>>> b3f487452765f88ff1dd267a916774d8f30d2d3a
 }
