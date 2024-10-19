@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'details_page.dart';
 
 class HomeCard extends StatelessWidget {
@@ -8,6 +7,8 @@ class HomeCard extends StatelessWidget {
   final String author;
   final int likes;
   final int views;
+  final List<Map<String, dynamic>> allPosts;
+  final int index;
 
   const HomeCard({
     Key? key,
@@ -16,6 +17,8 @@ class HomeCard extends StatelessWidget {
     required this.author,
     required this.likes,
     required this.views,
+    required this.allPosts,
+    required this.index,
   }) : super(key: key);
 
   @override
@@ -26,11 +29,8 @@ class HomeCard extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => DetailsPage(
-              imageUrl: imageUrl,
-              title: title,
-              author: author,
-              likes: likes,
-              views: views,
+              allPosts: allPosts,
+              initialIndex: index,
             ),
           ),
         );

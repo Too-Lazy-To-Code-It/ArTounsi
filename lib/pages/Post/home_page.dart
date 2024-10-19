@@ -89,6 +89,8 @@ class _HomePageState extends State<HomePage> {
                   author: post['author'],
                   likes: post['likes'],
                   views: post['views'],
+                  allPosts: _posts,
+                  index: index,
                 );
               },
             ),

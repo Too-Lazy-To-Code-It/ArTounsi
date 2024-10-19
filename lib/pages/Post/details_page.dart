@@ -1,87 +1,128 @@
 import 'package:flutter/material.dart';
+import 'fullscreen_photo_view.dart';
 
-class DetailsPage extends StatelessWidget {
-  final String imageUrl;
-  final String title;
-  final String author;
-  final int likes;
-  final int views;
+class DetailsPage extends StatefulWidget {
+  final List<Map<String, dynamic>> allPosts;
+  final int initialIndex;
 
   const DetailsPage({
     Key? key,
-    required this.imageUrl,
-    required this.title,
-    required this.author,
-    required this.likes,
-    required this.views,
+    required this.allPosts,
+    required this.initialIndex,
   }) : super(key: key);
+
+  @override
+  _DetailsPageState createState() => _DetailsPageState();
+}
+
+class _DetailsPageState extends State<DetailsPage> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.allPosts[_currentIndex]['title']),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 300,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+      body: PageView.builder(
+        controller: _pageController,
+        itemCount: widget.allPosts.length,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        itemBuilder: (context, index) {
+          final post = widget.allPosts[index];
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullscreenPhotoView(
+                          imageUrls: widget.allPosts.map((post) => post['imageUrl'] as String).toList(),
+                          initialIndex: index,
+                        ),
+                      ),
+                    );
+                  },
+                  child: Image.network(
+                    post['imageUrl'],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 300,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'By $author',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
-                      const SizedBox(width: 8),
-                      Text('$likes likes'),
-                      const SizedBox(width: 24),
-                      Icon(Icons.visibility, color: Theme.of(context).colorScheme.secondary),
-                      const SizedBox(width: 8),
-                      Text('$views views'),
+                      Text(
+                        post['title'],
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'By ${post['author']}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
+                          const SizedBox(width: 8),
+                          Text('${post['likes']} likes'),
+                          const SizedBox(width: 24),
+                          Icon(Icons.visibility, color: Theme.of(context).colorScheme.secondary),
+                          const SizedBox(width: 8),
+                          Text('${post['views']} views'),
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Description',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'This is a detailed description of the artwork. It can include information about the techniques used, the inspiration behind the piece, or any other relevant details about the creation process.',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Add functionality for liking the artwork
+                        },
+                        child: const Text('Like this artwork'),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Description',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'This is a detailed description of the artwork. It can include information about the techniques used, the inspiration behind the piece, or any other relevant details about the creation process.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      // Add functionality for liking the artwork
-                    },
-                    child: const Text('Like this artwork'),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
