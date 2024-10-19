@@ -51,14 +51,20 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.1
 
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
+  ios: "AppIcon"
   image_path: "assets/images/logo.png"
+  min_sdk_android: 21
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
+  assets:
+    - assets/images/
+    - assets/images/logo.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -66,10 +72,7 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-assets:
-  - assets/images/
-  - assets/images/logo.png
-  - assets/images/profile_picture.jpg
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
