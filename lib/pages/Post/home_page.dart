@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'home_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -8,7 +9,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final List<String> _imageUrls = [];
+  final List<Map<String, dynamic>> _posts = [];
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
   int _currentPage = 1;
@@ -16,7 +17,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _loadMoreImages();
+    _loadMorePosts();
     _scrollController.addListener(_scrollListener);
   }
 
@@ -30,26 +31,32 @@ class _HomePageState extends State<HomePage> {
   void _scrollListener() {
     if (_scrollController.offset >= _scrollController.position.maxScrollExtent &&
         !_scrollController.position.outOfRange) {
-      _loadMoreImages();
+      _loadMorePosts();
     }
   }
 
-  Future<void> _loadMoreImages() async {
+  Future<void> _loadMorePosts() async {
     if (!_isLoading) {
       setState(() {
         _isLoading = true;
       });
 
-      // Simulating an API call to fetch more images
+      // Simulating an API call to fetch more posts
       await Future.delayed(const Duration(seconds: 2));
 
-      final List<String> newImages = List.generate(
+      final List<Map<String, dynamic>> newPosts = List.generate(
         10,
-            (index) => 'https://picsum.photos/seed/${_currentPage * 10 + index}/400/400',
+            (index) => {
+          'imageUrl': 'https://picsum.photos/seed/${_currentPage * 10 + index}/400/400',
+          'title': 'Artwork ${_currentPage * 10 + index}',
+          'author': 'Artist ${_currentPage * 10 + index}',
+          'likes': (_currentPage * 10 + index) * 10,
+          'views': (_currentPage * 10 + index) * 100,
+        },
       );
 
       setState(() {
-        _imageUrls.addAll(newImages);
+        _posts.addAll(newPosts);
         _currentPage++;
         _isLoading = false;
       });
@@ -66,36 +73,22 @@ class _HomePageState extends State<HomePage> {
           sliver: SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 1,
+              childAspectRatio: 0.75,
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
             ),
             delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                if (index >= _imageUrls.length) {
+                if (index >= _posts.length) {
                   return null;
                 }
-                return Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    _imageUrls[index],
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
-                  ),
+                final post = _posts[index];
+                return HomeCard(
+                  imageUrl: post['imageUrl'],
+                  title: post['title'],
+                  author: post['author'],
+                  likes: post['likes'],
+                  views: post['views'],
                 );
               },
             ),
