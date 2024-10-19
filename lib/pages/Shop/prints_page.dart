@@ -11,28 +11,28 @@ class PrintsPage extends StatelessWidget {
         'name': 'Landscape Print',
         'price': 24.99,
         'artist': 'Emma Wilson',
-        'artistLogo': 'https://example.com/emma_wilson_logo.png',
+        'artistLogo': 'assets/images/Shop/1.jpg',
         'categories': ['Landscape', 'Nature']
       },
       {
         'name': 'Portrait Print',
         'price': 29.99,
         'artist': 'Michael Lee',
-        'artistLogo': 'https://example.com/michael_lee_logo.png',
+        'artistLogo': 'assets/images/Shop/2.jpg',
         'categories': ['Portrait', 'People']
       },
       {
         'name': 'Abstract Print',
         'price': 19.99,
         'artist': 'Sarah Johnson',
-        'artistLogo': 'https://example.com/sarah_johnson_logo.png',
+        'artistLogo': 'assets/images/Shop/3.jpg',
         'categories': ['Abstract', 'Modern']
       },
       {
         'name': 'Sci-Fi Print',
         'price': 34.99,
         'artist': 'David Chen',
-        'artistLogo': 'https://example.com/david_chen_logo.png',
+        'artistLogo': 'assets/images/Shop/4.jpg',
         'categories': ['Sci-Fi', 'Fantasy']
       },
     ];
