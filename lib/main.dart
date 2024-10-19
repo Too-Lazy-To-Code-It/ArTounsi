@@ -18,7 +18,7 @@ class ArTounsi extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ArTounsi',
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.darkTheme,
       home: const MainScreen(),
     );
   }

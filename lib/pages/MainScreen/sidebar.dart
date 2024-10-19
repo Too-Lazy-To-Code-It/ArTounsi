@@ -26,15 +26,15 @@ class CustomSidebar extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 30,
-                    backgroundImage: AssetImage('assets/profile_picture.jpg'),
+                    backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'John Doe',
+                    'Ankara Methi',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                   ),
                   Text(
-                    'john.doe@example.com',
+                    'ankara.methi@example.com',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                   ),
                 ],
