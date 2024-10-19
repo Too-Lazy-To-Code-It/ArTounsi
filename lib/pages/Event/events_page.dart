@@ -15,6 +15,8 @@ class _EventPageState extends State<EventPage> {
   void initState() {
     events.add(Event('Art Exhibition', 'assets/images/event1.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'));
     events.add(Event('Digital Art Workshop', 'assets/images/event2.jpg', DateTime(2023, 8, 1), 'Learn digital art techniques.'));
+    events.add(Event('Art Exhibition', 'assets/images/event1.jpg', DateTime(2023, 7, 15), 'A showcase of contemporary art.'));
+    events.add(Event('Digital Art Workshop', 'assets/images/event2.jpg', DateTime(2023, 8, 1), 'Learn digital art techniques.'));
     super.initState();
   }
 
@@ -35,7 +37,6 @@ class _EventPageState extends State<EventPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Events'),
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -49,7 +50,7 @@ class _EventPageState extends State<EventPage> {
         itemBuilder: (context, index) {
           return Card(
             margin: EdgeInsets.all(8.0),
-            color: Colors.blueAccent,
+            color: Colors.white10,
             child: Column(
               children: [
                 Image.asset(
@@ -71,7 +72,7 @@ class _EventPageState extends State<EventPage> {
                 ListTile(
                   title: Text(
                     events[index].title,
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.blue),
                   ),
                   subtitle: Text(
                     '${events[index].date.toString().split(' ')[0]}\n${events[index].description}',
