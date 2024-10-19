@@ -1,3 +1,4 @@
+// marketplace_page.dart
 import 'package:flutter/material.dart';
 import 'marketplace_detail_page.dart';
 
@@ -11,39 +12,47 @@ class MarketplacePage extends StatelessWidget {
         'name': 'Digital Artwork 1',
         'price': 29.99,
         'artist': 'John Doe',
-        'artistLogo': 'https://example.com/john_doe_logo.png',
-        'categories': ['Digital', 'Abstract']
+        'artistLogo': 'assets/images/Shop/1.jpg',
+        'categories': ['Digital', 'Abstract'],
+        'rating': 4.5,
+        'reviewCount': 120,
       },
       {
         'name': '3D Model Pack',
         'price': 49.99,
         'artist': 'Jane Smith',
-        'artistLogo': 'https://example.com/jane_smith_logo.png',
-        'categories': ['3D', 'Characters']
+        'artistLogo': 'assets/images/Shop/2.jpg',
+        'categories': ['3D', 'Characters'],
+        'rating': 4.2,
+        'reviewCount': 85,
       },
       {
         'name': 'Texture Set',
         'price': 19.99,
         'artist': 'Bob Johnson',
-        'artistLogo': 'https://example.com/bob_johnson_logo.png',
-        'categories': ['Textures', 'Environment']
+        'artistLogo': 'assets/images/Shop/3.jpg',
+        'categories': ['Textures', 'Environment'],
+        'rating': 4.8,
+        'reviewCount': 200,
       },
       {
         'name': 'Character Design',
         'price': 39.99,
         'artist': 'Alice Brown',
-        'artistLogo': 'https://example.com/alice_brown_logo.png',
-        'categories': ['Character', 'Concept Art']
+        'artistLogo': 'assets/images/Shop/4.jpg',
+        'categories': ['Character', 'Concept Art'],
+        'rating': 4.6,
+        'reviewCount': 150,
       },
     ];
 
     return GridView.builder(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(16.0),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.75,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
@@ -57,33 +66,31 @@ class MarketplacePage extends StatelessWidget {
             );
           },
           child: Card(
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.brush,
-                        size: 50,
-                        color: Colors.grey[600],
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      image: DecorationImage(
+                        image: AssetImage(products[index]['artistLogo']),
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         products[index]['name'],
-                        style: Theme.of(context).textTheme.titleMedium,
-                        maxLines: 2,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
@@ -97,31 +104,18 @@ class MarketplacePage extends StatelessWidget {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 10,
-                            backgroundImage: NetworkImage(products[index]['artistLogo']),
+                          Icon(Icons.star, size: 16, color: Colors.amber),
+                          Text(
+                            ' ${products[index]['rating']}',
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              products[index]['artist'],
-                              style: Theme.of(context).textTheme.bodySmall,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                          const SizedBox(width: 8),
+                          Icon(Icons.comment, size: 16, color: Colors.grey),
+                          Text(
+                            ' ${products[index]['reviewCount']}',
+                            style: Theme.of(context).textTheme.bodySmall,
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 4),
-                      Wrap(
-                        spacing: 4,
-                        children: (products[index]['categories'] as List<String>)
-                            .map((category) => Chip(
-                          label: Text(category, style: TextStyle(fontSize: 10)),
-                          padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ))
-                            .toList(),
                       ),
                     ],
                   ),

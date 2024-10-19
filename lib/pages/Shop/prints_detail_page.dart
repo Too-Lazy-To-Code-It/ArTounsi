@@ -1,3 +1,4 @@
+// prints_detail_page.dart
 import 'package:flutter/material.dart';
 
 class PrintsDetailPage extends StatelessWidget {
@@ -8,26 +9,20 @@ class PrintsDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(product['name']),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              height: 200,
-              width: double.infinity,
-              color: Colors.grey[300],
-              child: Center(
-                child: Icon(
-                  Icons.image,
-                  size: 100,
-                  color: Colors.grey[600],
-                ),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Image.asset(
+                product['artistLogo'],
+                fit: BoxFit.cover,
               ),
             ),
-            Padding(
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +31,7 @@ class PrintsDetailPage extends StatelessWidget {
                     product['name'],
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height:  8),
                   Text(
                     '\$${product['price']}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -49,13 +44,20 @@ class PrintsDetailPage extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 20,
-                        backgroundImage: NetworkImage(product['artistLogo']),
+                        backgroundImage: AssetImage(product['artistLogo']),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         product['artist'],
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Icon(Icons.star, color: Colors.amber),
+                      Text(' ${product['rating']} (${product['reviewCount']} reviews)'),
                     ],
                   ),
                   const SizedBox(height: 16),
@@ -68,16 +70,6 @@ class PrintsDetailPage extends StatelessWidget {
                     children: (product['categories'] as List<String>)
                         .map((category) => Chip(label: Text(category)))
                         .toList(),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Description:',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'This is a placeholder description for the print. In a real app, you would fetch this data from your backend or include it in the product details.',
-                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -96,23 +88,59 @@ class PrintsDetailPage extends StatelessWidget {
                     ))
                         .toList(),
                   ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Reviews',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  _buildReviewItem(context, 'Alice Brown', 5, 'Beautiful print! Looks great on my wall.'),
+                  _buildReviewItem(context, 'Bob Wilson', 4, 'Good quality print, but colors are slightly different from the image.'),
+                  _buildReviewItem(context, 'Carol Davis', 5, 'Excellent packaging and fast shipping.'),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ElevatedButton(
           child: Text('Add to Cart'),
           onPressed: () {
-            // Implement add to cart functionality
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Added to cart')),
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildReviewItem(BuildContext context, String name, int rating, String comment) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(name, style: Theme.of(context).textTheme.titleSmall),
+              const SizedBox(width: 8),
+              Row(
+                children: List.generate(5, (index) {
+                  return Icon(
+                    index < rating ? Icons.star : Icons.star_border,
+                    size: 16,
+                    color: Colors.amber,
+                  );
+                }),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(comment),
+        ],
       ),
     );
   }
