@@ -71,14 +71,16 @@ class MarketplacePage extends StatelessWidget {
           },
           child: Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
                       image: DecorationImage(
                         image: AssetImage(products[index]['artistLogo']),
                         fit: BoxFit.cover,
@@ -93,7 +95,10 @@ class MarketplacePage extends StatelessWidget {
                     children: [
                       Text(
                         products[index]['name'],
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -101,9 +106,9 @@ class MarketplacePage extends StatelessWidget {
                       Text(
                         '\$${products[index]['price']}',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Row(

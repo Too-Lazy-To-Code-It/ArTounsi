@@ -33,7 +33,9 @@ class MarketplaceDetailPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullscreenImageView(
-                            imageUrls: allProducts.map((p) => p['artistLogo'] as String).toList(),
+                            imageUrls: allProducts
+                                .map((p) => p['artistLogo'] as String)
+                                .toList(),
                             initialIndex: index,
                           ),
                         ),
@@ -63,16 +65,17 @@ class MarketplaceDetailPage extends StatelessWidget {
                       Text(
                         '\$${currentProduct['price']}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundImage: AssetImage(currentProduct['artistLogo']),
+                            backgroundImage:
+                                AssetImage(currentProduct['artistLogo']),
                           ),
                           const SizedBox(width: 8),
                           Text(
@@ -85,7 +88,8 @@ class MarketplaceDetailPage extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.star, color: Colors.amber),
-                          Text(' ${currentProduct['rating']} (${currentProduct['reviewCount']} reviews)'),
+                          Text(
+                              ' ${currentProduct['rating']} (${currentProduct['reviewCount']} reviews)'),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -105,9 +109,12 @@ class MarketplaceDetailPage extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      _buildReviewItem(context, 'John Doe', 5, 'Great product! Highly recommended.'),
-                      _buildReviewItem(context, 'Jane Smith', 4, 'Good quality, but a bit pricey.'),
-                      _buildReviewItem(context, 'Mike Johnson', 5, 'Excellent service and fast delivery.'),
+                      _buildReviewItem(context, 'John Doe', 5,
+                          'Great product! Highly recommended.'),
+                      _buildReviewItem(context, 'Jane Smith', 4,
+                          'Good quality, but a bit pricey.'),
+                      _buildReviewItem(context, 'Mike Johnson', 5,
+                          'Excellent service and fast delivery.'),
                     ],
                   ),
                 ),
@@ -130,7 +137,8 @@ class MarketplaceDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewItem(BuildContext context, String name, int rating, String comment) {
+  Widget _buildReviewItem(
+      BuildContext context, String name, int rating, String comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(

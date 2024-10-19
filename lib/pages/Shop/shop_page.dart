@@ -39,7 +39,8 @@ class _ShopPageState extends State<ShopPage> {
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Search...',
-                          prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                          prefixIcon:
+                              Icon(Icons.search, color: Colors.grey[600]),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(vertical: 15),
                         ),
@@ -90,7 +91,9 @@ class _ShopPageState extends State<ShopPage> {
           });
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: _selectedIndex == index ? Theme.of(context).primaryColor : Colors.grey[300],
+          backgroundColor: _selectedIndex == index
+              ? Theme.of(context).primaryColor
+              : Colors.grey[300],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
