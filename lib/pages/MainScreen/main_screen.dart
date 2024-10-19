@@ -10,7 +10,7 @@ import '../Shop/shop_page.dart';
 import '../User/profile_page.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -45,9 +45,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
@@ -68,13 +65,12 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: PageView(
         controller: _pageController,
-        children: _pages,
         onPageChanged: (index) {
           setState(() {
             _selectedIndex = index;
           });
         },
-        physics: const NeverScrollableScrollPhysics(),
+        children: _pages,
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,
