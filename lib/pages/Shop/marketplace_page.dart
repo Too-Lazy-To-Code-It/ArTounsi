@@ -82,14 +82,14 @@ class MarketplacePage extends StatelessWidget {
                     children: [
                       Text(
                         products[index]['name'],
-                        style: Theme.of(context).textTheme.subtitle1,
+                        style: Theme.of(context).textTheme.titleMedium,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '\$${products[index]['price']}',
-                        style: Theme.of(context).textTheme.subtitle2?.copyWith(
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
                         ),
@@ -105,7 +105,7 @@ class MarketplacePage extends StatelessWidget {
                           Expanded(
                             child: Text(
                               products[index]['artist'],
-                              style: Theme.of(context).textTheme.caption,
+                              style: Theme.of(context).textTheme.bodySmall,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
