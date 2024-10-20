@@ -1,3 +1,5 @@
+import 'package:Artounsi/pages/User/confirm_password_page.dart';
+import 'package:Artounsi/pages/User/forgot_password_page.dart';
 import 'package:Artounsi/pages/User/login_page.dart';
 import 'package:Artounsi/pages/User/register_page.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +28,8 @@ class ArTounsi extends StatelessWidget {
         "/loginPage": (BuildContext context) => LoginPage(),
         "/registerPage": (BuildContext context) => RegisterPage(),
         "/mainScreen": (BuildContext context) => MainScreen(),
+        "/forgotPasswordPage": (BuildContext context) => ForgotPasswordPage(),
+        "/confirmPasswordPage": (BuildContext context) => ConfirmPasswordPage(),
       },
     );
   }

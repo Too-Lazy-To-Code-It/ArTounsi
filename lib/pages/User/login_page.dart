@@ -86,9 +86,17 @@ class LoginPage extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      'Forgot Password?',
-                      style: TextStyle(color: Colors.grey[600]),
+                    InkWell(
+                      child: const Text(
+                        'Forgot Password',
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pushNamed(context, "/forgotPasswordPage");
+                      },
                     ),
                   ],
                 ),
