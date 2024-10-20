@@ -1,3 +1,4 @@
+import 'package:Artounsi/pages/Shop/add_product_button.dart';
 import 'package:flutter/material.dart';
 import '../../entities/Shop/Cart.dart';
 import 'product_grid_page.dart';
@@ -14,6 +15,11 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   int _selectedIndex = 0;
+
+  void _onProductAdded() {
+    // Refresh the product list or perform any necessary updates
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +47,7 @@ class _ShopPageState extends State<ShopPage> {
           ),
         ],
       ),
+      floatingActionButton: AddProductButton(onProductAdded: _onProductAdded),
     );
   }
 
