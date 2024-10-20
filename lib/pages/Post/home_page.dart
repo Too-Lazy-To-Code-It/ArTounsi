@@ -52,6 +52,7 @@ class _HomePageState extends State<HomePage> {
           'author': 'Artist ${_currentPage * 10 + index}',
           'likes': (_currentPage * 10 + index) * 10,
           'views': (_currentPage * 10 + index) * 100,
+          'comments': (_currentPage * 10 + index) * 2,
         },
       );
 
@@ -89,6 +90,7 @@ class _HomePageState extends State<HomePage> {
                   author: post['author'],
                   likes: post['likes'],
                   views: post['views'],
+                  comments: post['comments'],
                   allPosts: _posts,
                   index: index,
                 );

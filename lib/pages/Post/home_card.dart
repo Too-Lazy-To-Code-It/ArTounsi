@@ -7,6 +7,7 @@ class HomeCard extends StatelessWidget {
   final String author;
   final int likes;
   final int views;
+  final int comments;
   final List<Map<String, dynamic>> allPosts;
   final int index;
 
@@ -17,6 +18,7 @@ class HomeCard extends StatelessWidget {
     required this.author,
     required this.likes,
     required this.views,
+    required this.comments,
     required this.allPosts,
     required this.index,
   }) : super(key: key);
@@ -79,6 +81,10 @@ class HomeCard extends StatelessWidget {
                       Icon(Icons.visibility, size: 16, color: Theme.of(context).colorScheme.secondary),
                       const SizedBox(width: 4),
                       Text('$views'),
+                      const SizedBox(width: 16),
+                      Icon(Icons.comment, size: 16, color: Theme.of(context).colorScheme.secondary),
+                      const SizedBox(width: 4),
+                      Text('$comments'),
                     ],
                   ),
                 ],
