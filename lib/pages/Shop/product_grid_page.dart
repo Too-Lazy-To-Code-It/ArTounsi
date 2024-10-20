@@ -1,15 +1,19 @@
+// lib/pages/Shop/product_grid_page.dart
+
 import 'package:flutter/material.dart';
 import '../../entities/Shop/Product.dart';
+import '../../entities/Shop/Cart.dart';
 import 'product_detail_page.dart';
 
 class ProductGridPage extends StatelessWidget {
   final ProductType productType;
+  final Cart cart;
 
-  const ProductGridPage({Key? key, required this.productType}) : super(key: key);
+  const ProductGridPage({Key? key, required this.productType, required this.cart}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final List<Product> products = Product.getProducts(productType);
+    final products = Product.getProducts(productType);
 
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
@@ -21,7 +25,7 @@ class ProductGridPage extends StatelessWidget {
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
-        final Product product = products[index];
+        final product = products[index];
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -31,6 +35,7 @@ class ProductGridPage extends StatelessWidget {
                   product: product,
                   allProducts: products,
                   currentIndex: index,
+                  cart: cart,
                 ),
               ),
             );

@@ -1,16 +1,20 @@
+// lib/pages/main_screen.dart
+
+import 'package:Artounsi/entities/Shop/Cart.dart';
+import 'package:Artounsi/pages/Event/events_page.dart';
+import 'package:Artounsi/pages/Job/job_page.dart';
+import 'package:Artounsi/pages/Learning/learning_page.dart';
+import 'package:Artounsi/pages/Post/home_page.dart';
+import 'package:Artounsi/pages/Shop/shop_page.dart';
+import 'package:Artounsi/pages/User/profile_page.dart';
 import 'package:flutter/material.dart';
 import 'bottom_navigation_bar.dart';
 import 'sidebar.dart';
 import 'app_bar.dart';
-import '../Event/events_page.dart';
-import '../Job/job_page.dart';
-import '../Learning/learning_page.dart';
-import '../Post/home_page.dart';
-import '../Shop/shop_page.dart';
-import '../User/profile_page.dart';
-
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final Cart cart;
+
+  const MainScreen({Key? key, required this.cart}) : super(key: key);
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -28,14 +32,6 @@ class _MainScreenState extends State<MainScreen> {
     'Shop',
     'Events',
     'Profile'
-  ];
-  final List<Widget> _pages = [
-    HomePage(),
-    JobPage(),
-    LearningPage(),
-    ShopPage(),
-    EventPage(),
-    UserPage(),
   ];
 
   @override
@@ -70,7 +66,14 @@ class _MainScreenState extends State<MainScreen> {
             _selectedIndex = index;
           });
         },
-        children: _pages,
+        children: [
+          HomePage(),
+          JobPage(),
+          LearningPage(),
+          ShopPage(cart: widget.cart),
+          EventPage(),
+          UserPage(),
+        ],
       ),
       bottomNavigationBar: CustomBottomNavigationBar(
         selectedIndex: _selectedIndex,

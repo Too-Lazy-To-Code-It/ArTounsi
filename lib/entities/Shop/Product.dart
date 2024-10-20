@@ -21,11 +21,6 @@ class Product {
     required this.reviewCount,
   });
 
-  @override
-  String toString() {
-    return 'Product{id: $id, name: $name, price: $price, artist: $artist, imagePath: $imagePath, categories: $categories, rating: $rating, reviewCount: $reviewCount}';
-  }
-
   static List<Product> getProducts(ProductType type) {
     if (type == ProductType.marketplace) {
       return [
@@ -49,6 +44,7 @@ class Product {
           rating: 4.2,
           reviewCount: 85,
         ),
+        // Add more marketplace products...
       ];
     } else {
       return [
@@ -72,6 +68,7 @@ class Product {
           rating: 4.5,
           reviewCount: 130,
         ),
+        // Add more print products...
       ];
     }
   }

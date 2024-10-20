@@ -1,17 +1,20 @@
-import 'package:Artounsi/pages/Shop/fullscreen_image_view.dart';
 import 'package:flutter/material.dart';
 import '../../entities/Shop/Product.dart';
+import '../../entities/Shop/Cart.dart';
+import 'fullscreen_image_view.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final Product product;
   final List<Product> allProducts;
   final int currentIndex;
+  final Cart cart;
 
   const ProductDetailPage({
     Key? key,
     required this.product,
     required this.allProducts,
     required this.currentIndex,
+    required this.cart,
   }) : super(key: key);
 
   @override
@@ -55,8 +58,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 pinned: true,
                 flexibleSpace: FlexibleSpaceBar(
                   background: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      final int? newIndex = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullscreenImageView(
@@ -65,6 +68,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                         ),
                       );
+                      if (newIndex != null && newIndex != _currentIndex) {
+                        setState(() {
+                          _currentIndex = newIndex;
+                          _pageController.jumpToPage(newIndex);
+                        });
+                      }
                     },
                     child: Hero(
                       tag: 'productImage${currentProduct.id}',
@@ -103,6 +112,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           ),
                           const SizedBox(width: 8),
                           Text(
+
                             currentProduct.artist,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -148,6 +158,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
         child: ElevatedButton(
           child: Text('Add to Cart'),
           onPressed: () {
+            widget.cart.addItem(widget.allProducts[_currentIndex]);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Added to cart')),
             );

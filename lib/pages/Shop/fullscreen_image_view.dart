@@ -1,3 +1,5 @@
+// lib/pages/Shop/fullscreen_image_view.dart
+
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -42,6 +44,7 @@ class _FullscreenImageViewState extends State<FullscreenImageView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
           PhotoViewGallery.builder(
@@ -50,6 +53,8 @@ class _FullscreenImageViewState extends State<FullscreenImageView> {
               return PhotoViewGalleryPageOptions(
                 imageProvider: AssetImage(widget.imageUrls[index]),
                 initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2,
                 heroAttributes: PhotoViewHeroAttributes(tag: 'productImage${widget.imageUrls[index]}'),
               );
             },
@@ -57,6 +62,7 @@ class _FullscreenImageViewState extends State<FullscreenImageView> {
             loadingBuilder: (context, event) => Center(
               child: CircularProgressIndicator(),
             ),
+            backgroundDecoration: BoxDecoration(color: Colors.black),
             pageController: _pageController,
             onPageChanged: onPageChanged,
           ),
@@ -66,6 +72,16 @@ class _FullscreenImageViewState extends State<FullscreenImageView> {
             child: IconButton(
               icon: Icon(Icons.close, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(_currentIndex),
+            ),
+          ),
+          Positioned(
+            bottom: 20,
+            left: 0,
+            right: 0,
+            child: Text(
+              '${_currentIndex + 1} / ${widget.imageUrls.length}',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+              textAlign: TextAlign.center,
             ),
           ),
         ],
