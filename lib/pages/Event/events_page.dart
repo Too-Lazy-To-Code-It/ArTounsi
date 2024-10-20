@@ -26,12 +26,6 @@ class _EventPageState extends State<EventPage> {
       context,
       MaterialPageRoute(builder: (context) => add_event()),
     );
-
-    if (result != null && result is Event) {
-      setState(() {
-        events.add(result);
-      });
-    }
   }
 
   void _navigateToEventDetailsPage(Event event) {
