@@ -1,4 +1,3 @@
-import 'package:Artounsi/pages/Post/home_page.dart';
 import 'package:Artounsi/pages/User/login_page.dart';
 import 'package:Artounsi/pages/User/register_page.dart';
 import 'package:flutter/material.dart';
