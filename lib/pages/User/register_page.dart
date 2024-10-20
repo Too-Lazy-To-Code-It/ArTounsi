@@ -8,12 +8,28 @@ class RegisterPage extends StatefulWidget {
   State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _RegisterPageState extends State<RegisterPage>  {
+class _RegisterPageState extends State<RegisterPage> {
   String? _username;
   String? _email;
   String? _password;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return "Password can't be empty";
+    }
+    if (value.length < 5) {
+      return "Password must be at least 5 characters long";
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(value)) {
+      return "Password must contain at least 1 uppercase letter";
+    }
+    if (!RegExp(r'[0-9]').hasMatch(value)) {
+      return "Password must contain at least 1 number";
+    }
+    return null; // Password is valid
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +52,7 @@ class _RegisterPageState extends State<RegisterPage>  {
                 },
                 validator: (String? value) {
                   if (value!.isEmpty || value.length < 5) {
-                    return "Le username doit contenir au moins 5 caractères";
+                    return "Le username must have at least 5 characters";
                   } else {
                     return null;
                   }
@@ -54,7 +70,7 @@ class _RegisterPageState extends State<RegisterPage>  {
                 validator: (String? value) {
                   RegExp regex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
                   if (value!.isEmpty || !regex.hasMatch(value)) {
-                    return "Veillez saisir un email valide";
+                    return "Email must have valid form";
                   } else {
                     return null;
                   }
@@ -65,17 +81,11 @@ class _RegisterPageState extends State<RegisterPage>  {
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: TextFormField(
                 obscureText: true,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Mot de passe"),
+                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Password"),
                 onSaved: (String? value) {
                   _password = value;
                 },
-                validator: (String? value) {
-                  if (value!.isEmpty || value.length < 5) {
-                    return "Le username doit contenir au moins 5 caractères";
-                  } else {
-                    return null;
-                  }
-                },
+                validator: _validatePassword,
               ),
             ),
             const SizedBox(height: 30),
@@ -96,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage>  {
                           context: context,
                           builder: (BuildContext context) {
                             return AlertDialog(
-                              title: const Text("Informations"),
+                              title: const Text("Information"),
                               content: Text(message),
                             );
                           });
