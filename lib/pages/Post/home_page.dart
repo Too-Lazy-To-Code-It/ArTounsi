@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_card.dart';
 import 'add_art_page.dart';
-import 'details_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -31,7 +30,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _scrollListener() {
-    if (_scrollController.offset >= _scrollController.position.maxScrollExtent &&
+    if (_scrollController.offset >=
+            _scrollController.position.maxScrollExtent &&
         !_scrollController.position.outOfRange) {
       _loadMorePosts();
     }
@@ -46,11 +46,18 @@ class _HomePageState extends State<HomePage> {
       // Simulating an API call to fetch more posts
       await Future.delayed(const Duration(seconds: 2));
 
-      final List<String> tags = ['Art', 'Photography', 'Digital', 'Sculpture', 'Painting'];
+      final List<String> tags = [
+        'Art',
+        'Photography',
+        'Digital',
+        'Sculpture',
+        'Painting'
+      ];
       final List<Map<String, dynamic>> newPosts = List.generate(
         10,
-            (index) => {
-          'imageUrl': 'https://picsum.photos/seed/${_currentPage * 10 + index}/400/400',
+        (index) => {
+          'imageUrl':
+              'https://picsum.photos/seed/${_currentPage * 10 + index}/400/400',
           'title': 'Artwork ${_currentPage * 10 + index}',
           'author': 'Artist ${_currentPage * 10 + index}',
           'likes': (_currentPage * 10 + index) * 10,
@@ -94,7 +101,7 @@ class _HomePageState extends State<HomePage> {
                 mainAxisSpacing: 8,
               ),
               delegate: SliverChildBuilderDelegate(
-                    (context, index) {
+                (context, index) {
                   if (index >= _posts.length) {
                     return null;
                   }
@@ -117,11 +124,11 @@ class _HomePageState extends State<HomePage> {
           SliverToBoxAdapter(
             child: _isLoading
                 ? const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            )
+                    padding: EdgeInsets.all(16.0),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
                 : const SizedBox.shrink(),
           ),
         ],

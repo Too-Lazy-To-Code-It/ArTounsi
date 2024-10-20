@@ -132,18 +132,18 @@ class _AddArtPageState extends State<AddArtPage> {
             ),
             child: _mainArtImage != null
                 ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.file(
-                _mainArtImage!,
-                fit: BoxFit.cover,
-              ),
-            )
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.file(
+                      _mainArtImage!,
+                      fit: BoxFit.cover,
+                    ),
+                  )
                 : const Center(
-              child: Text(
-                'Tap to upload image',
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
+                    child: Text(
+                      'Tap to upload image',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ),
           ),
         ),
         if (_mainArtImage == null)
@@ -219,7 +219,8 @@ class _AddArtPageState extends State<AddArtPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in all required fields and select an image'),
+          content:
+              Text('Please fill in all required fields and select an image'),
           backgroundColor: Colors.red,
         ),
       );
