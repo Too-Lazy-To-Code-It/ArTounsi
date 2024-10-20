@@ -22,7 +22,7 @@ class _EventPageState extends State<EventPage> {
   }
 
   void _navigateToAddEventPage() async {
-    final result = await Navigator.push(
+     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => add_event()),
     );
