@@ -1,7 +1,7 @@
-// shop_page.dart
+// lib/pages/shop/shop_page.dart
 import 'package:flutter/material.dart';
 import 'product_grid_page.dart';
-import 'product_data.dart';
+import '../../entities/Shop/Product.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({Key? key}) : super(key: key);

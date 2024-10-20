@@ -1,6 +1,5 @@
-// product_grid_page.dart
 import 'package:flutter/material.dart';
-import 'product_data.dart';
+import '../../entities/Shop/Product.dart';
 import 'product_detail_page.dart';
 
 class ProductGridPage extends StatelessWidget {
@@ -10,7 +9,7 @@ class ProductGridPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final products = ProductData.getProducts(productType);
+    final List<Product> products = Product.getProducts(productType);
 
     return GridView.builder(
       padding: const EdgeInsets.all(16.0),
@@ -22,7 +21,7 @@ class ProductGridPage extends StatelessWidget {
       ),
       itemCount: products.length,
       itemBuilder: (context, index) {
-        final product = products[index];
+        final Product product = products[index];
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -66,7 +65,7 @@ class ProductGridPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '\$${product.price}',
+                        '\$${product.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,

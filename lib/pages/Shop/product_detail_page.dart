@@ -1,9 +1,10 @@
-// product_detail_page.dart
-import 'package:flutter/material.dart';
-import 'product_data.dart';
-import 'fullscreen_image_view.dart';
+// lib/pages/Shop/product_detail_page.dart
 
-class ProductDetailPage extends StatelessWidget {
+import 'package:Artounsi/pages/Shop/fullscreen_image_view.dart';
+import 'package:flutter/material.dart';
+import '../../entities/Shop/Product.dart';
+
+class ProductDetailPage extends StatefulWidget {
   final Product product;
   final List<Product> allProducts;
   final int currentIndex;
@@ -16,13 +17,39 @@ class ProductDetailPage extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _ProductDetailPageState createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> {
+  late PageController _pageController;
+  late int _currentIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.currentIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: PageView.builder(
-        itemCount: allProducts.length,
-        controller: PageController(initialPage: currentIndex),
+        itemCount: widget.allProducts.length,
+        controller: _pageController,
+        onPageChanged: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
         itemBuilder: (context, index) {
-          final currentProduct = allProducts[index];
+          final Product currentProduct = widget.allProducts[index];
           return CustomScrollView(
             slivers: [
               SliverAppBar(
@@ -35,14 +62,14 @@ class ProductDetailPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullscreenImageView(
-                            imageUrls: allProducts.map((p) => p.imagePath).toList(),
-                            initialIndex: index,
+                            imageUrls: widget.allProducts.map((p) => p.imagePath).toList(),
+                            initialIndex: _currentIndex,
                           ),
                         ),
                       );
                     },
                     child: Hero(
-                      tag: 'productImage${currentProduct.name}',
+                      tag: 'productImage${currentProduct.id}',
                       child: Image.asset(
                         currentProduct.imagePath,
                         fit: BoxFit.cover,
@@ -63,7 +90,7 @@ class ProductDetailPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '\$${currentProduct.price}',
+                        '\$${currentProduct.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
