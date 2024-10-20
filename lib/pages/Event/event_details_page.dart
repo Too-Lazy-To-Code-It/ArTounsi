@@ -41,7 +41,10 @@ class EventDetailsPage extends StatelessWidget {
             SizedBox(height: 16),
             Text(
               event.title,
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueAccent),
             ),
             SizedBox(height: 8),
             Text(

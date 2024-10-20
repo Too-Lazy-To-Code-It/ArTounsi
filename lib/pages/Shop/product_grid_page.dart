@@ -7,7 +7,9 @@ class ProductGridPage extends StatelessWidget {
   final ProductType productType;
   final Cart cart;
 
-  const ProductGridPage({Key? key, required this.productType, required this.cart}) : super(key: key);
+  const ProductGridPage(
+      {Key? key, required this.productType, required this.cart})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +42,16 @@ class ProductGridPage extends StatelessWidget {
           },
           child: Card(
             elevation: 4,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(16)),
                       image: DecorationImage(
                         image: AssetImage(product.imagePath),
                         fit: BoxFit.cover,
@@ -62,7 +66,10 @@ class ProductGridPage extends StatelessWidget {
                     children: [
                       Text(
                         product.name,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -70,9 +77,9 @@ class ProductGridPage extends StatelessWidget {
                       Text(
                         '\$${product.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Row(

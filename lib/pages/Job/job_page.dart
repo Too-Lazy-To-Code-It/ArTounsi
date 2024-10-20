@@ -61,7 +61,8 @@ class _JobPageState extends State<JobPage> {
       Project(
         id: generateRandomId(),
         title: "Nature Photography",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/Classy.jpg",
         additionalImagePaths: [
           "assets/images/nature_photography_1.jpg",
@@ -74,7 +75,8 @@ class _JobPageState extends State<JobPage> {
       Project(
         id: generateRandomId(),
         title: "Digital Art: Futuristic Cities",
-        description: "A series of digital artworks depicting futuristic cityscapes.",
+        description:
+            "A series of digital artworks depicting futuristic cityscapes.",
         mainImagePath: "assets/images/muslimFather.jpeg",
         additionalImagePaths: [
           "assets/images/futuristic_cities_1.jpg",
@@ -85,7 +87,8 @@ class _JobPageState extends State<JobPage> {
       Project(
         id: generateRandomId(),
         title: "Nature Photography",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/capital.jpeg",
         additionalImagePaths: [
           "assets/images/nature_photography_1.jpg",
@@ -98,7 +101,8 @@ class _JobPageState extends State<JobPage> {
       Project(
         id: generateRandomId(),
         title: "Game Card",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/cardGame.jpeg",
         additionalImagePaths: [
           "assets/images/nature_photography_1.jpg",
@@ -111,7 +115,8 @@ class _JobPageState extends State<JobPage> {
       Project(
         id: generateRandomId(),
         title: "Mosque",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/mos.jpeg",
         additionalImagePaths: [
           "assets/images/nature_photography_1.jpg",

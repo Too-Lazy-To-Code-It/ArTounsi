@@ -62,8 +62,8 @@ class HomeCard extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -77,7 +77,8 @@ class HomeCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildIconWithText(Icons.favorite, likes.toString()),
-                      _buildIconWithText(Icons.remove_red_eye, views.toString()),
+                      _buildIconWithText(
+                          Icons.remove_red_eye, views.toString()),
                       _buildIconWithText(Icons.comment, comments.toString()),
                     ],
                   ),
@@ -157,7 +158,8 @@ class _DetailsPageState extends State<DetailsPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FullscreenPhotoView(imageUrl: post['imageUrl']),
+                        builder: (context) =>
+                            FullscreenPhotoView(imageUrl: post['imageUrl']),
                       ),
                     );
                   },
@@ -176,9 +178,12 @@ class _DetailsPageState extends State<DetailsPage> {
                     children: [
                       Text(
                         post['title'],
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -189,9 +194,12 @@ class _DetailsPageState extends State<DetailsPage> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildIconWithText(Icons.favorite, '${post['likes']} likes'),
-                          _buildIconWithText(Icons.remove_red_eye, '${post['views']} views'),
-                          _buildIconWithText(Icons.comment, '${post['comments']} comments'),
+                          _buildIconWithText(
+                              Icons.favorite, '${post['likes']} likes'),
+                          _buildIconWithText(
+                              Icons.remove_red_eye, '${post['views']} views'),
+                          _buildIconWithText(
+                              Icons.comment, '${post['comments']} comments'),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -206,7 +214,8 @@ class _DetailsPageState extends State<DetailsPage> {
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.secondary,
                           borderRadius: BorderRadius.circular(20),
@@ -247,9 +256,18 @@ class _DetailsPageState extends State<DetailsPage> {
   Widget _buildCommentsList() {
     // This is a dummy list of comments. In a real app, you'd fetch this from an API or database.
     final List<Map<String, String>> comments = [
-      {'author': 'Alice', 'content': 'Great artwork! I love the use of colors.'},
-      {'author': 'Bob', 'content': 'The composition is really interesting. Well done!'},
-      {'author': 'Charlie', 'content': 'This piece speaks to me on so many levels. Fantastic job!'},
+      {
+        'author': 'Alice',
+        'content': 'Great artwork! I love the use of colors.'
+      },
+      {
+        'author': 'Bob',
+        'content': 'The composition is really interesting. Well done!'
+      },
+      {
+        'author': 'Charlie',
+        'content': 'This piece speaks to me on so many levels. Fantastic job!'
+      },
     ];
 
     return ListView.builder(
@@ -273,7 +291,8 @@ class _DetailsPageState extends State<DetailsPage> {
 class FullscreenPhotoView extends StatelessWidget {
   final String imageUrl;
 
-  const FullscreenPhotoView({Key? key, required this.imageUrl}) : super(key: key);
+  const FullscreenPhotoView({Key? key, required this.imageUrl})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -27,7 +27,8 @@ class _ShopPageState extends State<ShopPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
                 _buildTabButton('Marketplace', 0),
@@ -40,8 +41,10 @@ class _ShopPageState extends State<ShopPage> {
             child: IndexedStack(
               index: _selectedIndex,
               children: [
-                ProductGridPage(productType: ProductType.marketplace, cart: widget.cart),
-                ProductGridPage(productType: ProductType.prints, cart: widget.cart),
+                ProductGridPage(
+                    productType: ProductType.marketplace, cart: widget.cart),
+                ProductGridPage(
+                    productType: ProductType.prints, cart: widget.cart),
               ],
             ),
           ),
@@ -60,7 +63,9 @@ class _ShopPageState extends State<ShopPage> {
           });
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: _selectedIndex == index ? Theme.of(context).primaryColor : Colors.grey[300],
+          backgroundColor: _selectedIndex == index
+              ? Theme.of(context).primaryColor
+              : Colors.grey[300],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),

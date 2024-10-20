@@ -40,7 +40,8 @@ class _AddProductFormState extends State<AddProductForm> {
   }
 
   Future<void> _getImage() async {
-    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+    final pickedFile =
+        await _imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
@@ -108,11 +109,12 @@ class _AddProductFormState extends State<AddProductForm> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: _image == null
-                      ? Icon(Icons.add_a_photo, size: 50, color: Colors.grey[400])
+                      ? Icon(Icons.add_a_photo,
+                          size: 50, color: Colors.grey[400])
                       : ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.file(_image!, fit: BoxFit.cover),
-                  ),
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(_image!, fit: BoxFit.cover),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -179,9 +181,9 @@ class _AddProductFormState extends State<AddProductForm> {
                 ),
                 items: _categories
                     .map((category) => DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                ))
+                          value: category,
+                          child: Text(category),
+                        ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {

@@ -53,7 +53,8 @@ class _FullscreenImageViewState extends State<FullscreenImageView> {
                 initialScale: PhotoViewComputedScale.contained,
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 2,
-                heroAttributes: PhotoViewHeroAttributes(tag: 'productImage${widget.imageUrls[index]}'),
+                heroAttributes: PhotoViewHeroAttributes(
+                    tag: 'productImage${widget.imageUrls[index]}'),
               );
             },
             itemCount: widget.imageUrls.length,

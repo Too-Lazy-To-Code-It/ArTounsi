@@ -64,15 +64,19 @@ class _DetailsPageState extends State<DetailsPage> {
                     children: [
                       Chip(
                         label: Text(post['tag']),
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary,
                         labelStyle: TextStyle(color: Colors.white),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         post['title'],
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -82,11 +86,13 @@ class _DetailsPageState extends State<DetailsPage> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
+                          Icon(Icons.favorite,
+                              color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
                           Text('${post['likes']} likes'),
                           const SizedBox(width: 24),
-                          Icon(Icons.visibility, color: Theme.of(context).colorScheme.secondary),
+                          Icon(Icons.visibility,
+                              color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
                           Text('${post['views']} views'),
                         ],

@@ -1,7 +1,6 @@
 import 'package:Artounsi/pages/Shop/add_product_form.dart';
 import 'package:flutter/material.dart';
 
-
 class AddProductButton extends StatelessWidget {
   final VoidCallback? onProductAdded;
 

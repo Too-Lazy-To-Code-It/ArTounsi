@@ -11,7 +11,8 @@ class Cart {
   List<CartItem> items = [];
 
   void addItem(Product product) {
-    final existingItemIndex = items.indexWhere((item) => item.product.id == product.id);
+    final existingItemIndex =
+        items.indexWhere((item) => item.product.id == product.id);
 
     if (existingItemIndex != -1) {
       items[existingItemIndex].quantity++;
@@ -36,7 +37,8 @@ class Cart {
   }
 
   double get totalPrice {
-    return items.fold(0, (total, item) => total + (item.product.price * item.quantity));
+    return items.fold(
+        0, (total, item) => total + (item.product.price * item.quantity));
   }
 
   int get itemCount {
