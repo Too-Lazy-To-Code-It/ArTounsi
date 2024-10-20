@@ -30,7 +30,9 @@ class FullscreenPhotoView extends StatelessWidget {
             itemCount: imageUrls.length,
             loadingBuilder: (context, event) => Center(
               child: CircularProgressIndicator(
-                value: event == null ? 0 : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
+                value: event == null
+                    ? 0
+                    : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
               ),
             ),
             backgroundDecoration: const BoxDecoration(color: Colors.black),

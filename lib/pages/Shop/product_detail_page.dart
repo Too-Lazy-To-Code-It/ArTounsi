@@ -63,7 +63,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullscreenImageView(
-                            imageUrls: widget.allProducts.map((p) => p.imagePath).toList(),
+                            imageUrls: widget.allProducts
+                                .map((p) => p.imagePath)
+                                .toList(),
                             initialIndex: _currentIndex,
                           ),
                         ),
@@ -99,20 +101,20 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Text(
                         '\$${currentProduct.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundImage: AssetImage(currentProduct.imagePath),
+                            backgroundImage:
+                                AssetImage(currentProduct.imagePath),
                           ),
                           const SizedBox(width: 8),
                           Text(
-
                             currentProduct.artist,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
@@ -122,7 +124,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       Row(
                         children: [
                           Icon(Icons.star, color: Colors.amber),
-                          Text(' ${currentProduct.rating} (${currentProduct.reviewCount} reviews)'),
+                          Text(
+                              ' ${currentProduct.rating} (${currentProduct.reviewCount} reviews)'),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -142,9 +145,12 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      _buildReviewItem(context, 'John Doe', 5, 'Great product! Highly recommended.'),
-                      _buildReviewItem(context, 'Jane Smith', 4, 'Good quality, but a bit pricey.'),
-                      _buildReviewItem(context, 'Mike Johnson', 5, 'Excellent service and fast delivery.'),
+                      _buildReviewItem(context, 'John Doe', 5,
+                          'Great product! Highly recommended.'),
+                      _buildReviewItem(context, 'Jane Smith', 4,
+                          'Good quality, but a bit pricey.'),
+                      _buildReviewItem(context, 'Mike Johnson', 5,
+                          'Excellent service and fast delivery.'),
                     ],
                   ),
                 ),
@@ -168,7 +174,8 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget _buildReviewItem(BuildContext context, String name, int rating, String comment) {
+  Widget _buildReviewItem(
+      BuildContext context, String name, int rating, String comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(

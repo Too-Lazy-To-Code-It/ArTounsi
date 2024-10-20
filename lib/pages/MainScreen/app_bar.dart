@@ -36,13 +36,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () {
-            Navigator.pushNamed(context, "/updateUser");},
-
-          tooltip: 'Settings',
-        ),
-        IconButton(
           icon: const Icon(Icons.search),
           onPressed: () {},
           tooltip: 'Search',
@@ -51,13 +44,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.send),
           onPressed: () {},
           tooltip: 'Messages',
-        ),
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () {
-            Navigator.pushNamed(context, "/loginPage");
-          },
-          tooltip: 'Logout',
         ),
       ],
     );
