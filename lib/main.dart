@@ -4,33 +4,36 @@ import 'package:Artounsi/pages/User/login_page.dart';
 import 'package:Artounsi/pages/User/profile_page.dart';
 import 'package:Artounsi/pages/User/register_page.dart';
 import 'package:Artounsi/pages/User/update_user.dart';
+// lib/main.dart
+
+import 'package:Artounsi/entities/Shop/Cart.dart';
+import 'package:Artounsi/pages/MainScreen/main_screen.dart';
+import 'package:Artounsi/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
 import 'pages/MainScreen/main_screen.dart';
 
 void main() {
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-  ));
-  runApp(const ArTounsi());
+  runApp(MyApp());
 }
 
-class ArTounsi extends StatelessWidget {
-  const ArTounsi({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  final Cart cart = Cart();
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ArTounsi',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.darkTheme, // Use the custom light theme
+      darkTheme: AppTheme.darkTheme, // Use the custom dark theme
+      themeMode: ThemeMode.system, // Or ThemeMode.light or ThemeMode.dark
       debugShowCheckedModeBanner: false,
       home: LoginPage(),
       routes: {
         "/loginPage": (BuildContext context) => LoginPage(),
         "/registerPage": (BuildContext context) => RegisterPage(),
-        "/mainScreen": (BuildContext context) => MainScreen(),
+        // "/mainScreen": (BuildContext context) => MainScreen(),
         "/forgotPasswordPage": (BuildContext context) => ForgotPasswordPage(),
         "/confirmPasswordPage": (BuildContext context) => ConfirmPasswordPage(),
         "/userPage": (BuildContext context) => UserPage(),
