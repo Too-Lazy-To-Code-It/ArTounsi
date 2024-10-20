@@ -1,6 +1,7 @@
+// shop_page.dart
 import 'package:flutter/material.dart';
-import 'marketplace_page.dart';
-import 'prints_page.dart';
+import 'product_grid_page.dart';
+import 'product_data.dart';
 
 class ShopPage extends StatefulWidget {
   const ShopPage({Key? key}) : super(key: key);
@@ -39,8 +40,7 @@ class _ShopPageState extends State<ShopPage> {
                         controller: _searchController,
                         decoration: InputDecoration(
                           hintText: 'Search...',
-                          prefixIcon:
-                              Icon(Icons.search, color: Colors.grey[600]),
+                          prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
                           border: InputBorder.none,
                           contentPadding: EdgeInsets.symmetric(vertical: 15),
                         ),
@@ -71,8 +71,8 @@ class _ShopPageState extends State<ShopPage> {
               child: IndexedStack(
                 index: _selectedIndex,
                 children: [
-                  MarketplacePage(),
-                  PrintsPage(),
+                  ProductGridPage(productType: ProductType.marketplace),
+                  ProductGridPage(productType: ProductType.prints),
                 ],
               ),
             ),
@@ -91,9 +91,7 @@ class _ShopPageState extends State<ShopPage> {
           });
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: _selectedIndex == index
-              ? Theme.of(context).primaryColor
-              : Colors.grey[300],
+          backgroundColor: _selectedIndex == index ? Theme.of(context).primaryColor : Colors.grey[300],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),

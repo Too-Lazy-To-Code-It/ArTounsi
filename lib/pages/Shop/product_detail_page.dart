@@ -1,12 +1,14 @@
+// product_detail_page.dart
 import 'package:flutter/material.dart';
+import 'product_data.dart';
 import 'fullscreen_image_view.dart';
 
-class MarketplaceDetailPage extends StatelessWidget {
-  final Map<String, dynamic> product;
-  final List<Map<String, dynamic>> allProducts;
+class ProductDetailPage extends StatelessWidget {
+  final Product product;
+  final List<Product> allProducts;
   final int currentIndex;
 
-  const MarketplaceDetailPage({
+  const ProductDetailPage({
     Key? key,
     required this.product,
     required this.allProducts,
@@ -33,18 +35,16 @@ class MarketplaceDetailPage extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) => FullscreenImageView(
-                            imageUrls: allProducts
-                                .map((p) => p['artistLogo'] as String)
-                                .toList(),
+                            imageUrls: allProducts.map((p) => p.imagePath).toList(),
                             initialIndex: index,
                           ),
                         ),
                       );
                     },
                     child: Hero(
-                      tag: 'productImage${currentProduct['name']}',
+                      tag: 'productImage${currentProduct.name}',
                       child: Image.asset(
-                        currentProduct['artistLogo'],
+                        currentProduct.imagePath,
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -58,28 +58,27 @@ class MarketplaceDetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        currentProduct['name'],
+                        currentProduct.name,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '\$${currentProduct['price']}',
+                        '\$${currentProduct.price}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundImage:
-                                AssetImage(currentProduct['artistLogo']),
+                            backgroundImage: AssetImage(currentProduct.imagePath),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            currentProduct['artist'],
+                            currentProduct.artist,
                             style: Theme.of(context).textTheme.titleMedium,
                           ),
                         ],
@@ -88,8 +87,7 @@ class MarketplaceDetailPage extends StatelessWidget {
                       Row(
                         children: [
                           Icon(Icons.star, color: Colors.amber),
-                          Text(
-                              ' ${currentProduct['rating']} (${currentProduct['reviewCount']} reviews)'),
+                          Text(' ${currentProduct.rating} (${currentProduct.reviewCount} reviews)'),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -99,7 +97,7 @@ class MarketplaceDetailPage extends StatelessWidget {
                       ),
                       Wrap(
                         spacing: 8,
-                        children: (currentProduct['categories'] as List<String>)
+                        children: currentProduct.categories
                             .map((category) => Chip(label: Text(category)))
                             .toList(),
                       ),
@@ -109,12 +107,9 @@ class MarketplaceDetailPage extends StatelessWidget {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      _buildReviewItem(context, 'John Doe', 5,
-                          'Great product! Highly recommended.'),
-                      _buildReviewItem(context, 'Jane Smith', 4,
-                          'Good quality, but a bit pricey.'),
-                      _buildReviewItem(context, 'Mike Johnson', 5,
-                          'Excellent service and fast delivery.'),
+                      _buildReviewItem(context, 'John Doe', 5, 'Great product! Highly recommended.'),
+                      _buildReviewItem(context, 'Jane Smith', 4, 'Good quality, but a bit pricey.'),
+                      _buildReviewItem(context, 'Mike Johnson', 5, 'Excellent service and fast delivery.'),
                     ],
                   ),
                 ),
@@ -137,8 +132,7 @@ class MarketplaceDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildReviewItem(
-      BuildContext context, String name, int rating, String comment) {
+  Widget _buildReviewItem(BuildContext context, String name, int rating, String comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
