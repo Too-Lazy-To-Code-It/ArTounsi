@@ -18,7 +18,8 @@ class LoginPage extends StatelessWidget {
       body: Form(
         key: _keyForm,
         child: SafeArea(
-          child: SingleChildScrollView( // Wrap the entire body with SingleChildScrollView
+          child: SingleChildScrollView(
+            // Wrap the entire body with SingleChildScrollView
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -118,7 +119,8 @@ class LoginPage extends StatelessWidget {
                     margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     child: ElevatedButton(
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            AppTheme.primaryColor),
                       ),
                       child: const Text("Login"),
                       onPressed: () {

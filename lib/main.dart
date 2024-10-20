@@ -4,22 +4,14 @@ import 'package:Artounsi/pages/User/login_page.dart';
 import 'package:Artounsi/pages/User/profile_page.dart';
 import 'package:Artounsi/pages/User/register_page.dart';
 import 'package:Artounsi/pages/User/update_user.dart';
-// lib/main.dart
-
-import 'package:Artounsi/entities/Shop/Cart.dart';
-import 'package:Artounsi/pages/MainScreen/main_screen.dart';
-import 'package:Artounsi/theme/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
-import 'pages/MainScreen/main_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

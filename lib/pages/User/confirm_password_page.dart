@@ -84,7 +84,8 @@ class _ConfirmPasswordPageState extends State<ConfirmPasswordPage> {
                 onSaved: (String? value) {
                   _password_confirmed = value;
                 },
-                validator: _validatePasswordConfirmed, // Validate if passwords match
+                validator:
+                    _validatePasswordConfirmed, // Validate if passwords match
               ),
             ),
             SizedBox(height: 20),
@@ -94,7 +95,8 @@ class _ConfirmPasswordPageState extends State<ConfirmPasswordPage> {
                 ElevatedButton(
                   child: const Text("Confirm new password"),
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {

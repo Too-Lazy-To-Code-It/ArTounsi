@@ -42,11 +42,13 @@ class _RegisterPageState extends State<RegisterPage> {
             Container(
                 width: double.infinity,
                 margin: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                child: Image.asset("assets/images/logo.png", width: 460, height: 215)),
+                child: Image.asset("assets/images/logo.png",
+                    width: 460, height: 215)),
             Container(
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: TextFormField(
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Username"),
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(), labelText: "Username"),
                 onSaved: (String? value) {
                   _username = value;
                 },
@@ -63,12 +65,14 @@ class _RegisterPageState extends State<RegisterPage> {
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: TextFormField(
                 keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Email"),
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(), labelText: "Email"),
                 onSaved: (String? value) {
                   _email = value;
                 },
                 validator: (String? value) {
-                  RegExp regex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+                  RegExp regex = RegExp(
+                      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
                   if (value!.isEmpty || !regex.hasMatch(value)) {
                     return "Email must have valid form";
                   } else {
@@ -81,7 +85,8 @@ class _RegisterPageState extends State<RegisterPage> {
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: TextFormField(
                 obscureText: true,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Password"),
+                decoration: const InputDecoration(
+                    border: OutlineInputBorder(), labelText: "Password"),
                 onSaved: (String? value) {
                   _password = value;
                 },
@@ -95,12 +100,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 ElevatedButton(
                   child: const Text("Register"),
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      String message = "Register Successful ! \n Welcome $_username to ArTounsi";
+                      String message =
+                          "Register Successful ! \n Welcome $_username to ArTounsi";
 
                       showDialog(
                           context: context,
@@ -119,7 +126,8 @@ class _RegisterPageState extends State<RegisterPage> {
                 ElevatedButton(
                   child: const Text("Cancel"),
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   onPressed: () {
                     _formKey.currentState!.reset();

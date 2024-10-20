@@ -13,7 +13,8 @@ class _UserPage extends State<UserPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
+        padding:
+            const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
         children: [
           Center(
             child: const CircleAvatar(
@@ -92,7 +93,8 @@ class _UserPage extends State<UserPage> {
           ),
           const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -103,10 +105,10 @@ class _UserPage extends State<UserPage> {
               ],
             ),
           ),
-
           const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
