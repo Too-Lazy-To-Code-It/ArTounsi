@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../entities/Event/Events.dart';
+import 'Full_Screen_Img.dart';
 
 class EventDetailsPage extends StatelessWidget {
   final Event event;
@@ -17,15 +18,28 @@ class EventDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              event.imageUrl,
-              height: 250,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            GestureDetector(
+              onTap: () {
+                // Open the image in fullscreen when tapped
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullscreenImage(
+                      imageUrls: [event.imageUrl],
+                      initialIndex: 0,
+                    ),
+                  ),
+                );
+              },
+              child: Image.asset(
+                event.imageUrl,
+                height: 250,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             ),
             SizedBox(height: 16),
             Text(
-
               event.title,
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.blueAccent),
             ),

@@ -30,8 +30,6 @@ class _add_eventState extends State<add_event> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Here you would typically send the data to your API
-      // For now, we'll just create an Event object and return it
       final newEvent = Event(
         _titleController.text,
         _imageUrlController.text,
