@@ -1,17 +1,43 @@
-// fullscreen_image_view.dart
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 
-class FullscreenImageView extends StatelessWidget {
+class FullscreenImageView extends StatefulWidget {
   final List<String> imageUrls;
   final int initialIndex;
 
   const FullscreenImageView({
     Key? key,
     required this.imageUrls,
-    this.initialIndex = 0,
+    required this.initialIndex,
   }) : super(key: key);
+
+  @override
+  _FullscreenImageViewState createState() => _FullscreenImageViewState();
+}
+
+class _FullscreenImageViewState extends State<FullscreenImageView> {
+  late int _currentIndex;
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void onPageChanged(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,25 +45,27 @@ class FullscreenImageView extends StatelessWidget {
       body: Stack(
         children: [
           PhotoViewGallery.builder(
-            itemCount: imageUrls.length,
-            builder: (context, index) {
+            scrollPhysics: const BouncingScrollPhysics(),
+            builder: (BuildContext context, int index) {
               return PhotoViewGalleryPageOptions(
-                imageProvider: AssetImage(imageUrls[index]),
-                minScale: PhotoViewComputedScale.contained,
-                maxScale: PhotoViewComputedScale.covered * 2,
+                imageProvider: AssetImage(widget.imageUrls[index]),
+                initialScale: PhotoViewComputedScale.contained,
+                heroAttributes: PhotoViewHeroAttributes(tag: 'productImage${widget.imageUrls[index]}'),
               );
             },
-            scrollPhysics: BouncingScrollPhysics(),
-            backgroundDecoration: BoxDecoration(color: Colors.black),
-            pageController: PageController(initialPage: initialIndex),
+            itemCount: widget.imageUrls.length,
+            loadingBuilder: (context, event) => Center(
+              child: CircularProgressIndicator(),
+            ),
+            pageController: _pageController,
+            onPageChanged: onPageChanged,
           ),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: IconButton(
-                icon: Icon(Icons.close, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
+          Positioned(
+            top: 40,
+            left: 20,
+            child: IconButton(
+              icon: Icon(Icons.close, color: Colors.white),
+              onPressed: () => Navigator.of(context).pop(_currentIndex),
             ),
           ),
         ],

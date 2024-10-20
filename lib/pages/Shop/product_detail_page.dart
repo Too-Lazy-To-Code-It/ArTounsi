@@ -1,5 +1,3 @@
-// lib/pages/Shop/product_detail_page.dart
-
 import 'package:Artounsi/pages/Shop/fullscreen_image_view.dart';
 import 'package:flutter/material.dart';
 import '../../entities/Shop/Product.dart';
