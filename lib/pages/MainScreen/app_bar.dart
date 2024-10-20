@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback onMenuPressed;
+  final List<Widget>? actions;
 
   const CustomAppBar({
     Key? key,
     required this.title,
     required this.onMenuPressed,
+    this.actions,
   }) : super(key: key);
 
   @override
@@ -27,25 +29,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.bold,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.search),
-          onPressed: () {},
-          tooltip: 'Search',
-        ),
-        IconButton(
-          icon: const Icon(Icons.send),
-          onPressed: () {},
-          tooltip: 'Messages',
-        ),
-      ],
+      actions: actions,
     );
   }
 

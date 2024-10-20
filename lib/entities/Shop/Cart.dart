@@ -11,15 +11,13 @@ class Cart {
   List<CartItem> items = [];
 
   void addItem(Product product) {
-    final existingItem = items.firstWhere(
-          (item) => item.product.id == product.id,
-      orElse: () => CartItem(product: product, quantity: 0),
-    );
+    final existingItemIndex = items.indexWhere((item) => item.product.id == product.id);
 
-    if (existingItem.quantity == 0) {
-      items.add(existingItem);
+    if (existingItemIndex != -1) {
+      items[existingItemIndex].quantity++;
+    } else {
+      items.add(CartItem(product: product, quantity: 1));
     }
-    existingItem.quantity++;
   }
 
   void removeItem(String productId) {
@@ -27,10 +25,13 @@ class Cart {
   }
 
   void updateQuantity(String productId, int newQuantity) {
-    final item = items.firstWhere((item) => item.product.id == productId);
-    item.quantity = newQuantity;
-    if (item.quantity <= 0) {
-      removeItem(productId);
+    final itemIndex = items.indexWhere((item) => item.product.id == productId);
+    if (itemIndex != -1) {
+      if (newQuantity > 0) {
+        items[itemIndex].quantity = newQuantity;
+      } else {
+        removeItem(productId);
+      }
     }
   }
 
@@ -40,5 +41,9 @@ class Cart {
 
   int get itemCount {
     return items.fold(0, (total, item) => total + item.quantity);
+  }
+
+  void clear() {
+    items.clear();
   }
 }
