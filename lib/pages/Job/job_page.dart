@@ -28,7 +28,7 @@ class _JobPageState extends State<JobPage> {
         id: generateRandomId(),
         title: "Sunset Beach",
         description: "A beautiful oil painting of a sunset at the beach.",
-        mainImagePath: "assets/images/logo.png",
+        mainImagePath: "assets/images/cow.jpg",
         additionalImagePaths: [
           "assets/images/sunset_beach_1.jpg",
           "assets/images/sunset_beach_2.jpg",
@@ -39,7 +39,7 @@ class _JobPageState extends State<JobPage> {
         id: generateRandomId(),
         title: "Urban Sketch",
         description: "A series of urban sketches capturing city life.",
-        mainImagePath: "assets/images/logo.png",
+        mainImagePath: "assets/images/child.jpeg",
         additionalImagePaths: [
           "assets/images/urban_sketch_1.jpg",
           "assets/images/urban_sketch_2.jpg",
@@ -51,7 +51,7 @@ class _JobPageState extends State<JobPage> {
         id: generateRandomId(),
         title: "Abstract Emotions",
         description: "An abstract painting series exploring human emotions.",
-        mainImagePath: "assets/images/logo.png",
+        mainImagePath: "assets/images/marine.jpg",
         additionalImagePaths: [
           "assets/images/abstract_emotions_1.jpg",
           "assets/images/abstract_emotions_2.jpg",
@@ -62,7 +62,7 @@ class _JobPageState extends State<JobPage> {
         id: generateRandomId(),
         title: "Nature Photography",
         description: "A collection of nature photographs from various national parks.",
-        mainImagePath: "assets/images/logo.png",
+        mainImagePath: "assets/images/Classy.jpg",
         additionalImagePaths: [
           "assets/images/nature_photography_1.jpg",
           "assets/images/nature_photography_2.jpg",
@@ -75,12 +75,51 @@ class _JobPageState extends State<JobPage> {
         id: generateRandomId(),
         title: "Digital Art: Futuristic Cities",
         description: "A series of digital artworks depicting futuristic cityscapes.",
-        mainImagePath: "assets/images/logo.png",
+        mainImagePath: "assets/images/muslimFather.jpeg",
         additionalImagePaths: [
           "assets/images/futuristic_cities_1.jpg",
           "assets/images/futuristic_cities_2.jpg",
         ],
         projectLink: "https://myportfolio.com/futuristic-cities",
+      ),
+      Project(
+        id: generateRandomId(),
+        title: "Nature Photography",
+        description: "A collection of nature photographs from various national parks.",
+        mainImagePath: "assets/images/capital.jpeg",
+        additionalImagePaths: [
+          "assets/images/nature_photography_1.jpg",
+          "assets/images/nature_photography_2.jpg",
+          "assets/images/nature_photography_3.jpg",
+          "assets/images/nature_photography_4.jpg",
+        ],
+        projectLink: "https://myportfolio.com/nature-photography",
+      ),
+      Project(
+        id: generateRandomId(),
+        title: "Game Card",
+        description: "A collection of nature photographs from various national parks.",
+        mainImagePath: "assets/images/cardGame.jpeg",
+        additionalImagePaths: [
+          "assets/images/nature_photography_1.jpg",
+          "assets/images/nature_photography_2.jpg",
+          "assets/images/nature_photography_3.jpg",
+          "assets/images/nature_photography_4.jpg",
+        ],
+        projectLink: "https://myportfolio.com/nature-photography",
+      ),
+      Project(
+        id: generateRandomId(),
+        title: "Mosque",
+        description: "A collection of nature photographs from various national parks.",
+        mainImagePath: "assets/images/mos.jpeg",
+        additionalImagePaths: [
+          "assets/images/nature_photography_1.jpg",
+          "assets/images/nature_photography_2.jpg",
+          "assets/images/nature_photography_3.jpg",
+          "assets/images/nature_photography_4.jpg",
+        ],
+        projectLink: "https://myportfolio.com/nature-photography",
       ),
     ];
   }
