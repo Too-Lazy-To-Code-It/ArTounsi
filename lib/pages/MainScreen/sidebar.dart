@@ -26,16 +26,23 @@ class CustomSidebar extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 30,
-                    backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+                    backgroundImage:
+                        AssetImage('assets/images/profile_picture.jpg'),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Ankara Methi',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleLarge
+                        ?.copyWith(color: Colors.white),
                   ),
                   Text(
                     'ankara.methi@example.com',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: Colors.white70),
                   ),
                 ],
               ),
@@ -55,7 +62,8 @@ class CustomSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, int index) {
+  Widget _buildDrawerItem(
+      BuildContext context, IconData icon, String title, int index) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
