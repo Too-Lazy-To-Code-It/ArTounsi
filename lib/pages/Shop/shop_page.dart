@@ -1,5 +1,3 @@
-// lib/pages/Shop/shop_page.dart
-
 import 'package:flutter/material.dart';
 import '../../entities/Shop/Cart.dart';
 import 'product_grid_page.dart';

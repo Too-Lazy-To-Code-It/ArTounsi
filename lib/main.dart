@@ -1,5 +1,3 @@
-// lib/main.dart
-
 import 'package:Artounsi/entities/Shop/Cart.dart';
 import 'package:Artounsi/pages/MainScreen/main_screen.dart';
 import 'package:Artounsi/theme/app_theme.dart';
