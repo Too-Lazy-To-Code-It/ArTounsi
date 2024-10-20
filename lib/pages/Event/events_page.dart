@@ -22,7 +22,7 @@ class _EventPageState extends State<EventPage> {
   }
 
   void _navigateToAddEventPage() async {
-    final result = await Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => add_event()),
     );
@@ -38,14 +38,9 @@ class _EventPageState extends State<EventPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: _navigateToAddEventPage,
-            tooltip: 'Add Event',
-          ),
-        ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddEventPage,
+        child: Icon(Icons.add),
       ),
       body: ListView.builder(
         itemCount: events.length,
@@ -81,4 +76,5 @@ class _EventPageState extends State<EventPage> {
       ),
     );
   }
+
 }
