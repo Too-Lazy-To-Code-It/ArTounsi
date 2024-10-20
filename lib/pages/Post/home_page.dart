@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_card.dart';
+import 'add_art_page.dart';
+import 'details_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -53,12 +55,11 @@ class _HomePageState extends State<HomePage> {
           'author': 'Artist ${_currentPage * 10 + index}',
           'likes': (_currentPage * 10 + index) * 10,
           'views': (_currentPage * 10 + index) * 100,
-          'comments': (_currentPage * 10 + index) * 2,
-          'tag': tags[(_currentPage * 10 + index) % tags.length],
-          'commentsList': [
+          'comments': [
             {'author': 'User1', 'content': 'Great work!'},
             {'author': 'User2', 'content': 'I love the colors!'},
           ],
+          'tag': tags[(_currentPage * 10 + index) % tags.length],
         },
       );
 
@@ -70,52 +71,65 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  void _navigateToAddArtPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddArtPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      controller: _scrollController,
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.all(8),
-          sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.75,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                if (index >= _posts.length) {
-                  return null;
-                }
-                final post = _posts[index];
-                return HomeCard(
-                  imageUrl: post['imageUrl'],
-                  title: post['title'],
-                  author: post['author'],
-                  likes: post['likes'],
-                  views: post['views'],
-                  comments: post['comments'],
-                  tag: post['tag'],
-                  allPosts: _posts,
-                  index: index,
-                );
-              },
+    return Scaffold(
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(8),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                  if (index >= _posts.length) {
+                    return null;
+                  }
+                  final post = _posts[index];
+                  return HomeCard(
+                    imageUrl: post['imageUrl'],
+                    title: post['title'],
+                    author: post['author'],
+                    likes: post['likes'],
+                    views: post['views'],
+                    comments: post['comments'].length,
+                    tag: post['tag'],
+                    allPosts: _posts,
+                    index: index,
+                  );
+                },
+              ),
             ),
           ),
-        ),
-        SliverToBoxAdapter(
-          child: _isLoading
-              ? const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
-          )
-              : const SizedBox.shrink(),
-        ),
-      ],
+          SliverToBoxAdapter(
+            child: _isLoading
+                ? const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddArtPage,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
