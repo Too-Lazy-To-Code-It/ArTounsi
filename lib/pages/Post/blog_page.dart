@@ -44,61 +44,63 @@ class BlogPage extends StatelessWidget {
         itemCount: blogPosts.length,
         itemBuilder: (context, index) {
           final post = blogPosts[index];
-          return Card(
-            margin: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Image.network(
-                  post['imageUrl'],
-                  height: 200,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post['title'],
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 4),
-                      Text('By ${post['author']} on ${post['date']}'),
-                      const SizedBox(height: 4),
-                      Text(
-                        post['excerpt'],
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary, size: 16),
-                          const SizedBox(width: 4),
-                          Text('${post['likes']}'),
-                          const SizedBox(width: 16),
-                          Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary, size: 16),
-                          const SizedBox(width: 4),
-                          Text('${post['comments']}'),
-                        ],
-                      ),
-                    ],
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => BlogPostDetails(
+                    allPosts: blogPosts,
+                    initialIndex: index,
                   ),
                 ),
-                TextButton(
-                  child: const Text('Read More'),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => BlogPostDetails(post: post),
-                      ),
-                    );
-                  },
-                ),
-              ],
+              );
+            },
+            child: Card(
+              margin: const EdgeInsets.all(8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Image.network(
+                    post['imageUrl'],
+                    height: 200,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          post['title'],
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 4),
+                        Text('By ${post['author']} on ${post['date']}'),
+                        const SizedBox(height: 4),
+                        Text(
+                          post['excerpt'],
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary, size: 16),
+                            const SizedBox(width: 4),
+                            Text('${post['likes']}'),
+                            const SizedBox(width: 16),
+                            Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary, size: 16),
+                            const SizedBox(width: 4),
+                            Text('${post['comments']}'),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },

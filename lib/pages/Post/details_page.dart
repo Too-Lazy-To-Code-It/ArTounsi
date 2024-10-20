@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'fullscreen_photo_view.dart';
 
 class DetailsPage extends StatefulWidget {
   final List<Map<String, dynamic>> allPosts;
@@ -52,30 +51,23 @@ class _DetailsPageState extends State<DetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FullscreenPhotoView(
-                          imageUrls: widget.allPosts.map((post) => post['imageUrl'] as String).toList(),
-                          initialIndex: index,
-                        ),
-                      ),
-                    );
-                  },
-                  child: Image.network(
-                    post['imageUrl'],
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 300,
-                  ),
+                Image.network(
+                  post['imageUrl'],
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 300,
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Chip(
+                        label: Text(post['tag']),
+                        backgroundColor: Theme.of(context).colorScheme.secondary,
+                        labelStyle: TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         post['title'],
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
@@ -110,12 +102,12 @@ class _DetailsPageState extends State<DetailsPage> {
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Add functionality for liking the artwork
-                        },
-                        child: const Text('Like this artwork'),
+                      Text(
+                        'Comments',
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
+                      const SizedBox(height: 8),
+                      _buildCommentsList(post['comments']),
                     ],
                   ),
                 ),
@@ -124,6 +116,24 @@ class _DetailsPageState extends State<DetailsPage> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildCommentsList(List<Map<String, String>> comments) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: comments.length,
+      itemBuilder: (context, index) {
+        final comment = comments[index];
+        return ListTile(
+          leading: CircleAvatar(
+            child: Text(comment['author']![0]),
+          ),
+          title: Text(comment['author']!),
+          subtitle: Text(comment['content']!),
+        );
+      },
     );
   }
 }

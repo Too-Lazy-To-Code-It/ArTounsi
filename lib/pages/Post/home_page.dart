@@ -44,6 +44,7 @@ class _HomePageState extends State<HomePage> {
       // Simulating an API call to fetch more posts
       await Future.delayed(const Duration(seconds: 2));
 
+      final List<String> tags = ['Art', 'Photography', 'Digital', 'Sculpture', 'Painting'];
       final List<Map<String, dynamic>> newPosts = List.generate(
         10,
             (index) => {
@@ -53,6 +54,11 @@ class _HomePageState extends State<HomePage> {
           'likes': (_currentPage * 10 + index) * 10,
           'views': (_currentPage * 10 + index) * 100,
           'comments': (_currentPage * 10 + index) * 2,
+          'tag': tags[(_currentPage * 10 + index) % tags.length],
+          'commentsList': [
+            {'author': 'User1', 'content': 'Great work!'},
+            {'author': 'User2', 'content': 'I love the colors!'},
+          ],
         },
       );
 
@@ -91,6 +97,7 @@ class _HomePageState extends State<HomePage> {
                   likes: post['likes'],
                   views: post['views'],
                   comments: post['comments'],
+                  tag: post['tag'],
                   allPosts: _posts,
                   index: index,
                 );
