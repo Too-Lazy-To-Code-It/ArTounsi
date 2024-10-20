@@ -21,6 +21,8 @@ class JobPage extends StatelessWidget {
               // Navigate to project detail page
             },
             child: Card(
+              child: Padding(
+            padding: EdgeInsets.only(top: 20),
               child: Column(
                 children: [
                   Expanded(
@@ -34,6 +36,7 @@ class JobPage extends StatelessWidget {
                     child: Text('Project ${index + 1}'),
                   ),
                 ],
+              ),
               ),
             ),
           );
