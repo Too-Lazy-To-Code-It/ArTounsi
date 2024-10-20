@@ -9,7 +9,6 @@ class LoginPage extends StatelessWidget {
     late String? _username;
     late String? _password;
     final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    fianl Cart cart = Cart();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -122,8 +121,7 @@ class LoginPage extends StatelessWidget {
                       onPressed: () {
                         if (_keyForm.currentState!.validate()) {
                           _keyForm.currentState!.save();
-                          // Navigator.pushNamed(context, "/mainScreen");
-                          Navigator.push(context, MaterialPageRoute(builder : (context) => MainScreen(cart : cart)));
+                          Navigator.pushNamed(context, "/mainScreen");
                         }
                       },
                     ),
