@@ -19,7 +19,6 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  final Cart cart = Cart();
 
   @override
   Widget build(BuildContext context) {

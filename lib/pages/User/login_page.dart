@@ -1,3 +1,5 @@
+import 'package:Artounsi/entities/Shop/Cart.dart';
+import 'package:Artounsi/pages/MainScreen/main_screen.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
@@ -9,6 +11,7 @@ class LoginPage extends StatelessWidget {
     late String? _username;
     late String? _password;
     final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    final Cart cart = Cart();
 
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
@@ -121,7 +124,12 @@ class LoginPage extends StatelessWidget {
                       onPressed: () {
                         if (_keyForm.currentState!.validate()) {
                           _keyForm.currentState!.save();
-                          Navigator.pushNamed(context, "/mainScreen");
+                          // Navigator.pushNamed(context, "/mainScreen");
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => MainScreen(cart: cart),
+                            ),
+                          );
                         }
                       },
                     ),
