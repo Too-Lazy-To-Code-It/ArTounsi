@@ -14,7 +14,7 @@ class CustomFloatingActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Positioned(
       left: 20,
-      bottom: 20,
+      bottom: 10,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -23,7 +23,7 @@ class CustomFloatingActionButton extends StatelessWidget {
             onPressed: onPressedAdd,
             icon: Icons.add,
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 5),
           _buildFloatingActionButton(
             context: context,
             onPressed: onPressedSubtract,
@@ -42,8 +42,8 @@ class CustomFloatingActionButton extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 30,
+        height: 30,
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor,
           shape: BoxShape.circle,
@@ -51,7 +51,7 @@ class CustomFloatingActionButton extends StatelessWidget {
             BoxShadow(
               color: Colors.black.withOpacity(0.2),
               spreadRadius: 1,
-              blurRadius: 5,
+              blurRadius: 1,
               offset: Offset(0, 3),
             ),
           ],

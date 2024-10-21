@@ -290,7 +290,7 @@ class _JobPageState extends State<JobPage> {
               onPressedAdd: _incrementCounter,
               onPressedSubtract: _decrementCounter,
             ),
-            Positioned(
+            /*Positioned(
               right: 20,
               bottom: 20,
               child: FloatingActionButton(
@@ -303,7 +303,7 @@ class _JobPageState extends State<JobPage> {
                 },
                 child: Icon(Icons.add),
               ),
-            ),
+            ),*/
           ],
         ),
         floatingActionButton: FloatingActionButton(
