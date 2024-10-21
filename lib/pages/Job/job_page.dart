@@ -2,6 +2,7 @@ import 'package:Artounsi/pages/Job/project_creation_page.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 
+import '../../entities/Job/CustomFloatingActionButton.dart';
 import '../../entities/Job/job.dart';
 
 class JobPage extends StatefulWidget {
@@ -20,6 +21,7 @@ class _JobPageState extends State<JobPage> {
   }
 
   late List<Job> JobList;
+  int _counter = 2;
 
   @override
   void initState() {
@@ -141,7 +143,10 @@ class _JobPageState extends State<JobPage> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+            constraints: BoxConstraints(maxHeight: MediaQuery
+                .of(context)
+                .size
+                .height * 0.7),
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -151,7 +156,8 @@ class _JobPageState extends State<JobPage> {
                   children: [
                     Text(
                       Job.title,
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),
                     Image.asset(
@@ -168,7 +174,8 @@ class _JobPageState extends State<JobPage> {
                     SizedBox(height: 16),
                     Text(
                       "Additional Images:",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Container(
@@ -192,7 +199,9 @@ class _JobPageState extends State<JobPage> {
                     InkWell(
                       child: Text(
                         "Job Link",
-                        style: TextStyle(fontSize: 16, color: Colors.blue, decoration: TextDecoration.underline),
+                        style: TextStyle(fontSize: 16,
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline),
                       ),
                       onTap: () {
                         // TODO: Implement link opening functionality
@@ -218,52 +227,96 @@ class _JobPageState extends State<JobPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
-        ),
-        itemCount: JobList.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () {
-              _showJobDetails(context, JobList[index]);
-            },
-            child: Card(
-              child: Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Image.asset(
-                        JobList[index].mainImagePath,
-                        fit: BoxFit.cover,
-                      ),
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  void _decrementCounter() {
+    setState(() {
+      if (_counter > 0) {
+        _counter--;
+      }
+    });
+  }
+
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: _counter <= 0 ? 1 : _counter,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(JobList[index].title),
-                    ),
-                  ],
+                    itemCount: JobList.length,
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          _showJobDetails(context, JobList[index]);
+                        },
+                        child: Card(
+                          child: Padding(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: Image.asset(
+                                    JobList[index].mainImagePath,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(JobList[index].title),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
+              ],
+            ),
+            CustomFloatingActionButton(
+              onPressedAdd: _incrementCounter,
+              onPressedSubtract: _decrementCounter,
+            ),
+            Positioned(
+              right: 20,
+              bottom: 20,
+              child: FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ProjectCreationPage()),
+                  );
+                },
+                child: Icon(Icons.add),
               ),
             ),
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ProjectCreationPage()),
-          );
-        },
-        child: Icon(Icons.add),
-      ),
-    );
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => ProjectCreationPage()),
+            );
+          },
+          child: Icon(Icons.add),
+        ),
+      );
+    }
   }
-}
+
+
