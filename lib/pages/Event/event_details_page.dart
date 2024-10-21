@@ -14,8 +14,16 @@ class EventDetailsPage extends StatefulWidget {
 class _EventDetailsPageState extends State<EventDetailsPage> {
   final TextEditingController _commentController = TextEditingController();
   final List<Map<String, dynamic>> _comments = [
-    {'name': 'Alice', 'rating': 5, 'comment': 'Fantastic event! Well organized.'},
-    {'name': 'Bob', 'rating': 4, 'comment': 'Great experience, but a bit crowded.'},
+    {
+      'name': 'Alice',
+      'rating': 5,
+      'comment': 'Fantastic event! Well organized.'
+    },
+    {
+      'name': 'Bob',
+      'rating': 4,
+      'comment': 'Great experience, but a bit crowded.'
+    },
     {'name': 'Charlie', 'rating': 5, 'comment': 'Loved every moment of it!'},
   ];
 
@@ -79,7 +87,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+                  backgroundImage:
+                      AssetImage('assets/images/profile_picture.jpg'),
                 ),
                 SizedBox(width: 8),
                 Text(
@@ -146,7 +155,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Widget _buildCommentItem(BuildContext context, String name, int rating, String comment) {
+  Widget _buildCommentItem(
+      BuildContext context, String name, int rating, String comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(

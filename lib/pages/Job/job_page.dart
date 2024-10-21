@@ -69,7 +69,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Nature Photography",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/Classy.jpg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -82,7 +83,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Digital Art: Futuristic Cities",
-        description: "A series of digital artworks depicting futuristic cityscapes.",
+        description:
+            "A series of digital artworks depicting futuristic cityscapes.",
         mainImagePath: "assets/images/muslimFather.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -95,7 +97,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Nature Photography",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/capital.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -108,7 +111,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Game Card",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/cardGame.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -121,7 +125,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Mosque",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/mos.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -143,10 +148,8 @@ class _JobPageState extends State<JobPage> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery
-                .of(context)
-                .size
-                .height * 0.7),
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7),
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -156,8 +159,8 @@ class _JobPageState extends State<JobPage> {
                   children: [
                     Text(
                       Job.title,
-                      style: TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),
                     Image.asset(
@@ -174,8 +177,8 @@ class _JobPageState extends State<JobPage> {
                     SizedBox(height: 16),
                     Text(
                       "Additional Images:",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Container(
@@ -199,7 +202,8 @@ class _JobPageState extends State<JobPage> {
                     InkWell(
                       child: Text(
                         "Job Link",
-                        style: TextStyle(fontSize: 16,
+                        style: TextStyle(
+                            fontSize: 16,
                             color: Colors.blue,
                             decoration: TextDecoration.underline),
                       ),
@@ -241,56 +245,56 @@ class _JobPageState extends State<JobPage> {
     });
   }
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: GridView.builder(
-                    gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _counter <= 0 ? 1 : _counter,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: JobList.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          _showJobDetails(context, JobList[index]);
-                        },
-                        child: Card(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 20),
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: Image.asset(
-                                    JobList[index].mainImagePath,
-                                    fit: BoxFit.cover,
-                                  ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: _counter <= 0 ? 1 : _counter,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: JobList.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        _showJobDetails(context, JobList[index]);
+                      },
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 20),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: Image.asset(
+                                  JobList[index].mainImagePath,
+                                  fit: BoxFit.cover,
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(JobList[index].title),
-                                ),
-                              ],
-                            ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(JobList[index].title),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
-            CustomFloatingActionButton(
-              onPressedAdd: _incrementCounter,
-              onPressedSubtract: _decrementCounter,
-            ),
-            /*Positioned(
+              ),
+            ],
+          ),
+          CustomFloatingActionButton(
+            onPressedAdd: _incrementCounter,
+            onPressedSubtract: _decrementCounter,
+          ),
+          /*Positioned(
               right: 20,
               bottom: 20,
               child: FloatingActionButton(
@@ -304,19 +308,17 @@ class _JobPageState extends State<JobPage> {
                 child: Icon(Icons.add),
               ),
             ),*/
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProjectCreationPage()),
-            );
-          },
-          child: Icon(Icons.add),
-        ),
-      );
-    }
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProjectCreationPage()),
+          );
+        },
+        child: Icon(Icons.add),
+      ),
+    );
   }
-
-
+}
