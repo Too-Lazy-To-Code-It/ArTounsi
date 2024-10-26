@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_card.dart';
 import 'add_art_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -42,33 +43,43 @@ class _HomePageState extends State<HomePage> {
         _isLoading = true;
       });
 
-      // Simulating an API call to fetch more posts
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('artworks')
+            .get();
 
-      final List<String> tags = ['Art', 'Photography', 'Digital', 'Sculpture', 'Painting'];
-      final List<Map<String, dynamic>> newPosts = List.generate(
-        10,
-            (index) => {
-          'imageUrl': 'https://picsum.photos/seed/${_currentPage * 10 + index}/400/400',
-          'title': 'Artwork ${_currentPage * 10 + index}',
-          'author': 'Artist ${_currentPage * 10 + index}',
-          'likes': (_currentPage * 10 + index) * 10,
-          'views': (_currentPage * 10 + index) * 100,
-          'comments': [
-            {'author': 'User1', 'content': 'Great work!'},
-            {'author': 'User2', 'content': 'I love the colors!'},
-          ],
-          'tag': tags[(_currentPage * 10 + index) % tags.length],
-        },
-      );
+        List<Map<String, dynamic>> newPosts = querySnapshot.docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return {
+            'imageUrl': data['imageUrl'],
+            'title': data['title'],
+            'description': data['description'] ?? 'No description available',
+            'tag': List<String>.from(data['tag'] ?? []),
+            'softwareUsed': data['softwareUsed'] ?? 'Unknown',  // softwareUsed as a string
+            'author': data['author'] ?? 'Unknown Author',
+            'likes': data['likes'] ?? 0,
+            'views': data['views'] ?? 0,
+            'comments': List<Map<String, String>>.from(data['comments'] ?? []), // comments as list of maps
+          };
+        }).toList();
 
-      setState(() {
-        _posts.addAll(newPosts);
-        _currentPage++;
-        _isLoading = false;
-      });
+        setState(() {
+          _posts.addAll(newPosts);
+          _isLoading = false;
+        });
+      } catch (error) {
+        print("Error fetching posts: $error");
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
+
+
+
+
+
 
   void _navigateToAddArtPage() {
     Navigator.push(

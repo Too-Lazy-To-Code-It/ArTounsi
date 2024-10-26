@@ -103,7 +103,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           const SizedBox(width: 24),
                           Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
-                          Text('${post['comments'].length} comments'),
+                          Text('${(post['comments'] as List).length} comments'),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -113,7 +113,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'This is a detailed description of the artwork. It can include information about the techniques used, the inspiration behind the piece, or any other relevant details about the creation process.',
+                        post['description'] ?? 'No description available',
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       const SizedBox(height: 24),
@@ -122,14 +122,7 @@ class _DetailsPageState extends State<DetailsPage> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          _buildTag(post['tag']),
-                          // Add more tags here if available
-                        ],
-                      ),
+                      _buildTags(post['tags'] as List<String>? ?? []), // Updated line
                       const SizedBox(height: 24),
                       Text(
                         'Software Used',
@@ -158,6 +151,15 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
+  Widget _buildTags(List<String> tags) {
+    return Column(
+      children: tags.map((tag) {
+        print('Tag: $tag'); // Debugging output
+        return _buildTag(tag);
+      }).toList(),
+    );
+  }
+
   Widget _buildTag(String tag) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -173,13 +175,14 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  Widget _buildCommentsList(List<Map<String, String>> comments) {
+
+  Widget _buildCommentsList(List<dynamic> comments) {
     return ListView.builder(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: comments.length,
       itemBuilder: (context, index) {
-        final comment = comments[index];
+        final comment = comments[index] as Map<String, String>;
         return ListTile(
           leading: CircleAvatar(
             child: Text(comment['author']![0]),

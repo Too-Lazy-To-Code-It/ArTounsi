@@ -8,7 +8,7 @@ class HomeCard extends StatelessWidget {
   final int likes;
   final int views;
   final int comments;
-  final String tag;
+  final List<String> tag;
   final List<Map<String, dynamic>> allPosts;
   final int index;
 
