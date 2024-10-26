@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 
 class AddArtPage extends StatefulWidget {
   const AddArtPage({Key? key}) : super(key: key);
@@ -130,7 +132,7 @@ class _AddArtPageState extends State<AddArtPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Art Categories (Select one or more)',
+          'Art Categories',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
@@ -256,15 +258,22 @@ class _AddArtPageState extends State<AddArtPage> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate() && _mainArtImage != null && _selectedTags.isNotEmpty) {
       _formKey.currentState!.save();
-      // TODO: Implement save art logic here
-      print('Title: ${_titleController.text}');
-      print('Description: ${_descriptionController.text}');
-      print('Categories: ${_selectedTags.join(", ")}');
-      print('Software Used: ${_softwareController.text}');
-      print('Main Image: ${_mainArtImage?.path}');
+
+      // Upload the image to Firebase Storage and get the URL
+      String imageUrl = await _uploadImage(_mainArtImage!);
+
+      // Create a document in Firestore
+      await FirebaseFirestore.instance.collection('artworks').add({
+        'title': _titleController.text,
+        'description': _descriptionController.text,
+        'imageUrl': imageUrl,
+        'softwareUsed': _softwareController.text,
+        'tags': _selectedTags,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
@@ -291,6 +300,21 @@ class _AddArtPageState extends State<AddArtPage> {
       );
     }
   }
+
+// Function to upload image to Firebase Storage
+  Future<String> _uploadImage(File image) async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref();
+      String fileName = 'artworks/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      UploadTask uploadTask = storageRef.child(fileName).putFile(image);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      // Handle any errors that occur during the upload
+      throw Exception('Image upload failed: $e');
+    }
+  }
+
 
   @override
   void dispose() {

@@ -8,7 +8,6 @@ import '../Learning/learning_page.dart';
 import '../Post/home_page.dart';
 import '../Shop/shop_page.dart';
 import '../User/profile_page.dart';
-import '../Post/blog_page.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
