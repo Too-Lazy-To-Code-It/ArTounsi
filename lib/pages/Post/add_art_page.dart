@@ -14,9 +14,24 @@ class _AddArtPageState extends State<AddArtPage> {
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _softwareController = TextEditingController();
   File? _mainArtImage;
+  List<String> _selectedTags = [];
+
+  final List<Map<String, dynamic>> _tagOptions = [
+    {'name': 'Game Art', 'icon': Icons.games},
+    {'name': 'Anime Art', 'icon': Icons.animation},
+    {'name': 'Character Art', 'icon': Icons.person},
+    {'name': 'Landscape Art', 'icon': Icons.landscape},
+    {'name': 'Abstract Art', 'icon': Icons.brush},
+    {'name': 'Portrait Art', 'icon': Icons.face},
+    {'name': 'Concept Art', 'icon': Icons.lightbulb},
+    {'name': 'Digital Painting', 'icon': Icons.palette},
+    {'name': '3D Art', 'icon': Icons.view_in_ar},
+    {'name': 'Pixel Art', 'icon': Icons.grid_on},
+    {'name': 'Fan Art', 'icon': Icons.favorite},
+    {'name': 'Illustration', 'icon': Icons.image},
+  ];
 
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -65,14 +80,12 @@ class _AddArtPageState extends State<AddArtPage> {
                   },
                 ),
                 const SizedBox(height: 16.0),
-                _buildTextField(
-                  controller: _tagsController,
-                  label: 'Tags (Optional)',
-                ),
+                _buildMultiSelectChips(),
                 const SizedBox(height: 16.0),
                 _buildTextField(
                   controller: _softwareController,
-                  label: 'Software Used (Optional)',
+                  label: 'Software Used',
+                  maxLines: 3,
                 ),
                 const SizedBox(height: 16.0),
                 _buildImagePicker(),
@@ -109,6 +122,59 @@ class _AddArtPageState extends State<AddArtPage> {
       ),
       maxLines: maxLines,
       validator: validator,
+    );
+  }
+
+  Widget _buildMultiSelectChips() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Art Categories (Select one or more)',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: _tagOptions.map((tag) {
+            return FilterChip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(tag['icon'], size: 18, color: _selectedTags.contains(tag['name']) ? Colors.white : Theme.of(context).primaryColor),
+                  SizedBox(width: 4),
+                  Text(tag['name']),
+                ],
+              ),
+              selected: _selectedTags.contains(tag['name']),
+              onSelected: (bool selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedTags.add(tag['name']);
+                  } else {
+                    _selectedTags.remove(tag['name']);
+                  }
+                });
+              },
+              selectedColor: Theme.of(context).primaryColor,
+              checkmarkColor: Colors.white,
+              backgroundColor: Colors.grey[200],
+              labelStyle: TextStyle(
+                color: _selectedTags.contains(tag['name']) ? Colors.white : Colors.black,
+              ),
+            );
+          }).toList(),
+        ),
+        if (_selectedTags.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Please select at least one category',
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 
@@ -191,12 +257,12 @@ class _AddArtPageState extends State<AddArtPage> {
   }
 
   void _submitForm() {
-    if (_formKey.currentState!.validate() && _mainArtImage != null) {
+    if (_formKey.currentState!.validate() && _mainArtImage != null && _selectedTags.isNotEmpty) {
       _formKey.currentState!.save();
       // TODO: Implement save art logic here
       print('Title: ${_titleController.text}');
       print('Description: ${_descriptionController.text}');
-      print('Tags: ${_tagsController.text}');
+      print('Categories: ${_selectedTags.join(", ")}');
       print('Software Used: ${_softwareController.text}');
       print('Main Image: ${_mainArtImage?.path}');
 
@@ -211,15 +277,15 @@ class _AddArtPageState extends State<AddArtPage> {
       // Reset form
       _titleController.clear();
       _descriptionController.clear();
-      _tagsController.clear();
       _softwareController.clear();
       setState(() {
         _mainArtImage = null;
+        _selectedTags = [];
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please fill in all required fields and select an image'),
+          content: Text('Please fill in all required fields, select at least one category, and select an image'),
           backgroundColor: Colors.red,
         ),
       );
@@ -230,7 +296,6 @@ class _AddArtPageState extends State<AddArtPage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _tagsController.dispose();
     _softwareController.dispose();
     super.dispose();
   }

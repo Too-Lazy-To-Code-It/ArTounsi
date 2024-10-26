@@ -118,6 +118,30 @@ class _DetailsPageState extends State<DetailsPage> {
                       ),
                       const SizedBox(height: 24),
                       Text(
+                        'Tags',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildTag(post['tag']),
+                          // Add more tags here if available
+                        ],
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Software Used',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        post['softwareUsed'] ?? 'Not specified',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
                         'Comments',
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
@@ -130,6 +154,21 @@ class _DetailsPageState extends State<DetailsPage> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTag(String tag) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).colorScheme.secondary),
+      ),
+      child: Text(
+        tag,
+        style: TextStyle(color: Theme.of(context).colorScheme.secondary),
       ),
     );
   }
