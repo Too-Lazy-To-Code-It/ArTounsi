@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../entities/Event/Events.dart';
+import '../../services/Event/EventService.dart';
 
 class add_event extends StatefulWidget {
   @override
@@ -14,6 +15,7 @@ class _AddEventState extends State<add_event> {
   final _descriptionController = TextEditingController();
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
+  final EventService _eventService = EventService();
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -39,7 +41,7 @@ class _AddEventState extends State<add_event> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       final newEvent = Event(
         _titleController.text,
@@ -47,7 +49,25 @@ class _AddEventState extends State<add_event> {
         _selectedDate,
         _descriptionController.text,
       );
-      Navigator.pop(context, newEvent);
+
+      try {
+        await _eventService.createEvent(newEvent);
+        Navigator.pop(context, newEvent);
+      } catch (e) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Error'),
+            content: Text('Failed to add event: $e'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
 
