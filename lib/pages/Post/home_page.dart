@@ -134,7 +134,8 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddArtPage,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.black),
+        backgroundColor: Theme.of(context).primaryColor,
       ),
     );
   }

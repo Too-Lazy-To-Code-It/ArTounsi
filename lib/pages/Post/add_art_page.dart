@@ -50,56 +50,69 @@ class _AddArtPageState extends State<AddArtPage> {
       appBar: AppBar(
         title: const Text('Add Artwork'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTextField(
-                  controller: _titleController,
-                  label: 'Art Title',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                _buildTextField(
-                  controller: _descriptionController,
-                  label: 'Art Description',
-                  maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                _buildMultiSelectChips(),
-                const SizedBox(height: 16.0),
-                _buildTextField(
-                  controller: _softwareController,
-                  label: 'Software Used',
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 16.0),
-                _buildImagePicker(),
-                const SizedBox(height: 24.0),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Add Artwork'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+      body: Container(
+        color: Colors.black,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildTextField(
+                    controller: _titleController,
+                    label: 'Art Title',
+                    icon: Icons.title,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a title';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16.0),
+                  _buildTextField(
+                    controller: _descriptionController,
+                    label: 'Art Description',
+                    icon: Icons.description,
+                    maxLines: 3,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a description';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildMultiSelectChips(),
+                  const SizedBox(height: 16.0),
+                  _buildTextField(
+                    controller: _softwareController,
+                    label: 'Software Used',
+                    icon: Icons.computer,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildImagePicker(),
+                  const SizedBox(height: 24.0),
+                  ElevatedButton.icon(
+                    onPressed: _submitForm,
+                    icon: const Icon(Icons.add, color: Colors.black),
+                    label: const Text('Add Artwork', style: TextStyle(color: Colors.black)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -110,6 +123,7 @@ class _AddArtPageState extends State<AddArtPage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
+    required IconData icon,
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
@@ -117,11 +131,25 @@ class _AddArtPageState extends State<AddArtPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.white70),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white70),
         ),
-        errorStyle: TextStyle(color: Colors.red),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.white70),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+        ),
+        filled: true,
+        fillColor: Colors.grey[900],
+        errorStyle: TextStyle(color: Colors.red[300]),
       ),
+      style: TextStyle(color: Colors.white),
       maxLines: maxLines,
       validator: validator,
     );
@@ -133,18 +161,18 @@ class _AddArtPageState extends State<AddArtPage> {
       children: [
         Text(
           'Art Categories',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8.0,
-          runSpacing: 4.0,
+          runSpacing: 8.0,
           children: _tagOptions.map((tag) {
             return FilterChip(
               label: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(tag['icon'], size: 18, color: _selectedTags.contains(tag['name']) ? Colors.white : Theme.of(context).primaryColor),
+                  Icon(tag['icon'], size: 18, color: _selectedTags.contains(tag['name']) ? Colors.black : Theme.of(context).primaryColor),
                   SizedBox(width: 4),
                   Text(tag['name']),
                 ],
@@ -160,10 +188,13 @@ class _AddArtPageState extends State<AddArtPage> {
                 });
               },
               selectedColor: Theme.of(context).primaryColor,
-              checkmarkColor: Colors.white,
-              backgroundColor: Colors.grey[200],
+              checkmarkColor: Colors.black,
+              backgroundColor: Colors.grey[800],
               labelStyle: TextStyle(
-                color: _selectedTags.contains(tag['name']) ? Colors.white : Colors.black,
+                color: _selectedTags.contains(tag['name']) ? Colors.black : Colors.white,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
             );
           }).toList(),
@@ -173,7 +204,7 @@ class _AddArtPageState extends State<AddArtPage> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               'Please select at least one category',
-              style: TextStyle(color: Colors.red, fontSize: 12),
+              style: TextStyle(color: Colors.red[300], fontSize: 12),
             ),
           ),
       ],
@@ -186,7 +217,7 @@ class _AddArtPageState extends State<AddArtPage> {
       children: [
         Text(
           'Art Image',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -194,32 +225,37 @@ class _AddArtPageState extends State<AddArtPage> {
           child: Container(
             height: 200,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1.5),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade200,
+              border: Border.all(color: Colors.white70, width: 1.5),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey[900],
             ),
             child: _mainArtImage != null
                 ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(12),
               child: Image.file(
                 _mainArtImage!,
                 fit: BoxFit.cover,
               ),
             )
-                : const Center(
-              child: Text(
-                'Tap to upload image',
-                style: TextStyle(color: Colors.grey),
-              ),
+                : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_photo_alternate, size: 50, color: Colors.white70),
+                const SizedBox(height: 8),
+                Text(
+                  'Tap to upload image',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
             ),
           ),
         ),
         if (_mainArtImage == null)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               'Required main image',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: Colors.red[300], fontSize: 12),
             ),
           ),
       ],
@@ -231,27 +267,28 @@ class _AddArtPageState extends State<AddArtPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Choose Image Source'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: const Text('Camera'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                const Padding(padding: EdgeInsets.all(8.0)),
-                GestureDetector(
-                  child: const Text('Gallery'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-              ],
-            ),
+          backgroundColor: Colors.grey[900],
+          title: Text('Choose Image Source', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.camera, color: Colors.white70),
+                title: Text('Camera', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.photo_library, color: Colors.white70),
+                title: Text('Gallery', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
           ),
         );
       },
@@ -262,48 +299,67 @@ class _AddArtPageState extends State<AddArtPage> {
     if (_formKey.currentState!.validate() && _mainArtImage != null && _selectedTags.isNotEmpty) {
       _formKey.currentState!.save();
 
-      // Upload the image to Firebase Storage and get the URL
-      String imageUrl = await _uploadImage(_mainArtImage!);
+      try {
+        // Upload the image to Firebase Storage and get the URL
+        String imageUrl = await _uploadImage(_mainArtImage!);
 
-      // Create a document in Firestore
-      // Inside the _submitForm() method of AddArtPage
-      await FirebaseFirestore.instance.collection('artworks').add({
-        'title': _titleController.text,
-        'description': _descriptionController.text,
-        'imageUrl': imageUrl,
-        'softwareUsed': _softwareController.text,
-        'tags': _selectedTags,
-        'createdAt': FieldValue.serverTimestamp(),
-        // Add other fields as necessary
-      });
+        // Create a document in Firestore
+        await FirebaseFirestore.instance.collection('artworks').add({
+          'title': _titleController.text,
+          'description': _descriptionController.text,
+          'imageUrl': imageUrl,
+          'softwareUsed': _softwareController.text,
+          'tags': _selectedTags,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Art added successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Art added successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
 
-      // Reset form
-      _titleController.clear();
-      _descriptionController.clear();
-      _softwareController.clear();
-      setState(() {
-        _mainArtImage = null;
-        _selectedTags = [];
-      });
+        // Reset form
+        _titleController.clear();
+        _descriptionController.clear();
+        _softwareController.clear();
+        setState(() {
+          _mainArtImage = null;
+          _selectedTags = [];
+        });
+      } catch (e) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text('Please fill in all required fields, select at least one category, and select an image'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
     }
   }
 
-// Function to upload image to Firebase Storage
   Future<String> _uploadImage(File image) async {
     try {
       final storageRef = FirebaseStorage.instance.ref();
@@ -312,11 +368,9 @@ class _AddArtPageState extends State<AddArtPage> {
       TaskSnapshot snapshot = await uploadTask;
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
-      // Handle any errors that occur during the upload
       throw Exception('Image upload failed: $e');
     }
   }
-
 
   @override
   void dispose() {
