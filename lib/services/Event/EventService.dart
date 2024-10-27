@@ -10,11 +10,11 @@ class EventService {
   Future<String> uploadImage(File image) async {
     try {
       String fileName = 'events/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      UploadTask uploadTask = _storage.ref().child(fileName).putFile(image);
-      TaskSnapshot snapshot = await uploadTask;
+      final ref = _storage.ref().child(fileName);
+      TaskSnapshot snapshot = await ref.putFile(image);
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
-      throw Exception('Image upload failed: $e');
+      throw Exception('Failed to upload image: $e');
     }
   }
 
@@ -29,21 +29,14 @@ class EventService {
     }
   }
 
-
-  /*Future<List<Event>> getEvents() async {
+  Future<List<Event>> getEvents() async {
     try {
-      QuerySnapshot snapshot = await _firestore.collection('events').get();
-      return snapshot.docs.map((doc) {
-        return Event(
-          doc['title'] ?? '',
-          doc['imageUrl'] ?? '',
-          (doc['date'] as Timestamp).toDate(),
-          doc['description'] ?? '',
-        );
-      }).toList();
+      QuerySnapshot snapshot = await _db.collection('events').get();
+      return snapshot.docs.map((doc) => Event.fromMap(doc.data() as Map<String, dynamic>)).toList();
     } catch (e) {
       print('Error fetching events: $e');
-      return [];
+      throw Exception('Failed to fetch events: $e');
     }
-  }*/
+  }
+
 }

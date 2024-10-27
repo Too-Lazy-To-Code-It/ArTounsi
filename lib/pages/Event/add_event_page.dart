@@ -55,7 +55,11 @@ class _AddEventState extends State<AddEvent> {
         if (_imagePath != null) {
           final imageFile = File(_imagePath!);
           await _eventService.addEvent(newEvent, imageFile);
-          Navigator.pop(context, newEvent);
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Event added successfully!')),
+          );
+          Navigator.pop(context, true); // Pass `true` to indicate success
         } else {
           throw Exception('Please select an image.');
         }
@@ -67,6 +71,7 @@ class _AddEventState extends State<AddEvent> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -1,22 +1,31 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Event {
-  final String title;
-  final String imageUrl;
-  final DateTime date;
-  final String description;
+  String title;
+  String imageUrl;
+  DateTime date;
+  String description;
 
   Event(this.title, this.imageUrl, this.date, this.description);
+
+  factory Event.fromMap(Map<String, dynamic> map) {
+    return Event(
+      map['title'] ?? 'Untitled Event', // Default title if null
+      map['imageUrl'] ?? '',            // Empty string if no image URL
+      // Check if date is a Timestamp or a String
+      map['date'] is Timestamp
+          ? (map['date'] as Timestamp).toDate()
+          : DateTime.tryParse(map['date'] ?? '') ?? DateTime.now(),
+      map['description'] ?? 'No description available', // Default description
+    );
+  }
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
-      'imagePath': imageUrl,
-      'date': date.toIso8601String(), // Use ISO 8601 format for dates
+      'imageUrl': imageUrl,
+      'date': date,
       'description': description,
     };
-  }
-
-  @override
-  String toString() {
-    return 'Event{title: $title, imageUrl: $imageUrl, date: $date, description: $description}';
   }
 }
