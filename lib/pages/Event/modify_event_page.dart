@@ -7,7 +7,7 @@ import '../../services/Event/EventService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ModifyEvent extends StatefulWidget {
-  final DocumentReference eventRef; // Reference to the event to be modified
+  final DocumentReference eventRef;
 
   ModifyEvent({required this.eventRef});
 
@@ -22,14 +22,14 @@ class _ModifyEventState extends State<ModifyEvent> {
   final EventService _eventService = EventService();
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
+  String? _existingImageUrl;
 
   @override
   void initState() {
     super.initState();
-    _loadEventData(); // Load existing event data
+    _loadEventData();
   }
 
-  // Load event data from Firestore
   Future<void> _loadEventData() async {
     DocumentSnapshot doc = await widget.eventRef.get();
     if (doc.exists) {
@@ -38,12 +38,12 @@ class _ModifyEventState extends State<ModifyEvent> {
         _titleController.text = event.title;
         _descriptionController.text = event.description;
         _selectedDate = event.date;
-        _imagePath = event.imageUrl; // URL or local path
+        _existingImageUrl = event.imageUrl;
+        _imagePath = null;
       });
     }
   }
 
-  // Select date for the event
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -58,22 +58,19 @@ class _ModifyEventState extends State<ModifyEvent> {
     }
   }
 
-  // Pick an image from the gallery
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _imagePath = pickedFile.path; // Local file path
+        _imagePath = pickedFile.path;
       });
     }
   }
 
-  // Submit the updated event
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
-        // Create the updated event instance
         final updatedEvent = Event(
           _titleController.text,
           '',
@@ -81,11 +78,10 @@ class _ModifyEventState extends State<ModifyEvent> {
           _descriptionController.text,
         );
 
-        // Call modifyEvent from the EventService
         await _eventService.modifyEvent(
           widget.eventRef,
           updatedEvent,
-          newImage: _imagePath != null ? File(_imagePath!) : null,
+          newImage: _imagePath != null && File(_imagePath!).existsSync() ? File(_imagePath!) : null,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,8 +135,10 @@ class _ModifyEventState extends State<ModifyEvent> {
               children: [
                 Expanded(
                   child: Text(
-                    _imagePath != null
+                    _imagePath != null && _imagePath!.isNotEmpty
                         ? 'Image selected: ${_imagePath!.split('/').last}'
+                        : _existingImageUrl != null && _existingImageUrl!.isNotEmpty
+                        ? 'Existing image loaded: ${_existingImageUrl!.split('/').last}'
                         : 'No image selected',
                   ),
                 ),
@@ -151,33 +149,27 @@ class _ModifyEventState extends State<ModifyEvent> {
               ],
             ),
             SizedBox(height: 16),
-            if (_imagePath != null)
+            if (_imagePath != null && _imagePath!.isNotEmpty)
               Container(
                 margin: EdgeInsets.only(top: 16),
                 height: 200,
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                 ),
-                child: _imagePath!.startsWith('http') // Check if it's a URL
-                    ? Image.network(
-                  _imagePath!,
-                  fit: BoxFit.cover,
-                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Center(
-                      child: CircularProgressIndicator(
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                            : null,
-                      ),
-                    );
-                  },
-                  errorBuilder: (context, error, stackTrace) {
-                    return Center(child: Text('Failed to load image'));
-                  },
-                )
-                    : Image.file(
+                child: Image.file(
                   File(_imagePath!),
+                  fit: BoxFit.cover,
+                ),
+              )
+            else if (_existingImageUrl != null && _existingImageUrl!.isNotEmpty)
+              Container(
+                margin: EdgeInsets.only(top: 16),
+                height: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: Image.network(
+                  _existingImageUrl!,
                   fit: BoxFit.cover,
                 ),
               ),

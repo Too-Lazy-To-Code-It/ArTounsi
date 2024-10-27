@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../entities/Event/Events.dart';
 import 'Full_Screen_Img.dart';
 import '../../services/Event/EventService.dart';
-import 'modify_event_page.dart'; // Import your ModifyEvent page
+import 'modify_event_page.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Event event;
@@ -95,9 +95,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
-  // New method to modify the event
   void _modifyEvent() async {
-    // Get the reference of the event document in Firestore
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
         .collection('events')
         .where('title', isEqualTo: widget.event.title)
@@ -107,7 +105,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     if (querySnapshot.docs.isNotEmpty) {
       DocumentReference eventRef = querySnapshot.docs.first.reference;
 
-      // Navigate to ModifyEvent and pass the eventRef
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -115,7 +112,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         ),
       ).then((result) {
         if (result == true) {
-          // Optionally, you can refresh the event data or take other actions after modification
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Event modified successfully!')),
           );

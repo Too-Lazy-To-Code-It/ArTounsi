@@ -41,7 +41,6 @@ class EventService {
           await _storage.ref().child('events/$fileName').delete();
         }
 
-        // Delete the event from Firestore
         await eventRef.delete();
       } else {
         throw Exception('Event not found');
@@ -54,33 +53,30 @@ class EventService {
 
   Future<void> modifyEvent(DocumentReference eventRef, Event updatedEvent, {File? newImage}) async {
     try {
-      // Check if a new image is provided
       String? imageUrl;
       if (newImage != null) {
         imageUrl = await uploadImage(newImage);
       } else {
-        // If no new image, retrieve the existing image URL
         DocumentSnapshot doc = await eventRef.get();
         if (doc.exists) {
-          imageUrl = (doc.data() as Map<String, dynamic>)['imageUrl'];
+          imageUrl = (doc.data() as Map<String, dynamic>)['imageUrl'] as String?;
         }
       }
 
-      // Prepare the updated event data
       final updatedData = {
         'title': updatedEvent.title,
-        'imageUrl': imageUrl ?? '', // Use existing image if not updated
+        'imageUrl': imageUrl ?? '',
         'date': updatedEvent.date,
         'description': updatedEvent.description,
       };
 
-      // Update the event in Firestore
       await eventRef.update(updatedData);
     } catch (e) {
       print('Error modifying event: $e');
       throw Exception('Failed to modify event: $e');
     }
   }
+
 
   Future<List<Event>> getEvents() async {
     try {
