@@ -4,13 +4,18 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../entities/Event/Events.dart';
 import '../../services/Event/EventService.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class AddEvent extends StatefulWidget {
+class ModifyEvent extends StatefulWidget {
+  final DocumentReference eventRef; // Reference to the event to be modified
+
+  ModifyEvent({required this.eventRef});
+
   @override
-  _AddEventState createState() => _AddEventState();
+  _ModifyEventState createState() => _ModifyEventState();
 }
 
-class _AddEventState extends State<AddEvent> {
+class _ModifyEventState extends State<ModifyEvent> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
@@ -18,6 +23,27 @@ class _AddEventState extends State<AddEvent> {
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
 
+  @override
+  void initState() {
+    super.initState();
+    _loadEventData(); // Load existing event data
+  }
+
+  // Load event data from Firestore
+  Future<void> _loadEventData() async {
+    DocumentSnapshot doc = await widget.eventRef.get();
+    if (doc.exists) {
+      var event = Event.fromMap(doc.data() as Map<String, dynamic>);
+      setState(() {
+        _titleController.text = event.title;
+        _descriptionController.text = event.description;
+        _selectedDate = event.date;
+        _imagePath = event.imageUrl; // URL or local path
+      });
+    }
+  }
+
+  // Select date for the event
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -32,41 +58,44 @@ class _AddEventState extends State<AddEvent> {
     }
   }
 
+  // Pick an image from the gallery
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _imagePath = pickedFile.path;
+        _imagePath = pickedFile.path; // Local file path
       });
     }
   }
 
+  // Submit the updated event
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
-        final newEvent = Event(
+        // Create the updated event instance
+        final updatedEvent = Event(
           _titleController.text,
           '',
           _selectedDate,
           _descriptionController.text,
         );
 
-        if (_imagePath != null) {
-          final imageFile = File(_imagePath!);
-          await _eventService.addEvent(newEvent, imageFile);
+        // Call modifyEvent from the EventService
+        await _eventService.modifyEvent(
+          widget.eventRef,
+          updatedEvent,
+          newImage: _imagePath != null ? File(_imagePath!) : null,
+        );
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Event added successfully!')),
-          );
-          Navigator.pop(context, true);
-        } else {
-          throw Exception('Please select an image.');
-        }
-      } catch (e) {
-        print('Error adding event: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add event: $e')),
+          SnackBar(content: Text('Event updated successfully!')),
+        );
+        Navigator.pop(context, true);
+      } catch (e) {
+        print('Error modifying event: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update event: $e')),
         );
       }
     }
@@ -76,7 +105,7 @@ class _AddEventState extends State<AddEvent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Event'),
+        title: Text('Modify Event'),
       ),
       body: Form(
         key: _formKey,
@@ -129,7 +158,25 @@ class _AddEventState extends State<AddEvent> {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
                 ),
-                child: Image.file(
+                child: _imagePath!.startsWith('http') // Check if it's a URL
+                    ? Image.network(
+                  _imagePath!,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                            : null,
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(child: Text('Failed to load image'));
+                  },
+                )
+                    : Image.file(
                   File(_imagePath!),
                   fit: BoxFit.cover,
                 ),
@@ -151,7 +198,7 @@ class _AddEventState extends State<AddEvent> {
             SizedBox(height: 32),
             ElevatedButton(
               onPressed: _submitForm,
-              child: Text('Add Event'),
+              child: Text('Update Event'),
             ),
           ],
         ),

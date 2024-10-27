@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../entities/Event/Events.dart';
 import 'Full_Screen_Img.dart';
+import '../../services/Event/EventService.dart';
+import 'modify_event_page.dart'; // Import your ModifyEvent page
 
 class EventDetailsPage extends StatefulWidget {
   final Event event;
@@ -14,28 +17,114 @@ class EventDetailsPage extends StatefulWidget {
 class _EventDetailsPageState extends State<EventDetailsPage> {
   final TextEditingController _commentController = TextEditingController();
   final List<Map<String, dynamic>> _comments = [
-    {
-      'name': 'Alice',
-      'comment': 'Fantastic event! Well organized.'
-    },
-    {
-      'name': 'Bob',
-      'comment': 'Great experience, but a bit crowded.'
-    },
-    {
-      'name': 'Charlie',
-      'comment': 'Loved every moment of it!'},
+    {'name': 'Alice', 'comment': 'Fantastic event! Well organized.'},
+    {'name': 'Bob', 'comment': 'Great experience, but a bit crowded.'},
+    {'name': 'Charlie', 'comment': 'Loved every moment of it!'},
   ];
+
+  bool _isEventDeleted = false;
+
+  Future<void> _deleteEvent() async {
+    final eventService = EventService();
+    try {
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+          .collection('events')
+          .where('title', isEqualTo: widget.event.title)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        DocumentReference eventRef = querySnapshot.docs.first.reference;
+        await eventService.deleteEvent(eventRef);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Event deleted!')),
+        );
+        setState(() {
+          _isEventDeleted = true;
+        });
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Event not found!')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete event: $e')),
+      );
+    }
+  }
+
+  void _confirmDeleteEvent() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Delete Event"),
+          content: Text("Are you sure you want to delete this event?"),
+          actions: [
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text("Delete"),
+              onPressed: () {
+                _deleteEvent();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   void _addComment() {
     if (_commentController.text.isNotEmpty) {
       setState(() {
         _comments.add({
-          'name': 'John Doe', // You could replace this with a dynam
+          'name': 'John Doe',
           'comment': _commentController.text,
         });
         _commentController.clear();
       });
+    }
+  }
+
+  // New method to modify the event
+  void _modifyEvent() async {
+    // Get the reference of the event document in Firestore
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('events')
+        .where('title', isEqualTo: widget.event.title)
+        .limit(1)
+        .get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      DocumentReference eventRef = querySnapshot.docs.first.reference;
+
+      // Navigate to ModifyEvent and pass the eventRef
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ModifyEvent(eventRef: eventRef),
+        ),
+      ).then((result) {
+        if (result == true) {
+          // Optionally, you can refresh the event data or take other actions after modification
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Event modified successfully!')),
+          );
+        }
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Event not found!')),
+      );
     }
   }
 
@@ -93,12 +182,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundImage:
-                  AssetImage('assets/images/profile_picture.jpg'),
+                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'Organizer Name', // Replace with actual data if available
+                  'Organizer Name',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -150,7 +238,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               maxLines: 5,
               style: TextStyle(fontSize: 18),
             ),
-
             SizedBox(height: 8),
             Center(
               child: ElevatedButton(
@@ -161,11 +248,32 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           ],
         ),
       ),
+      floatingActionButton: Stack(
+        children: [
+          Positioned(
+            bottom: 70,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: _confirmDeleteEvent,
+              child: Icon(Icons.delete),
+              backgroundColor: Colors.red,
+            ),
+          ),
+          Positioned(
+            bottom: 10,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: _modifyEvent,
+              child: Icon(Icons.edit),
+              backgroundColor: Colors.blue,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildCommentItem(
-      BuildContext context, String name, String comment) {
+  Widget _buildCommentItem(BuildContext context, String name, String comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(

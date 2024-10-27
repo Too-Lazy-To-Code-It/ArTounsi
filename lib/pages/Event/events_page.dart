@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'add_event_page.dart';
 import '../../entities/Event/Events.dart';
 import 'event_details_page.dart';
-import '../../services/Event/EventService.dart';// Import EventService
+import '../../services/Event/EventService.dart';
 
 class EventPage extends StatefulWidget {
   @override
@@ -11,13 +11,13 @@ class EventPage extends StatefulWidget {
 
 class _EventPageState extends State<EventPage> {
   List<Event> events = [];
-  final EventService _eventService = EventService(); // Instantiate EventService
-  bool isLoading = true; // Add a loading indicator
+  final EventService _eventService = EventService();
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchEvents(); // Fetch events on initialization
+    _fetchEvents();
   }
 
   Future<void> _fetchEvents() async {
@@ -29,7 +29,7 @@ class _EventPageState extends State<EventPage> {
       });
     } catch (e, stackTrace) {
       print('Error fetching events: $e');
-      print(stackTrace); // Print stack trace for deeper debugging
+      print(stackTrace);
       setState(() {
         isLoading = false;
       });
@@ -47,12 +47,17 @@ class _EventPageState extends State<EventPage> {
     }
   }
 
-  void _navigateToEventDetailsPage(Event event) {
-    Navigator.push(
+  void _navigateToEventDetailsPage(Event event) async {
+    bool? shouldReload = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EventDetailsPage(event: event)),
     );
+    if (shouldReload == true) {
+      _fetchEvents();
+    }
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +67,7 @@ class _EventPageState extends State<EventPage> {
         child: Icon(Icons.add),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // Show loading spinner
+          ? Center(child: CircularProgressIndicator())
           : ListView.builder(
         itemCount: events.length,
         itemBuilder: (context, index) {
@@ -74,7 +79,7 @@ class _EventPageState extends State<EventPage> {
               child: Column(
                 children: [
                   Image.network(
-                    events[index].imageUrl, // Use network image
+                    events[index].imageUrl,
                     height: 200,
                     width: double.infinity,
                     fit: BoxFit.cover,
