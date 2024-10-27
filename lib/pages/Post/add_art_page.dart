@@ -266,6 +266,7 @@ class _AddArtPageState extends State<AddArtPage> {
       String imageUrl = await _uploadImage(_mainArtImage!);
 
       // Create a document in Firestore
+      // Inside the _submitForm() method of AddArtPage
       await FirebaseFirestore.instance.collection('artworks').add({
         'title': _titleController.text,
         'description': _descriptionController.text,
@@ -273,6 +274,7 @@ class _AddArtPageState extends State<AddArtPage> {
         'softwareUsed': _softwareController.text,
         'tags': _selectedTags,
         'createdAt': FieldValue.serverTimestamp(),
+        // Add other fields as necessary
       });
 
       // Show success message
