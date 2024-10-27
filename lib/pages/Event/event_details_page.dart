@@ -16,23 +16,22 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   final List<Map<String, dynamic>> _comments = [
     {
       'name': 'Alice',
-      'rating': 5,
       'comment': 'Fantastic event! Well organized.'
     },
     {
       'name': 'Bob',
-      'rating': 4,
       'comment': 'Great experience, but a bit crowded.'
     },
-    {'name': 'Charlie', 'rating': 5, 'comment': 'Loved every moment of it!'},
+    {
+      'name': 'Charlie',
+      'comment': 'Loved every moment of it!'},
   ];
 
   void _addComment() {
     if (_commentController.text.isNotEmpty) {
       setState(() {
         _comments.add({
-          'name': 'John Doe',
-          'rating': 5,
+          'name': 'John Doe', // You could replace this with a dynam
           'comment': _commentController.text,
         });
         _commentController.clear();
@@ -65,7 +64,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10),
-                child: Image.asset(
+                child: widget.event.imageUrl.startsWith('http')
+                    ? Image.network(
+                  widget.event.imageUrl,
+                  height: 300,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                )
+                    : Image.asset(
                   widget.event.imageUrl,
                   height: 300,
                   width: double.infinity,
@@ -88,11 +94,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 CircleAvatar(
                   radius: 24,
                   backgroundImage:
-                      AssetImage('assets/images/profile_picture.jpg'),
+                  AssetImage('assets/images/profile_picture.jpg'),
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'John Doe',
+                  'Organizer Name', // Replace with actual data if available
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -129,7 +135,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 return _buildCommentItem(
                   context,
                   commentData['name'],
-                  commentData['rating'],
                   commentData['comment'],
                 );
               }).toList(),
@@ -141,7 +146,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 labelText: 'Add a comment',
                 border: OutlineInputBorder(),
               ),
+              minLines: 3,
+              maxLines: 5,
+              style: TextStyle(fontSize: 18),
             ),
+
             SizedBox(height: 8),
             Center(
               child: ElevatedButton(
@@ -156,7 +165,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   Widget _buildCommentItem(
-      BuildContext context, String name, int rating, String comment) {
+      BuildContext context, String name, String comment) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Column(
@@ -167,20 +176,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               Text(
                 name,
                 style: TextStyle(
+                  color: Colors.orangeAccent,
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
               const SizedBox(width: 8),
-              Row(
-                children: List.generate(5, (index) {
-                  return Icon(
-                    index < rating ? Icons.star : Icons.star_border,
-                    size: 16,
-                    color: Colors.amber,
-                  );
-                }),
-              ),
             ],
           ),
           const SizedBox(height: 4),
