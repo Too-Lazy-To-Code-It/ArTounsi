@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../entities/Event/Events.dart';
-import '../../services/Event/EventService.dart';
+import '../../services/Event/EventService.dart'; // Import EventService
 
-class add_event extends StatefulWidget {
+class AddEvent extends StatefulWidget {
   @override
   _AddEventState createState() => _AddEventState();
 }
 
-class _AddEventState extends State<add_event> {
+class _AddEventState extends State<AddEvent> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final EventService _eventService = EventService(); // EventService instance
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
-  final EventService _eventService = EventService();
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -41,31 +42,27 @@ class _AddEventState extends State<add_event> {
     }
   }
 
-  void _submitForm() async {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      final newEvent = Event(
-        _titleController.text,
-        _imagePath ?? '',
-        _selectedDate,
-        _descriptionController.text,
-      );
-
       try {
-        await _eventService.createEvent(newEvent);
-        Navigator.pop(context, newEvent);
+        final newEvent = Event(
+          _titleController.text,
+          '', // Image URL will be added after upload
+          _selectedDate,
+          _descriptionController.text,
+        );
+
+        if (_imagePath != null) {
+          final imageFile = File(_imagePath!);
+          await _eventService.addEvent(newEvent, imageFile);
+          Navigator.pop(context, newEvent);
+        } else {
+          throw Exception('Please select an image.');
+        }
       } catch (e) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text('Error'),
-            content: Text('Failed to add event: $e'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('OK'),
-              ),
-            ],
-          ),
+        print('Error adding event: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add event: $e')),
         );
       }
     }

@@ -39,7 +39,7 @@ class _EventPageState extends State<EventPage> {
   void _navigateToAddEventPage() async {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => add_event()),
+      MaterialPageRoute(builder: (context) => AddEvent()),
     );
   }
 
