@@ -132,6 +132,7 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
         title: Text('Edit Artwork'),
         backgroundColor: Colors.black,
       ),
+      backgroundColor: Colors.black,
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -142,7 +143,19 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
               children: [
                 TextFormField(
                   controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Title'),
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white70),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[900],
+                  ),
+                  style: TextStyle(color: Colors.white),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a title';
@@ -150,19 +163,47 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                     return null;
                   },
                 ),
+                SizedBox(height: 16),
                 TextFormField(
                   controller: _descriptionController,
-                  decoration: InputDecoration(labelText: 'Description'),
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white70),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[900],
+                  ),
+                  style: TextStyle(color: Colors.white),
                   maxLines: 3,
                 ),
+                SizedBox(height: 16),
                 TextFormField(
                   controller: _softwareController,
-                  decoration: InputDecoration(labelText: 'Software Used'),
+                  decoration: InputDecoration(
+                    labelText: 'Software Used',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white70),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                    ),
+                    filled: true,
+                    fillColor: Colors.grey[900],
+                  ),
+                  style: TextStyle(color: Colors.white),
                 ),
                 SizedBox(height: 16),
-                Text('Tags'),
+                Text('Tags', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
+                  runSpacing: 8,
                   children: _tagOptions.map((tag) {
                     return FilterChip(
                       label: Text(tag['name']),
@@ -176,20 +217,36 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                           }
                         });
                       },
+                      selectedColor: Theme.of(context).primaryColor,
+                      checkmarkColor: Colors.black,
+                      backgroundColor: Colors.grey[800],
+                      labelStyle: TextStyle(
+                        color: _selectedTags.contains(tag['name']) ? Colors.black : Colors.white,
+                      ),
                     );
                   }).toList(),
                 ),
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _pickImage,
-                  child: Text('Pick Image'),
+                  child: Text('Pick Image', style: TextStyle(color: Colors.black)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                  ),
                 ),
                 if (_newArtImage != null)
-                  Image.file(_newArtImage!, height: 200, width: 200),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Image.file(_newArtImage!, height: 200, width: 200),
+                  ),
                 SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text('Update Artwork'),
+                  child: Text('Update Artwork', style: TextStyle(color: Colors.black)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    minimumSize: Size(double.infinity, 50),
+                  ),
                 ),
               ],
             ),
