@@ -42,14 +42,6 @@ class _HomePageState extends State<HomePage> {
     // No need to manually refresh, StreamBuilder will handle updates
   }
 
-  void _onArtworkDeleted(String artworkId) {
-    // Deletion will be handled by StreamBuilder automatically
-  }
-
-  void _onArtworkUpdated(Map<String, dynamic> updatedArtwork) {
-    // Updates will be handled by StreamBuilder automatically
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,10 +106,7 @@ class _HomePageState extends State<HomePage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => DetailsPage(
-                                allPosts: posts,
-                                initialIndex: index,
-                                onArtworkDeleted: _onArtworkDeleted,
-                                onArtworkUpdated: _onArtworkUpdated,
+                                artworkId: post['id'],
                               ),
                             ),
                           );

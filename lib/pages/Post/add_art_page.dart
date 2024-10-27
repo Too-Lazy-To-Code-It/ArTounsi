@@ -309,7 +309,7 @@ class _AddArtPageState extends State<AddArtPage> {
           'description': _descriptionController.text,
           'imageUrl': imageUrl,
           'softwareUsed': _softwareController.text,
-          'tags': _selectedTags,
+          'tags': _selectedTags, // Changed from 'tag' to 'tags'
           'createdAt': FieldValue.serverTimestamp(),
         });
 

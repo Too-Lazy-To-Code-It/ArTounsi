@@ -48,7 +48,7 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
     _titleController = TextEditingController(text: widget.artwork['title']);
     _descriptionController = TextEditingController(text: widget.artwork['description']);
     _softwareController = TextEditingController(text: widget.artwork['softwareUsed']);
-    _selectedTags = List<String>.from(widget.artwork['tag'] ?? []);
+    _selectedTags = List<String>.from(widget.artwork['tags'] ?? []);
   }
 
   @override
@@ -93,17 +93,24 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
 
       try {
         Map<String, dynamic> updatedArtwork = {
-          'id': widget.artwork['id'],
           'title': _titleController.text,
           'description': _descriptionController.text,
           'softwareUsed': _softwareController.text,
-          'tag': _selectedTags,
-          'imageUrl': newImageUrl ?? widget.artwork['imageUrl'],
+          'tags': _selectedTags,
         };
 
-        await FirebaseFirestore.instance.collection('artworks').doc(widget.artwork['id']).update(updatedArtwork);
+        if (newImageUrl != null) {
+          updatedArtwork['imageUrl'] = newImageUrl;
+        }
 
-        widget.onArtworkUpdated(updatedArtwork);
+        await FirebaseFirestore.instance
+            .collection('artworks')
+            .doc(widget.artwork['id'])
+            .update(updatedArtwork);
+
+        // Update the local state
+        Map<String, dynamic> fullUpdatedArtwork = Map<String, dynamic>.from(widget.artwork)..addAll(updatedArtwork);
+        widget.onArtworkUpdated(fullUpdatedArtwork);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Artwork updated successfully')),
@@ -125,200 +132,70 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
         title: Text('Edit Artwork'),
         backgroundColor: Colors.black,
       ),
-      body: Container(
-        color: Colors.black,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildTextField(
-                    controller: _titleController,
-                    label: 'Art Title',
-                    icon: Icons.title,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a title';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _descriptionController,
-                    label: 'Art Description',
-                    icon: Icons.description,
-                    maxLines: 3,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a description';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _softwareController,
-                    label: 'Software Used',
-                    icon: Icons.computer,
-                    maxLines: 3,
-                  ),
-                  SizedBox(height: 16),
-                  _buildMultiSelectChips(),
-                  SizedBox(height: 16),
-                  _buildImagePicker(),
-                  SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _submitForm,
-                    icon: const Icon(Icons.save, color: Colors.black),
-                    label: const Text('Update Artwork', style: TextStyle(color: Colors.black)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 16.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _titleController,
+                  decoration: InputDecoration(labelText: 'Title'),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a title';
+                    }
+                    return null;
+                  },
+                ),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(labelText: 'Description'),
+                  maxLines: 3,
+                ),
+                TextFormField(
+                  controller: _softwareController,
+                  decoration: InputDecoration(labelText: 'Software Used'),
+                ),
+                SizedBox(height: 16),
+                Text('Tags'),
+                Wrap(
+                  spacing: 8,
+                  children: _tagOptions.map((tag) {
+                    return FilterChip(
+                      label: Text(tag['name']),
+                      selected: _selectedTags.contains(tag['name']),
+                      onSelected: (bool selected) {
+                        setState(() {
+                          if (selected) {
+                            _selectedTags.add(tag['name']);
+                          } else {
+                            _selectedTags.remove(tag['name']);
+                          }
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _pickImage,
+                  child: Text('Pick Image'),
+                ),
+                if (_newArtImage != null)
+                  Image.file(_newArtImage!, height: 200, width: 200),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: _submitForm,
+                  child: Text('Update Artwork'),
+                ),
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    int maxLines = 1,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
-        prefixIcon: Icon(icon, color: Colors.white70),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white70),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white70),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor),
-        ),
-        filled: true,
-        fillColor: Colors.grey[900],
-        errorStyle: TextStyle(color: Colors.red[300]),
-      ),
-      style: TextStyle(color: Colors.white),
-      maxLines: maxLines,
-      validator: validator,
-    );
-  }
-
-  Widget _buildMultiSelectChips() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Art Categories',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: _tagOptions.map((tag) {
-            return FilterChip(
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(tag['icon'], size: 18, color: _selectedTags.contains(tag['name']) ? Colors.black : Theme.of(context).primaryColor),
-                  SizedBox(width: 4),
-                  Text(tag['name']),
-                ],
-              ),
-              selected: _selectedTags.contains(tag['name']),
-              onSelected: (bool selected) {
-                setState(() {
-                  if (selected) {
-                    _selectedTags.add(tag['name']);
-                  } else {
-                    _selectedTags.remove(tag['name']);
-                  }
-                });
-              },
-              selectedColor: Theme.of(context).primaryColor,
-              checkmarkColor: Colors.black,
-              backgroundColor: Colors.grey[800],
-              labelStyle: TextStyle(
-                color: _selectedTags.contains(tag['name']) ? Colors.black : Colors.white,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-            );
-          }).toList(),
-        ),
-        if (_selectedTags.isEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text(
-              'Please select at least one category',
-              style: TextStyle(color: Colors.red[300], fontSize: 12),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildImagePicker() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Art Image',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        SizedBox(height: 8),
-        GestureDetector(
-          onTap: _pickImage,
-          child: Container(
-            height: 200,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.white70, width: 1.5),
-              borderRadius: BorderRadius.circular(12),
-              color: Colors.grey[900],
-            ),
-            child: _newArtImage != null
-                ? ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.file(
-                _newArtImage!,
-                fit: BoxFit.cover,
-              ),
-            )
-                : ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.network(
-                widget.artwork['imageUrl'],
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
