@@ -18,7 +18,6 @@ class _UpdateUserState extends State<UpdateUser> {
   bool _enableDarkMode = false;
   bool _showOnlineStatus = true;
 
-
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
@@ -60,7 +59,6 @@ class _UpdateUserState extends State<UpdateUser> {
             children: [
               GestureDetector(
                 onTap: _pickImage,
-
                 child: CircleAvatar(
                   radius: 200,
                   backgroundImage: _imageFile != null
@@ -73,7 +71,8 @@ class _UpdateUserState extends State<UpdateUser> {
                 margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                 child: TextFormField(
                   initialValue: _username,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Username"),
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(), labelText: "Username"),
                   onSaved: (String? value) {
                     _username = value;
                   },
@@ -91,12 +90,14 @@ class _UpdateUserState extends State<UpdateUser> {
                 child: TextFormField(
                   initialValue: _email,
                   keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Email"),
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(), labelText: "Email"),
                   onSaved: (String? value) {
                     _email = value;
                   },
                   validator: (String? value) {
-                    RegExp regex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+                    RegExp regex = RegExp(
+                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
                     if (value!.isEmpty || !regex.hasMatch(value)) {
                       return "Email must have valid form";
                     } else {
@@ -111,7 +112,8 @@ class _UpdateUserState extends State<UpdateUser> {
                   initialValue: _summary,
                   keyboardType: TextInputType.multiline,
                   maxLines: 10,
-                  decoration: const InputDecoration(border: OutlineInputBorder(), labelText: "Summary"),
+                  decoration: const InputDecoration(
+                      border: OutlineInputBorder(), labelText: "Summary"),
                   onSaved: (String? value) {
                     _summary = value;
                   },
@@ -171,7 +173,8 @@ class _UpdateUserState extends State<UpdateUser> {
                 margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   child: const Text("Update"),
                   onPressed: () {

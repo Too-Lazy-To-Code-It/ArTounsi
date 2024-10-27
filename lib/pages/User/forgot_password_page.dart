@@ -13,8 +13,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   String? _code;
   bool _isVisible = false;
 
-  final GlobalKey<FormState> _emailFormKey = GlobalKey<FormState>(); // Separate key for email form field
-  final GlobalKey<FormState> _codeFormKey = GlobalKey<FormState>();  // Separate key for code form field
+  final GlobalKey<FormState> _emailFormKey =
+      GlobalKey<FormState>(); // Separate key for email form field
+  final GlobalKey<FormState> _codeFormKey =
+      GlobalKey<FormState>(); // Separate key for code form field
 
   @override
   Widget build(BuildContext context) {
@@ -44,8 +46,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 },
                 validator: (String? value) {
                   RegExp regex = RegExp(
-                      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+"
-                  );
+                      r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
                   if (value!.isEmpty || !regex.hasMatch(value)) {
                     return "Email must have valid form";
                   } else {
@@ -94,7 +95,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: const Text("Send Mail"),
                 style: ButtonStyle(
                   backgroundColor:
-                  MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                      MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                 ),
                 onPressed: () {
                   if (_emailFormKey.currentState!.validate()) {
@@ -107,11 +108,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               ),
               const SizedBox(width: 30),
               Visibility(
-                visible: _isVisible, // Only show the "Enter Code" button if the code field is visible
+                visible:
+                    _isVisible, // Only show the "Enter Code" button if the code field is visible
                 child: ElevatedButton(
                   child: const Text("Enter Code"),
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   onPressed: () {
                     if (_codeFormKey.currentState!.validate()) {

@@ -1,4 +1,5 @@
 import 'package:Artounsi/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class UserPage extends StatefulWidget {
@@ -9,11 +10,14 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPage extends State<UserPage> {
+  final user = FirebaseAuth.instance.currentUser!;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
+        padding:
+            const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
         children: [
           Center(
             child: const CircleAvatar(
@@ -27,7 +31,7 @@ class _UserPage extends State<UserPage> {
             children: [
               const SizedBox(width: 20),
               Text(
-                'ankara.methi@exemple.com',
+                user.email!,
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),
@@ -92,7 +96,8 @@ class _UserPage extends State<UserPage> {
           ),
           const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -103,10 +108,10 @@ class _UserPage extends State<UserPage> {
               ],
             ),
           ),
-
           const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
+            padding:
+                const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
