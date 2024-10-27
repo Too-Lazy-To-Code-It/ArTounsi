@@ -4,6 +4,8 @@ import '../../entities/Event/Events.dart';
 import 'Full_Screen_Img.dart';
 import '../../services/Event/EventService.dart';
 import 'modify_event_page.dart';
+import '../../entities/Event/Comments.dart';
+import '../../services/Event/ComlmentService.dart'; // Add this line
 
 class EventDetailsPage extends StatefulWidget {
   final Event event;
@@ -16,13 +18,23 @@ class EventDetailsPage extends StatefulWidget {
 
 class _EventDetailsPageState extends State<EventDetailsPage> {
   final TextEditingController _commentController = TextEditingController();
-  final List<Map<String, dynamic>> _comments = [
-    {'name': 'Alice', 'comment': 'Fantastic event! Well organized.'},
-    {'name': 'Bob', 'comment': 'Great experience, but a bit crowded.'},
-    {'name': 'Charlie', 'comment': 'Loved every moment of it!'},
-  ];
+  final List<Comment> _comments = []; // Change type to Comment
+  final CommentService _commentService = CommentService(); // Initialize CommentService
 
   bool _isEventDeleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadComments();
+  }
+
+  Future<void> _loadComments() async {
+    List<Comment> comments = await _commentService.getComments();
+    setState(() {
+      _comments.addAll(comments);
+    });
+  }
 
   Future<void> _deleteEvent() async {
     final eventService = EventService();
@@ -83,13 +95,19 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  void _addComment() {
+  Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
+      Comment newComment = Comment(
+        name: 'John Doe',
+        comment: _commentController.text,
+      );
+
+      // Add comment to Firestore
+      await _commentService.addComment(newComment);
+
+      // Update local state
       setState(() {
-        _comments.add({
-          'name': 'John Doe',
-          'comment': _commentController.text,
-        });
+        _comments.add(newComment);
         _commentController.clear();
       });
     }
@@ -215,11 +233,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
             SizedBox(height: 8),
             Column(
-              children: _comments.map((commentData) {
+              children: _comments.map((comment) {
                 return _buildCommentItem(
                   context,
-                  commentData['name'],
-                  commentData['comment'],
+                  comment.name,
+                  comment.comment,
                 );
               }).toList(),
             ),
