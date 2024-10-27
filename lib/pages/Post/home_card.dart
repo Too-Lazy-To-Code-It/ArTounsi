@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'details_page.dart';
 
 class HomeCard extends StatelessWidget {
   final String imageUrl;
@@ -9,20 +8,19 @@ class HomeCard extends StatelessWidget {
   final int views;
   final int comments;
   final List<String> tag;
-  final List<Map<String, dynamic>> allPosts;
-  final int index;
+  final VoidCallback onTap;
 
   const HomeCard({
     Key? key,
     required this.imageUrl,
+
     required this.title,
     required this.author,
     required this.likes,
     required this.views,
     required this.comments,
     required this.tag,
-    required this.allPosts,
-    required this.index,
+    required this.onTap,
   }) : super(key: key);
 
   @override
@@ -33,17 +31,7 @@ class HomeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetailsPage(
-                allPosts: allPosts,
-                initialIndex: index,
-              ),
-            ),
-          );
-        },
+        onTap: onTap,
         child: Image.network(
           imageUrl,
           fit: BoxFit.cover,

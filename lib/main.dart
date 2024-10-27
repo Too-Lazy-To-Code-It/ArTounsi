@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme/app_theme.dart';
 import 'pages/MainScreen/main_screen.dart';
-
+import 'pages/Post/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,8 +15,6 @@ void main() async {
   runApp(const ArTounsi());
 }
 
-
-
 class ArTounsi extends StatelessWidget {
   const ArTounsi({Key? key}) : super(key: key);
 
@@ -26,6 +24,9 @@ class ArTounsi extends StatelessWidget {
       title: 'ArTounsi',
       theme: AppTheme.darkTheme,
       home: const MainScreen(),
+      routes: {
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }

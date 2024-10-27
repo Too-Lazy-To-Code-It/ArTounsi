@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_card.dart';
 import 'add_art_page.dart';
+import 'details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,7 +15,6 @@ class _HomePageState extends State<HomePage> {
   final List<Map<String, dynamic>> _posts = [];
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
-  int _currentPage = 1;
 
   @override
   void initState() {
@@ -49,17 +49,18 @@ class _HomePageState extends State<HomePage> {
             .get();
 
         List<Map<String, dynamic>> newPosts = querySnapshot.docs.map((doc) {
-          final data = doc.data() as Map<String, dynamic>;
+          final data = doc.data() as Map<String, dynamic>? ?? {};
           return {
-            'imageUrl': data['imageUrl'],
-            'title': data['title'],
-            'description': data['description'] ?? 'No description available',
+            'id': doc.id,
+            'imageUrl': data['imageUrl'] as String? ?? '',
+            'title': data['title'] as String? ?? 'Untitled',
+            'description': data['description'] as String? ?? 'No description available',
             'tag': List<String>.from(data['tag'] ?? []),
-            'softwareUsed': data['softwareUsed'] ?? 'Unknown',  // softwareUsed as a string
-            'author': data['author'] ?? 'Unknown Author',
-            'likes': data['likes'] ?? 0,
-            'views': data['views'] ?? 0,
-            'comments': List<Map<String, String>>.from(data['comments'] ?? []), // comments as list of maps
+            'softwareUsed': data['softwareUsed'] as String? ?? 'Unknown',
+            'author': data['author'] as String? ?? 'Unknown Author',
+            'likes': data['likes'] as int? ?? 0,
+            'views': data['views'] as int? ?? 0,
+            'comments': List<Map<String, dynamic>>.from(data['comments'] ?? []),
           };
         }).toList();
 
@@ -76,16 +77,26 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-
-
-
-
-
   void _navigateToAddArtPage() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const AddArtPage()),
     );
+  }
+
+  void _onArtworkDeleted(String artworkId) {
+    setState(() {
+      _posts.removeWhere((post) => post['id'] == artworkId);
+    });
+  }
+
+  void _onArtworkUpdated(Map<String, dynamic> updatedArtwork) {
+    setState(() {
+      int index = _posts.indexWhere((post) => post['id'] == updatedArtwork['id']);
+      if (index != -1) {
+        _posts[index] = updatedArtwork;
+      }
+    });
   }
 
   @override
@@ -110,15 +121,26 @@ class _HomePageState extends State<HomePage> {
                   }
                   final post = _posts[index];
                   return HomeCard(
-                    imageUrl: post['imageUrl'],
-                    title: post['title'],
-                    author: post['author'],
-                    likes: post['likes'],
-                    views: post['views'],
-                    comments: post['comments'].length,
-                    tag: post['tag'],
-                    allPosts: _posts,
-                    index: index,
+                    imageUrl: post['imageUrl'] ?? '',
+                    title: post['title'] ?? 'Untitled',
+                    author: post['author'] ?? 'Unknown',
+                    likes: post['likes'] ?? 0,
+                    views: post['views'] ?? 0,
+                    comments: (post['comments'] as List?)?.length ?? 0,
+                    tag: List<String>.from(post['tag'] ?? []),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailsPage(
+                            allPosts: _posts,
+                            initialIndex: index,
+                            onArtworkDeleted: _onArtworkDeleted,
+                            onArtworkUpdated: _onArtworkUpdated,
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),
@@ -139,6 +161,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddArtPage,
         child: const Icon(Icons.add),
+
       ),
     );
   }

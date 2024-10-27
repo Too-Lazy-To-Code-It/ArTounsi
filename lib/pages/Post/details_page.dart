@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'fullscreen_photo_view.dart';
+import 'EditArtworkPage.dart';
 
 class DetailsPage extends StatefulWidget {
   final List<Map<String, dynamic>> allPosts;
   final int initialIndex;
+  final Function(String) onArtworkDeleted;
+  final Function(Map<String, dynamic>) onArtworkUpdated;
 
   const DetailsPage({
     Key? key,
     required this.allPosts,
     required this.initialIndex,
+    required this.onArtworkDeleted,
+    required this.onArtworkUpdated,
   }) : super(key: key);
 
   @override
@@ -32,11 +38,79 @@ class _DetailsPageState extends State<DetailsPage> {
     super.dispose();
   }
 
+  Future<void> _deleteArtwork() async {
+    final post = widget.allPosts[_currentIndex];
+    final artworkId = post['id'];
+
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Artwork'),
+          content: Text('Are you sure you want to delete this artwork?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      try {
+        await FirebaseFirestore.instance.collection('artworks').doc(artworkId).delete();
+        widget.onArtworkDeleted(artworkId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Artwork deleted successfully')),
+        );
+        Navigator.of(context).pop();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete artwork: $e')),
+        );
+      }
+    }
+  }
+
+  void _editArtwork() {
+    final post = widget.allPosts[_currentIndex];
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditArtworkPage(
+          artwork: post,
+          onArtworkUpdated: (updatedArtwork) {
+            setState(() {
+              widget.allPosts[_currentIndex] = updatedArtwork;
+            });
+            widget.onArtworkUpdated(updatedArtwork);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.allPosts[_currentIndex]['title']),
+        title: Text(widget.allPosts[_currentIndex]['title'] ?? 'Artwork Details'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: _editArtwork,
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _deleteArtwork,
+          ),
+        ],
       ),
       body: PageView.builder(
         controller: _pageController,
@@ -58,7 +132,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => FullscreenPhotoView(
-                          imageUrls: widget.allPosts.map((post) => post['imageUrl'] as String).toList(),
+                          imageUrls: widget.allPosts.map((post) => post['imageUrl'] as String? ?? '').toList(),
                           initialIndex: index,
                         ),
                       ),
@@ -68,7 +142,7 @@ class _DetailsPageState extends State<DetailsPage> {
                     }
                   },
                   child: Image.network(
-                    post['imageUrl'],
+                    post['imageUrl'] ?? '',
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: 300,
@@ -80,14 +154,14 @@ class _DetailsPageState extends State<DetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        post['title'],
+                        post['title'] ?? 'Untitled',
                         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'By ${post['author']}',
+                        'By ${post['author'] ?? 'Unknown'}',
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       const SizedBox(height: 16),
@@ -95,15 +169,15 @@ class _DetailsPageState extends State<DetailsPage> {
                         children: [
                           Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
-                          Text('${post['likes']} likes'),
+                          Text('${post['likes'] ?? 0} likes'),
                           const SizedBox(width: 24),
                           Icon(Icons.visibility, color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
-                          Text('${post['views']} views'),
+                          Text('${post['views'] ?? 0} views'),
                           const SizedBox(width: 24),
                           Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
-                          Text('${(post['comments'] as List).length} comments'),
+                          Text('${(post['comments'] as List?)?.length ?? 0} comments'),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -122,7 +196,7 @@ class _DetailsPageState extends State<DetailsPage> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      _buildTags(post['tags'] as List<String>? ?? []), // Updated line
+                      _buildTags(post['tag'] as List<dynamic>? ?? []),
                       const SizedBox(height: 24),
                       Text(
                         'Software Used',
@@ -139,7 +213,7 @@ class _DetailsPageState extends State<DetailsPage> {
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 8),
-                      _buildCommentsList(post['comments']),
+                      _buildCommentsList(post['comments'] as List<dynamic>? ?? []),
                     ],
                   ),
                 ),
@@ -151,12 +225,11 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  Widget _buildTags(List<String> tags) {
-    return Column(
-      children: tags.map((tag) {
-        print('Tag: $tag'); // Debugging output
-        return _buildTag(tag);
-      }).toList(),
+  Widget _buildTags(List<dynamic> tags) {
+    return Wrap(
+      spacing: 8.0,
+      runSpacing: 4.0,
+      children: tags.map((tag) => _buildTag(tag.toString())).toList(),
     );
   }
 
@@ -175,20 +248,19 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-
   Widget _buildCommentsList(List<dynamic> comments) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: comments.length,
       itemBuilder: (context, index) {
-        final comment = comments[index] as Map<String, String>;
+        final comment = comments[index] as Map<String, dynamic>? ?? {};
         return ListTile(
           leading: CircleAvatar(
-            child: Text(comment['author']![0]),
+            child: Text(comment['author']?[0] ?? ''),
           ),
-          title: Text(comment['author']!),
-          subtitle: Text(comment['content']!),
+          title: Text(comment['author'] ?? 'Unknown'),
+          subtitle: Text(comment['content'] ?? ''),
         );
       },
     );
