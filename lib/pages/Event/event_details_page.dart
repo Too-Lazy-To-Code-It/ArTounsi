@@ -5,7 +5,7 @@ import 'Full_Screen_Img.dart';
 import '../../services/Event/EventService.dart';
 import 'modify_event_page.dart';
 import '../../entities/Event/Comments.dart';
-import '../../services/Event/ComlmentService.dart'; // Add this line
+import '../../services/Event/ComlmentService.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Event event;
@@ -18,9 +18,10 @@ class EventDetailsPage extends StatefulWidget {
 
 class _EventDetailsPageState extends State<EventDetailsPage> {
   final TextEditingController _commentController = TextEditingController();
-  final List<Comment> _comments = []; // Change type to Comment
-  final CommentService _commentService = CommentService(); // Initialize CommentService
-
+  final List<Comment> _comments = [];
+  final List<DocumentReference> _commentRefs = []; // Store document references
+  final CommentService _commentService = CommentService();
+  bool _isLoading = false;
   bool _isEventDeleted = false;
 
   @override
@@ -30,11 +31,43 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   }
 
   Future<void> _loadComments() async {
-    List<Comment> comments = await _commentService.getComments();
-    setState(() {
-      _comments.addAll(comments);
-    });
+    try {
+      setState(() {
+        // Optionally show loading state
+        _isLoading = true;
+      });
+
+      List<Comment> comments = await _commentService.getComments();
+      setState(() {
+        _comments.addAll(comments);
+      });
+
+      await _saveCommentsDocument(comments);
+    } catch (e) {
+      // Handle errors, e.g., show a message to the user
+      print('Error loading comments: $e');
+    } finally {
+      setState(() {
+        _isLoading = false; // Hide loading state
+      });
+    }
   }
+
+  Future<void> _saveCommentsDocument(List<Comment> comments) async {
+    try {
+      final docRef = FirebaseFirestore.instance.collection('commentsCollection').doc('commentsDocId');
+      final commentsData = {
+        'comments': comments.map((comment) => comment.toMap()).toList(),
+        'timestamp': FieldValue.serverTimestamp(),
+      };
+      await docRef.set(commentsData);
+    } catch (e) {
+      // Handle errors while saving the document
+      print('Error saving comments document: $e');
+    }
+  }
+
+
 
   Future<void> _deleteEvent() async {
     final eventService = EventService();
@@ -102,16 +135,16 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         comment: _commentController.text,
       );
 
-      // Add comment to Firestore
-      await _commentService.addComment(newComment);
+      DocumentReference newDocRef = await _commentService.addComment(newComment);
 
-      // Update local state
       setState(() {
         _comments.add(newComment);
+        _commentRefs.add(newDocRef);
         _commentController.clear();
       });
     }
   }
+
 
   void _modifyEvent() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -140,6 +173,48 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         SnackBar(content: Text('Event not found!')),
       );
     }
+  }
+
+  Future<void> _deleteComment(int index) async {
+    if (index < _commentRefs.length) {
+      DocumentReference docRef = _commentRefs[index];
+      await _commentService.deleteComment(docRef); // Use the document reference to delete
+
+      setState(() {
+        _comments.removeAt(index);
+        _commentRefs.removeAt(index); // Remove the reference as well
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Comment deleted!')),
+      );
+    }
+  }
+
+  void _confirmDeleteComment(int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this comment?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteComment(index);
+                Navigator.of(context).pop();
+              },
+              child: Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -233,11 +308,13 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
             SizedBox(height: 8),
             Column(
-              children: _comments.map((comment) {
+              children: _comments.asMap().entries.map((entry) {
+                int index = entry.key;
+                Comment comment = entry.value;
                 return _buildCommentItem(
                   context,
-                  comment.name,
-                  comment.comment,
+                  comment,
+                  index,
                 );
               }).toList(),
             ),
@@ -287,28 +364,16 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Widget _buildCommentItem(BuildContext context, String name, String comment) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                name,
-                style: TextStyle(
-                  color: Colors.orangeAccent,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(width: 8),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(comment),
-        ],
+  Widget _buildCommentItem(BuildContext context, Comment comment, int index) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        title: Text(comment.name, style: TextStyle(color: Colors.amber),),
+        subtitle: Text(comment.comment),
+        trailing: IconButton(
+          icon: Icon(Icons.delete),
+          onPressed: () => _confirmDeleteComment(index),
+        ),
       ),
     );
   }
