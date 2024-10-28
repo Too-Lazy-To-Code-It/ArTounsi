@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../entities/Shop/Product.dart';
 
 class AddProductForm extends StatefulWidget {
@@ -21,6 +23,7 @@ class _AddProductFormState extends State<AddProductForm> {
   ProductType _productType = ProductType.marketplace;
   File? _image;
   final _imagePicker = ImagePicker();
+  bool _isLoading = false;
 
   final List<String> _categories = [
     'Digital',
@@ -40,16 +43,22 @@ class _AddProductFormState extends State<AddProductForm> {
   }
 
   Future<void> _getImage() async {
-    final pickedFile =
-        await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
+    try {
+      final pickedFile =
+      await _imagePicker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _image = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick image: $e')),
+      );
     }
   }
 
-  void _submitForm() {
+  Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_image == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -57,20 +66,48 @@ class _AddProductFormState extends State<AddProductForm> {
         );
         return;
       }
-      // Here you would typically save the product to your database
-      // For this example, we'll just print the values
-      print('Name: ${_nameController.text}');
-      print('Price: ${_priceController.text}');
-      print('Artist: ${_artistController.text}');
-      print('Category: $_selectedCategory');
-      print('Product Type: $_productType');
-      print('Image Path: ${_image!.path}');
 
-      // Call the onProductAdded callback
-      widget.onProductAdded?.call();
+      setState(() {
+        _isLoading = true;
+      });
 
-      // Close the form
-      Navigator.of(context).pop();
+      try {
+        // Upload image to Firebase Storage
+        final storageRef = FirebaseStorage.instance
+            .ref()
+            .child('product_images/${DateTime.now().toIso8601String()}.jpg');
+        await storageRef.putFile(_image!);
+        final imageUrl = await storageRef.getDownloadURL();
+
+        // Create new product
+        final newProduct = Product(
+          id: '',
+          name: _nameController.text,
+          price: double.parse(_priceController.text),
+          artist: _artistController.text,
+          imagePath: imageUrl,
+          categories: [_selectedCategory!],
+          rating: 0,
+          reviewCount: 0,
+          type: _productType,
+        );
+
+        // Save to Firestore
+        await FirebaseFirestore.instance
+            .collection('products')
+            .add(newProduct.toFirestore());
+
+        widget.onProductAdded?.call();
+        Navigator.of(context).pop();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add product: $e')),
+        );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -110,11 +147,11 @@ class _AddProductFormState extends State<AddProductForm> {
                   ),
                   child: _image == null
                       ? Icon(Icons.add_a_photo,
-                          size: 50, color: Colors.grey[400])
+                      size: 50, color: Colors.grey[400])
                       : ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: Image.file(_image!, fit: BoxFit.cover),
-                        ),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.file(_image!, fit: BoxFit.cover),
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -181,9 +218,9 @@ class _AddProductFormState extends State<AddProductForm> {
                 ),
                 items: _categories
                     .map((category) => DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        ))
+                  value: category,
+                  child: Text(category),
+                ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
@@ -228,8 +265,10 @@ class _AddProductFormState extends State<AddProductForm> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: _submitForm,
-                child: const Text('Add Product'),
+                onPressed: _isLoading ? null : _submitForm,
+                child: _isLoading
+                    ? CircularProgressIndicator()
+                    : const Text('Add Product'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(

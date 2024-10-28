@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 enum ProductType { marketplace, prints }
 
 class Product {
@@ -9,6 +11,7 @@ class Product {
   final List<String> categories;
   final double rating;
   final int reviewCount;
+  final ProductType type;
 
   Product({
     required this.id,
@@ -19,57 +22,37 @@ class Product {
     required this.categories,
     required this.rating,
     required this.reviewCount,
+    required this.type,
   });
 
-  static List<Product> getProducts(ProductType type) {
-    if (type == ProductType.marketplace) {
-      return [
-        Product(
-          id: 'm1',
-          name: 'Digital Artwork 1',
-          price: 29.99,
-          artist: 'John Doe',
-          imagePath: 'assets/images/Shop/1.jpg',
-          categories: ['Digital', 'Abstract'],
-          rating: 4.5,
-          reviewCount: 120,
-        ),
-        Product(
-          id: 'm2',
-          name: '3D Model Pack',
-          price: 49.99,
-          artist: 'Jane Smith',
-          imagePath: 'assets/images/Shop/2.jpg',
-          categories: ['3D', 'Characters'],
-          rating: 4.2,
-          reviewCount: 85,
-        ),
-        // Add more marketplace products...
-      ];
-    } else {
-      return [
-        Product(
-          id: 'p1',
-          name: 'Landscape Print',
-          price: 24.99,
-          artist: 'Emma Wilson',
-          imagePath: 'assets/images/Shop/3.jpg',
-          categories: ['Landscape', 'Nature'],
-          rating: 4.7,
-          reviewCount: 180,
-        ),
-        Product(
-          id: 'p2',
-          name: 'Portrait Print',
-          price: 29.99,
-          artist: 'Michael Lee',
-          imagePath: 'assets/images/Shop/4.jpg',
-          categories: ['Portrait', 'People'],
-          rating: 4.5,
-          reviewCount: 130,
-        ),
-        // Add more print products...
-      ];
-    }
+  factory Product.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return Product(
+      id: doc.id,
+      name: data['name'] ?? '',
+      price: (data['price'] ?? 0).toDouble(),
+      artist: data['artist'] ?? '',
+      imagePath: data['imagePath'] ?? '',
+      categories: List<String>.from(data['categories'] ?? []),
+      rating: (data['rating'] ?? 0).toDouble(),
+      reviewCount: data['reviewCount'] ?? 0,
+      type: ProductType.values.firstWhere(
+            (e) => e.toString() == 'ProductType.${data['type']}',
+        orElse: () => ProductType.marketplace,
+      ),
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'price': price,
+      'artist': artist,
+      'imagePath': imagePath,
+      'categories': categories,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'type': type.toString().split('.').last,
+    };
   }
 }
