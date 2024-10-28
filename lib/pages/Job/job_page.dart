@@ -4,6 +4,7 @@ import 'dart:math';
 
 import '../../entities/Job/CustomFloatingActionButton.dart';
 import '../../entities/Job/job.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class JobPage extends StatefulWidget {
   const JobPage({Key? key}) : super(key: key);
@@ -23,9 +24,12 @@ class _JobPageState extends State<JobPage> {
   late List<Job> JobList;
   int _counter = 2;
 
+  final JobService _jobService = JobService();
+
   @override
   void initState() {
     super.initState();
+    /*
     JobList = [
       Job(
         id: generateRandomId(),
@@ -69,7 +73,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Nature Photography",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/Classy.jpg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -82,7 +87,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Digital Art: Futuristic Cities",
-        description: "A series of digital artworks depicting futuristic cityscapes.",
+        description:
+            "A series of digital artworks depicting futuristic cityscapes.",
         mainImagePath: "assets/images/muslimFather.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -95,7 +101,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Nature Photography",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/capital.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -108,7 +115,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Game Card",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/cardGame.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -121,7 +129,8 @@ class _JobPageState extends State<JobPage> {
       Job(
         id: generateRandomId(),
         title: "Mosque",
-        description: "A collection of nature photographs from various national parks.",
+        description:
+            "A collection of nature photographs from various national parks.",
         mainImagePath: "assets/images/mos.jpeg",
         additionalImagePaths: [
           "assets/images/marine.jpg",
@@ -132,6 +141,8 @@ class _JobPageState extends State<JobPage> {
         JobLink: "https://myportfolio.com/nature-photography",
       ),
     ];
+
+    */
   }
 
   void _showJobDetails(BuildContext context, Job Job) {
@@ -143,10 +154,8 @@ class _JobPageState extends State<JobPage> {
             borderRadius: BorderRadius.circular(20.0),
           ),
           child: Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery
-                .of(context)
-                .size
-                .height * 0.7),
+            constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.7),
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -156,8 +165,8 @@ class _JobPageState extends State<JobPage> {
                   children: [
                     Text(
                       Job.title,
-                      style: TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 16),
                     Image.asset(
@@ -174,8 +183,8 @@ class _JobPageState extends State<JobPage> {
                     SizedBox(height: 16),
                     Text(
                       "Additional Images:",
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
                     Container(
@@ -199,7 +208,8 @@ class _JobPageState extends State<JobPage> {
                     InkWell(
                       child: Text(
                         "Job Link",
-                        style: TextStyle(fontSize: 16,
+                        style: TextStyle(
+                            fontSize: 16,
                             color: Colors.blue,
                             decoration: TextDecoration.underline),
                       ),
@@ -241,56 +251,79 @@ class _JobPageState extends State<JobPage> {
     });
   }
 
-    @override
-    Widget build(BuildContext context) {
-      return Scaffold(
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                Expanded(
-                  child: GridView.builder(
-                    gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: _counter <= 0 ? 1 : _counter,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: JobList.length,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          _showJobDetails(context, JobList[index]);
-                        },
-                        child: Card(
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 20),
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: Image.asset(
-                                    JobList[index].mainImagePath,
-                                    fit: BoxFit.cover,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: StreamBuilder<List<Job>>(
+                  stream: _jobService.getJobs(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    }
+
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No jobs available'));
+                    }
+
+                    List<Job> jobList = snapshot.data!;
+
+                    return GridView.builder(
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: _counter <= 0 ? 1 : _counter,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: jobList.length,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            _showJobDetails(context, jobList[index]);
+                          },
+                          child: Card(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 20),
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: Image.network(
+                                      jobList[index].mainImagePath,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Icon(Icons.error);
+                                      },
+                                    ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(JobList[index].title),
-                                ),
-                              ],
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(jobList[index].title),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                        );
+                      },
+                    );
+                  },
                 ),
-              ],
-            ),
-            CustomFloatingActionButton(
-              onPressedAdd: _incrementCounter,
-              onPressedSubtract: _decrementCounter,
-            ),
-            /*Positioned(
+              ),
+            ],
+          ),
+          CustomFloatingActionButton(
+            onPressedAdd: _incrementCounter,
+            onPressedSubtract: _decrementCounter,
+          ),
+          /*Positioned(
               right: 20,
               bottom: 20,
               child: FloatingActionButton(
@@ -304,19 +337,17 @@ class _JobPageState extends State<JobPage> {
                 child: Icon(Icons.add),
               ),
             ),*/
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ProjectCreationPage()),
-            );
-          },
-          child: Icon(Icons.add),
-        ),
-      );
-    }
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProjectCreationPage()),
+          );
+        },
+        child: Icon(Icons.add),
+      ),
+    );
   }
-
-
+}

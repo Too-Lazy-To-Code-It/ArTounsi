@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 
 class ProjectCreationPage extends StatefulWidget {
@@ -10,6 +13,10 @@ class ProjectCreationPage extends StatefulWidget {
 class _ProjectCreationPageState extends State<ProjectCreationPage> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   String _title = '';
   String _description = '';
   File? _mainImage;
@@ -31,8 +38,75 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
 
   Future<XFile?> _getImage() async {
     final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
+    await _picker.pickImage(source: ImageSource.gallery);
     return pickedFile;
+  }
+
+  Future<String> _uploadImage(File image, String folder) async {
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    Reference ref = _storage.ref().child('Job_images/$folder/$fileName');
+    UploadTask uploadTask = ref.putFile(image);
+    TaskSnapshot taskSnapshot = await uploadTask;
+    String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+    return downloadUrl;
+  }
+
+  Future<void> _saveJob() async {
+    if (_formKey.currentState!.validate() && _mainImage != null) {
+      _formKey.currentState!.save();
+
+      try {
+        // Upload main image
+        String mainImageUrl = await _uploadImage(_mainImage!, 'main');
+
+        // Upload additional images
+        List<String> additionalImageUrls = [];
+        for (File image in _additionalImages) {
+          String url = await _uploadImage(image, 'additional');
+          additionalImageUrls.add(url);
+        }
+
+        // Get current user ID
+        String userId = _auth.currentUser?.uid ?? 'anonymous';
+
+        // Save job data to Firestore
+        await _firestore.collection('Jobs').add({
+          'title': _title,
+          'description': _description,
+          'mainImageUrl': mainImageUrl,
+          'additionalImageUrls': additionalImageUrls,
+          'projectLink': _projectLink,
+          'userId': userId,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Job created successfully')),
+        );
+
+        // Clear the form
+        setState(() {
+          _title = '';
+          _description = '';
+          _mainImage = null;
+          _additionalImages = [];
+          _projectLink = '';
+          _formKey.currentState!.reset();
+        });
+      } catch (e) {
+        print('Error saving job: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error creating job. Please try again.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please fill in all required fields'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -166,25 +240,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
             ),
             SizedBox(height: 24.0),
             ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate() && _mainImage != null) {
-                  _formKey.currentState!.save();
-                  // TODO: Implement save project logic here
-                  print('Title: $_title');
-                  print('Description: $_description');
-                  print('Main Image: ${_mainImage?.path}');
-                  print(
-                      'Additional Images: ${_additionalImages.map((file) => file.path).toList()}');
-                  print('Project Link: $_projectLink');
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please fill in all required fields'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
+              onPressed: _saveJob,
               child: Text('Create Job'),
             ),
           ],

@@ -6,8 +6,11 @@ import 'package:Artounsi/pages/User/register_page.dart';
 import 'package:Artounsi/pages/User/update_user.dart';
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
