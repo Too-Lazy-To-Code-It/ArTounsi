@@ -30,7 +30,9 @@ class Product {
     return Product(
       id: doc.id,
       name: data['name'] ?? '',
-      price: (data['price'] ?? 0).toDouble(),
+      price: (data['price'] is String)
+          ? double.tryParse(data['price']) ?? 0.0
+          : (data['price'] ?? 0).toDouble(),
       artist: data['artist'] ?? '',
       imagePath: data['imagePath'] ?? '',
       categories: List<String>.from(data['categories'] ?? []),
@@ -43,7 +45,7 @@ class Product {
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
-      'price': price,
+      'price': price,  // This will be stored as a number in Firestore
       'artist': artist,
       'imagePath': imagePath,
       'categories': categories,

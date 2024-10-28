@@ -62,15 +62,8 @@ class _AddProductFormState extends State<AddProductForm> {
           final storageRef = FirebaseStorage.instance
               .ref()
               .child('product_images/${DateTime.now().toIso8601String()}.jpg');
-
-          // Upload the file
-          await storageRef.putFile(_image!).whenComplete(() async {
-            // Get the download URL
-            imageUrl = await storageRef.getDownloadURL();
-          }).catchError((error) {
-            print('Error uploading image: $error');
-            throw error; // Rethrow the error to be caught in the outer catch block
-          });
+          await storageRef.putFile(_image!);
+          imageUrl = await storageRef.getDownloadURL();
         }
 
         final newProduct = Product(
