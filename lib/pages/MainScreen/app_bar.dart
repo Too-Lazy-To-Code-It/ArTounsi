@@ -5,12 +5,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onMenuPressed;
   final List<Widget>? actions;
 
-  const CustomAppBar({
-    Key? key,
-    required this.title,
-    required this.onMenuPressed,
-    this.actions,
-  }) : super(key: key);
+  const CustomAppBar(
+      {Key? key,
+      required this.title,
+      required this.onMenuPressed,
+      this.actions})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +36,32 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ],
       ),
-      actions: actions,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () {
+            Navigator.pushNamed(context, "/updateUser");
+          },
+          tooltip: 'Settings',
+        ),
+        IconButton(
+          icon: const Icon(Icons.search),
+          onPressed: () {},
+          tooltip: 'Search',
+        ),
+        IconButton(
+          icon: const Icon(Icons.send),
+          onPressed: () {},
+          tooltip: 'Messages',
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            Navigator.pushNamed(context, "/loginPage");
+          },
+          tooltip: 'Logout',
+        ),
+      ],
     );
   }
 

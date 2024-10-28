@@ -2,8 +2,14 @@ import 'package:Artounsi/entities/Shop/Cart.dart';
 import 'package:Artounsi/pages/MainScreen/main_screen.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 

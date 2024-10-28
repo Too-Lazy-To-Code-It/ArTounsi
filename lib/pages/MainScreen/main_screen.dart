@@ -42,7 +42,7 @@ class _MainScreenState extends State<MainScreen> {
   void _onItemTapped(int index) {
     _pageController.animateToPage(
       index,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 150),
       curve: Curves.easeInOut,
     );
   }
@@ -57,9 +57,7 @@ class _MainScreenState extends State<MainScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () {
-              // Implement search functionality
-            },
+            onPressed: () {},
             tooltip: 'Search',
           ),
           Stack(
@@ -67,9 +65,7 @@ class _MainScreenState extends State<MainScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.shopping_cart),
-                onPressed: () {
-                  // Navigate to cart page
-                },
+                onPressed: () {},
                 tooltip: 'Cart',
               ),
               if (widget.cart.itemCount > 0)
