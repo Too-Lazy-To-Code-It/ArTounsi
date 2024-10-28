@@ -7,7 +7,7 @@ class Product {
   final String name;
   final double price;
   final String artist;
-  final String imagePath;
+  final String imageUrl;
   final List<String> categories;
   final double rating;
   final int reviewCount;
@@ -18,7 +18,7 @@ class Product {
     required this.name,
     required this.price,
     required this.artist,
-    required this.imagePath,
+    required this.imageUrl,
     required this.categories,
     required this.rating,
     required this.reviewCount,
@@ -30,28 +30,43 @@ class Product {
     return Product(
       id: doc.id,
       name: data['name'] ?? '',
-      price: (data['price'] is String)
-          ? double.tryParse(data['price']) ?? 0.0
-          : (data['price'] ?? 0).toDouble(),
+      price: _parseDouble(data['price']),
       artist: data['artist'] ?? '',
-      imagePath: data['imagePath'] ?? '',
+      imageUrl: data['imageUrl'] ?? '',
       categories: List<String>.from(data['categories'] ?? []),
-      rating: (data['rating'] ?? 0).toDouble(),
+      rating: _parseDouble(data['rating']),
       reviewCount: data['reviewCount'] ?? 0,
-      type: data['type'] == 'marketplace' ? ProductType.marketplace : ProductType.prints,
+      type: _parseProductType(data['type']),
     );
   }
 
   Map<String, dynamic> toFirestore() {
     return {
       'name': name,
-      'price': price,  // This will be stored as a number in Firestore
+      'price': price,
       'artist': artist,
-      'imagePath': imagePath,
+      'imageUrl': imageUrl,
       'categories': categories,
       'rating': rating,
       'reviewCount': reviewCount,
-      'type': type == ProductType.marketplace ? 'marketplace' : 'prints',
+      'type': type.toString().split('.').last,
     };
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
+  }
+
+  static ProductType _parseProductType(dynamic value) {
+    if (value is String) {
+      return ProductType.values.firstWhere(
+            (type) => type.toString().split('.').last.toLowerCase() == value.toLowerCase(),
+        orElse: () => ProductType.marketplace,
+      );
+    }
+    return ProductType.marketplace;
   }
 }

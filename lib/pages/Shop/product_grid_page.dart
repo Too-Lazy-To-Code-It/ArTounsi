@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../entities/Shop/Product.dart';
@@ -20,7 +19,7 @@ class ProductGridPage extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Product')
-          .where('type', isEqualTo: productType == ProductType.marketplace ? 'marketplace' : 'prints')
+          .where('type', isEqualTo: productType.toString().split('.').last.toLowerCase())
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -77,7 +76,7 @@ class ProductGridPage extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           image: DecorationImage(
-                            image: _getImageProvider(product.imagePath),
+                            image: NetworkImage(product.imageUrl),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -107,7 +106,7 @@ class ProductGridPage extends StatelessWidget {
                             children: [
                               Icon(Icons.star, size: 16, color: Colors.amber),
                               Text(
-                                ' ${product.rating}',
+                                ' ${product.rating.toStringAsFixed(1)}',
                                 style: Theme.of(context).textTheme.bodySmall,
                               ),
                               const SizedBox(width: 8),
@@ -129,13 +128,5 @@ class ProductGridPage extends StatelessWidget {
         );
       },
     );
-  }
-
-  ImageProvider _getImageProvider(String imagePath) {
-    if (imagePath.startsWith('http')) {
-      return NetworkImage(imagePath);
-    } else {
-      return FileImage(File(imagePath));
-    }
   }
 }

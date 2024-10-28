@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:uuid/uuid.dart';
 import '../../entities/Shop/Product.dart';
 
 class AddProductForm extends StatefulWidget {
@@ -51,11 +51,13 @@ class _AddProductFormState extends State<AddProductForm> {
     }
   }
 
-  Future<String> _saveImageLocally(File image) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final imageName = Uuid().v4() + '.jpg';
-    final savedImage = await image.copy('${directory.path}/$imageName');
-    return savedImage.path;
+  Future<String> _uploadImageToFirebase(File image) async {
+    final String fileName = Uuid().v4();
+    final Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('product_images/$fileName');
+    final UploadTask uploadTask = firebaseStorageRef.putFile(image);
+    final TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
+    final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
+    return downloadUrl;
   }
 
   Future<void> _submitForm() async {
@@ -65,9 +67,9 @@ class _AddProductFormState extends State<AddProductForm> {
       });
 
       try {
-        String imagePath = '';
+        String imageUrl = '';
         if (_image != null) {
-          imagePath = await _saveImageLocally(_image!);
+          imageUrl = await _uploadImageToFirebase(_image!);
         }
 
         final newProduct = Product(
@@ -75,7 +77,7 @@ class _AddProductFormState extends State<AddProductForm> {
           name: _nameController.text,
           price: double.parse(_priceController.text),
           artist: _artistController.text,
-          imagePath: imagePath,
+          imageUrl: imageUrl,
           categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
           rating: 0,
           reviewCount: 0,
@@ -101,11 +103,12 @@ class _AddProductFormState extends State<AddProductForm> {
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add New Product'),
+        title: Text('Add Product'),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -117,42 +120,25 @@ class _AddProductFormState extends State<AddProductForm> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Product Name',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Product Name'),
                   validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
                 ),
-                SizedBox(height: 16),
                 TextFormField(
                   controller: _priceController,
-                  decoration: InputDecoration(
-                    labelText: 'Price',
-                    border: OutlineInputBorder(),
-                    prefixText: '\$',
-                  ),
+                  decoration: InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
                   validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
                 ),
-                SizedBox(height: 16),
                 TextFormField(
                   controller: _artistController,
-                  decoration: InputDecoration(
-                    labelText: 'Artist',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Artist'),
                   validator: (value) => value!.isEmpty ? 'Please enter an artist' : null,
                 ),
-                SizedBox(height: 16),
                 TextFormField(
                   controller: _categoriesController,
-                  decoration: InputDecoration(
-                    labelText: 'Categories (comma-separated)',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Categories (comma-separated)'),
                   validator: (value) => value!.isEmpty ? 'Please enter categories' : null,
                 ),
-                SizedBox(height: 16),
                 DropdownButtonFormField<ProductType>(
                   value: _productType,
                   items: ProductType.values.map((type) => DropdownMenuItem(
@@ -164,40 +150,21 @@ class _AddProductFormState extends State<AddProductForm> {
                       _productType = value!;
                     });
                   },
-                  decoration: InputDecoration(
-                    labelText: 'Product Type',
-                    border: OutlineInputBorder(),
-                  ),
+                  decoration: InputDecoration(labelText: 'Product Type'),
                 ),
                 SizedBox(height: 16),
-                ElevatedButton.icon(
+                ElevatedButton(
                   onPressed: _getImage,
-                  icon: Icon(Icons.image),
-                  label: Text('Select Image'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                  ),
+                  child: Text('Pick Image'),
                 ),
-                SizedBox(height: 16),
-                if (_image != null)
-                  Container(
-                    height: 200,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Image.file(_image!, fit: BoxFit.cover),
-                  ),
+                if (_image != null) ...[
+                  SizedBox(height: 16),
+                  Image.file(_image!, height: 200),
+                ],
                 SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
-                  child: _isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text('Add Product'),
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    textStyle: TextStyle(fontSize: 18),
-                  ),
+                  child: _isLoading ? CircularProgressIndicator() : Text('Add Product'),
                 ),
               ],
             ),

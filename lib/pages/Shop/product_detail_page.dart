@@ -1,6 +1,6 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../entities/Shop/Product.dart';
 import '../../entities/Shop/Cart.dart';
 
@@ -70,12 +70,19 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     }
   }
 
-  Future<void> _deleteProduct(String productId) async {
+  Future<void> _deleteProduct(String productId, String imageUrl) async {
     try {
-      await FirebaseFirestore.instance
+      // Delete the product document from Firestore
+      await  FirebaseFirestore.instance
           .collection('Product')
           .doc(productId)
           .delete();
+
+      // Delete the image from Firebase Storage
+      if (imageUrl.isNotEmpty) {
+        await FirebaseStorage.instance.refFromURL(imageUrl).delete();
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Product deleted successfully')),
       );
@@ -135,7 +142,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                 Container(
                   height: 300,
                   width: double.infinity,
-                  child: _getImage(product.imagePath),
+                  child: Image.network(
+                    product.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading image: $error');
+                      return Icon(Icons.error);
+                    },
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -214,7 +228,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                               name: _nameController.text,
                               price: double.tryParse(_priceController.text) ?? product.price,
                               artist: _artistController.text,
-                              imagePath: product.imagePath,
+                              imageUrl: product.imageUrl,
                               categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
                               rating: product.rating,
                               reviewCount: product.reviewCount,
@@ -237,28 +251,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
     );
   }
 
-  Widget _getImage(String imagePath) {
-    if (imagePath.startsWith('http')) {
-      return Image.network(
-        imagePath,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('Error loading image: $error');
-          return Icon(Icons.error);
-        },
-      );
-    } else {
-      return Image.file(
-        File(imagePath),
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          print('Error loading image: $error');
-          return Icon(Icons.error);
-        },
-      );
-    }
-  }
-
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
       context: context,
@@ -277,7 +269,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
               child: Text('Delete'),
               onPressed: () {
                 Navigator.of(context).pop();
-                _deleteProduct(widget.productId);
+                _productFuture.then((product) {
+                  _deleteProduct(widget.productId, product.imageUrl);
+                });
               },
             ),
           ],
