@@ -1,5 +1,3 @@
-// lib/pages/main_screen.dart
-
 import 'package:Artounsi/entities/Shop/Cart.dart';
 import 'package:Artounsi/pages/Event/events_page.dart';
 import 'package:Artounsi/pages/Job/job_page.dart';
@@ -7,10 +5,12 @@ import 'package:Artounsi/pages/Learning/learning_page.dart';
 import 'package:Artounsi/pages/Post/home_page.dart';
 import 'package:Artounsi/pages/Shop/shop_page.dart';
 import 'package:Artounsi/pages/User/profile_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'bottom_navigation_bar.dart';
 import 'sidebar.dart';
 import 'app_bar.dart';
+
 class MainScreen extends StatefulWidget {
   final Cart cart;
 
@@ -55,6 +55,51 @@ class _MainScreenState extends State<MainScreen> {
       appBar: CustomAppBar(
         title: _pageTitles[_selectedIndex],
         onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              // Implement search functionality
+            },
+            tooltip: 'Search',
+          ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.shopping_cart),
+                onPressed: () {
+                  // Navigate to cart page
+                },
+                tooltip: 'Cart',
+              ),
+              if (widget.cart.itemCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '${widget.cart.itemCount}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
       ),
       drawer: CustomSidebar(
         onItemTapped: _onItemTapped,
