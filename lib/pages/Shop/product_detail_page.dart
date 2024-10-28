@@ -21,7 +21,7 @@ class ProductDetailPage extends StatelessWidget {
       ),
       body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance
-            .collection('products')
+            .collection('Product')  // Changed from 'products' to 'Product' to match your other code
             .doc(productId)
             .snapshots(),
         builder: (context, snapshot) {
@@ -39,7 +39,6 @@ class ProductDetailPage extends StatelessWidget {
 
           final product = Product.fromFirestore(snapshot.data!);
 
-          // Build your product detail UI here using the 'product' object
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -50,6 +49,13 @@ class ProductDetailPage extends StatelessWidget {
                   height: 300,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 300,
+                      color: Colors.grey[300],
+                      child: Center(child: Text('Image not available')),
+                    );
+                  },
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -63,16 +69,40 @@ class ProductDetailPage extends StatelessWidget {
                       SizedBox(height: 8),
                       Text(
                         '\$${product.price.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(context).primaryColor,
+                        ),
                       ),
                       SizedBox(height: 16),
                       Text('Artist: ${product.artist}'),
                       SizedBox(height: 8),
-                      Text('Rating: ${product.rating}'),
-                      SizedBox(height: 8),
-                      Text('Reviews: ${product.reviewCount}'),
+                      Row(
+                        children: [
+                          Icon(Icons.star, color: Colors.amber),
+                          SizedBox(width: 4),
+                          Text('${product.rating.toStringAsFixed(1)}'),
+                          SizedBox(width: 16),
+                          Icon(Icons.comment, color: Colors.grey),
+                          SizedBox(width: 4),
+                          Text('${product.reviewCount} reviews'),
+                        ],
+                      ),
                       SizedBox(height: 16),
                       Text('Categories: ${product.categories.join(", ")}'),
+                      SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Add to cart logic here
+                          cart.addItem(product);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Added to cart')),
+                          );
+                        },
+                        child: Text('Add to Cart'),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size(double.infinity, 50),
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -80,15 +110,6 @@ class ProductDetailPage extends StatelessWidget {
             ),
           );
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Add to cart logic here
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Added to cart')),
-          );
-        },
-        child: Icon(Icons.add_shopping_cart),
       ),
     );
   }

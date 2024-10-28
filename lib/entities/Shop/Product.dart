@@ -26,7 +26,7 @@ class Product {
   });
 
   factory Product.fromFirestore(DocumentSnapshot doc) {
-    Map data = doc.data() as Map<String, dynamic>;
+    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
     return Product(
       id: doc.id,
       name: data['name'] ?? '',
@@ -36,10 +36,7 @@ class Product {
       categories: List<String>.from(data['categories'] ?? []),
       rating: (data['rating'] ?? 0).toDouble(),
       reviewCount: data['reviewCount'] ?? 0,
-      type: ProductType.values.firstWhere(
-            (e) => e.toString() == 'ProductType.${data['type']}',
-        orElse: () => ProductType.marketplace,
-      ),
+      type: data['type'] == 'marketplace' ? ProductType.marketplace : ProductType.prints,
     );
   }
 
@@ -52,7 +49,7 @@ class Product {
       'categories': categories,
       'rating': rating,
       'reviewCount': reviewCount,
-      'type': type.toString().split('.').last,
+      'type': type == ProductType.marketplace ? 'marketplace' : 'prints',
     };
   }
 }

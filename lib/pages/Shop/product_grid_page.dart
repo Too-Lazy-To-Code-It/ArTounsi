@@ -18,8 +18,8 @@ class ProductGridPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('products')
-          .where('type', isEqualTo: productType.toString().split('.').last)
+          .collection('Product')
+          .where('type', isEqualTo: productType == ProductType.marketplace ? 'marketplace' : 'prints')
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -27,16 +27,20 @@ class ProductGridPage extends StatelessWidget {
         }
 
         if (snapshot.hasError) {
+          print('Error fetching products: ${snapshot.error}');
           return Center(child: Text('Error: ${snapshot.error}'));
         }
 
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          print('No products found');
           return Center(child: Text('No products found'));
         }
 
         final products = snapshot.data!.docs
             .map((doc) => Product.fromFirestore(doc))
             .toList();
+
+        print('Fetched ${products.length} products');
 
         return GridView.builder(
           padding: const EdgeInsets.all(16.0),
@@ -63,16 +67,14 @@ class ProductGridPage extends StatelessWidget {
               },
               child: Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(16)),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           image: DecorationImage(
                             image: NetworkImage(product.imagePath),
                             fit: BoxFit.cover,
@@ -87,20 +89,14 @@ class ProductGridPage extends StatelessWidget {
                         children: [
                           Text(
                             product.name,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '\$${product.price.toStringAsFixed(2)}',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleSmall
-                                ?.copyWith(
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.bold,
                             ),
