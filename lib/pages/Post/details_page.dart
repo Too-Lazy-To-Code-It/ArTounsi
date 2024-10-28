@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'EditArtworkPage.dart';
 import 'fullscreen_photo_view.dart';
 
@@ -27,7 +28,7 @@ class _DetailsPageState extends State<DetailsPage> {
     });
   }
 
-  Future<void> _deleteArtwork(String artworkId) async {
+  Future<void> _deleteArtwork(String artworkId, String imageUrl) async {
     bool confirmDelete = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -50,7 +51,19 @@ class _DetailsPageState extends State<DetailsPage> {
 
     if (confirmDelete == true) {
       try {
+        // Delete the artwork document from Firestore
         await FirebaseFirestore.instance.collection('artworks').doc(artworkId).delete();
+
+        // Delete the image from Firebase Storage
+        if (imageUrl.isNotEmpty) {
+          try {
+            await FirebaseStorage.instance.refFromURL(imageUrl).delete();
+          } catch (e) {
+            print('Error deleting image from storage: $e');
+            // Even if image deletion fails, we continue with the process
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Artwork deleted successfully')),
         );
@@ -113,7 +126,7 @@ class _DetailsPageState extends State<DetailsPage> {
               ),
               IconButton(
                 icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
-                onPressed: () => _deleteArtwork(artwork['id']),
+                onPressed: () => _deleteArtwork(artwork['id'], artwork['imageUrl']),
               ),
             ],
           ),
