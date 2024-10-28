@@ -259,60 +259,37 @@ class _JobPageState extends State<JobPage> {
           Column(
             children: [
               Expanded(
-                child: StreamBuilder<List<Job>>(
-                  stream: _jobService.getJobs(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Center(child: CircularProgressIndicator());
-                    }
-
-                    if (snapshot.hasError) {
-                      return Center(child: Text('Error: ${snapshot.error}'));
-                    }
-
-                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Center(child: Text('No jobs available'));
-                    }
-
-                    List<Job> jobList = snapshot.data!;
-
-                    return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: _counter <= 0 ? 1 : _counter,
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                      ),
-                      itemCount: jobList.length,
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            _showJobDetails(context, jobList[index]);
-                          },
-                          child: Card(
-                            child: Padding(
-                              padding: EdgeInsets.only(top: 20),
-                              child: Column(
-                                children: [
-                                  Expanded(
-                                    child: Image.network(
-                                      jobList[index].mainImagePath,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Icon(Icons.error);
-                                      },
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(jobList[index].title),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: _counter <= 0 ? 1 : _counter,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                  ),
+                  itemCount: JobList.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () {
+                        _showJobDetails(context, JobList[index]);
                       },
+                      child: Card(
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 20),
+                          child: Column(
+                            children: [
+                              Expanded(
+                                child: Image.asset(
+                                  JobList[index].mainImagePath,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(JobList[index].title),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     );
                   },
                 ),

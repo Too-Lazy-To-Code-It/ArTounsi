@@ -1,4 +1,5 @@
 import 'package:Artounsi/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class UserPage extends StatefulWidget {
@@ -9,6 +10,8 @@ class UserPage extends StatefulWidget {
 }
 
 class _UserPage extends State<UserPage> {
+  final user = FirebaseAuth.instance.currentUser!;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,7 +31,7 @@ class _UserPage extends State<UserPage> {
             children: [
               const SizedBox(width: 20),
               Text(
-                'ankara.methi@exemple.com',
+                user.email!,
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),
