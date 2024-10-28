@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import '../../entities/Shop/Product.dart';
 
 class AddProductForm extends StatefulWidget {
@@ -50,6 +51,13 @@ class _AddProductFormState extends State<AddProductForm> {
     }
   }
 
+  Future<String> _saveImageLocally(File image) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final imageName = Uuid().v4() + '.jpg';
+    final savedImage = await image.copy('${directory.path}/$imageName');
+    return savedImage.path;
+  }
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -57,13 +65,9 @@ class _AddProductFormState extends State<AddProductForm> {
       });
 
       try {
-        String imageUrl = '';
+        String imagePath = '';
         if (_image != null) {
-          final storageRef = FirebaseStorage.instance
-              .ref()
-              .child('product_images/${DateTime.now().toIso8601String()}.jpg');
-          await storageRef.putFile(_image!);
-          imageUrl = await storageRef.getDownloadURL();
+          imagePath = await _saveImageLocally(_image!);
         }
 
         final newProduct = Product(
@@ -71,7 +75,7 @@ class _AddProductFormState extends State<AddProductForm> {
           name: _nameController.text,
           price: double.parse(_priceController.text),
           artist: _artistController.text,
-          imagePath: imageUrl,
+          imagePath: imagePath,
           categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
           rating: 0,
           reviewCount: 0,

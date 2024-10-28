@@ -1,9 +1,10 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../entities/Shop/Product.dart';
 import '../../entities/Shop/Cart.dart';
 
-class ProductDetailPage extends StatelessWidget {
+class ProductDetailPage extends StatefulWidget {
   final String productId;
   final Cart cart;
 
@@ -14,16 +15,97 @@ class ProductDetailPage extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _ProductDetailPageState createState() => _ProductDetailPageState();
+}
+
+class _ProductDetailPageState extends State<ProductDetailPage> {
+  late Future<Product> _productFuture;
+  bool _isEditing = false;
+  late TextEditingController _nameController;
+  late TextEditingController _priceController;
+  late TextEditingController _artistController;
+  late TextEditingController _categoriesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _productFuture = _fetchProduct();
+  }
+
+  Future<Product> _fetchProduct() async {
+    final doc = await FirebaseFirestore.instance
+        .collection('Product')
+        .doc(widget.productId)
+        .get();
+    if (!doc.exists) {
+      throw Exception('Product not found');
+    }
+    return Product.fromFirestore(doc);
+  }
+
+  void _toggleEdit() {
+    setState(() {
+      _isEditing = !_isEditing;
+    });
+  }
+
+  Future<void> _updateProduct(Product product) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('Product')
+          .doc(product.id)
+          .update(product.toFirestore());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Product updated successfully')),
+      );
+      setState(() {
+        _productFuture = Future.value(product);
+        _isEditing = false;
+      });
+    } catch (e) {
+      print('Error updating product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update product: $e')),
+      );
+    }
+  }
+
+  Future<void> _deleteProduct(String productId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('Product')
+          .doc(productId)
+          .delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Product deleted successfully')),
+      );
+      Navigator.of(context).pop(); // Return to previous page
+    } catch (e) {
+      print('Error deleting product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete product: $e')),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Product Details'),
+        actions: [
+          IconButton(
+            icon: Icon(_isEditing ? Icons.save : Icons.edit),
+            onPressed: _toggleEdit,
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () => _showDeleteConfirmation(context),
+          ),
+        ],
       ),
-      body: StreamBuilder<DocumentSnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('Product')  // Changed from 'products' to 'Product' to match your other code
-            .doc(productId)
-            .snapshots(),
+      body: FutureBuilder<Product>(
+        future: _productFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
@@ -33,76 +115,117 @@ class ProductDetailPage extends StatelessWidget {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          if (!snapshot.hasData || !snapshot.data!.exists) {
+          if (!snapshot.hasData) {
             return Center(child: Text('Product not found'));
           }
 
-          final product = Product.fromFirestore(snapshot.data!);
+          final product = snapshot.data!;
+
+          if (_isEditing) {
+            _nameController = TextEditingController(text: product.name);
+            _priceController = TextEditingController(text: product.price.toString());
+            _artistController = TextEditingController(text: product.artist);
+            _categoriesController = TextEditingController(text: product.categories.join(', '));
+          }
 
           return SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Product image
-                Image.network(
-                  product.imagePath,
+                Container(
                   height: 300,
                   width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 300,
-                      color: Colors.grey[300],
-                      child: Center(child: Text('Image not available')),
-                    );
-                  },
+                  child: _getImage(product.imagePath),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      _isEditing
+                          ? TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(labelText: 'Product Name'),
+                      )
+                          : Text(
                         product.name,
                         style: Theme.of(context).textTheme.headlineSmall,
                       ),
                       SizedBox(height: 8),
-                      Text(
+                      _isEditing
+                          ? TextField(
+                        controller: _priceController,
+                        decoration: InputDecoration(labelText: 'Price'),
+                        keyboardType: TextInputType.number,
+                      )
+                          : Text(
                         '\$${product.price.toStringAsFixed(2)}',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).primaryColor,
                         ),
                       ),
                       SizedBox(height: 16),
-                      Text('Artist: ${product.artist}'),
+                      _isEditing
+                          ? TextField(
+                        controller: _artistController,
+                        decoration: InputDecoration(labelText: 'Artist'),
+                      )
+                          : Text(
+                        'Artist: ${product.artist}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       SizedBox(height: 8),
+                      _isEditing
+                          ? TextField(
+                        controller: _categoriesController,
+                        decoration: InputDecoration(labelText: 'Categories (comma-separated)'),
+                      )
+                          : Text(
+                        'Categories: ${product.categories.join(", ")}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      SizedBox(height: 16),
                       Row(
                         children: [
                           Icon(Icons.star, color: Colors.amber),
-                          SizedBox(width: 4),
-                          Text('${product.rating.toStringAsFixed(1)}'),
-                          SizedBox(width: 16),
-                          Icon(Icons.comment, color: Colors.grey),
-                          SizedBox(width: 4),
-                          Text('${product.reviewCount} reviews'),
+                          Text(' ${product.rating} (${product.reviewCount} reviews)'),
                         ],
                       ),
-                      SizedBox(height: 16),
-                      Text('Categories: ${product.categories.join(", ")}'),
                       SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Add to cart logic here
-                          cart.addItem(product);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Added to cart')),
-                          );
-                        },
-                        child: Text('Add to Cart'),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: Size(double.infinity, 50),
+                      if (!_isEditing)
+                        ElevatedButton(
+                          child: Text('Add to Cart'),
+                          onPressed: () {
+                            widget.cart.addItem(product);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('${product.name} added to cart')),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(double.infinity, 50),
+                          ),
                         ),
-                      ),
+                      if (_isEditing)
+                        ElevatedButton(
+                          child: Text('Save Changes'),
+                          onPressed: () {
+                            final updatedProduct = Product(
+                              id: product.id,
+                              name: _nameController.text,
+                              price: double.tryParse(_priceController.text) ?? product.price,
+                              artist: _artistController.text,
+                              imagePath: product.imagePath,
+                              categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
+                              rating: product.rating,
+                              reviewCount: product.reviewCount,
+                              type: product.type,
+                            );
+                            _updateProduct(updatedProduct);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            minimumSize: Size(double.infinity, 50),
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -111,6 +234,55 @@ class ProductDetailPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _getImage(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return Image.network(
+        imagePath,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Error loading image: $error');
+          return Icon(Icons.error);
+        },
+      );
+    } else {
+      return Image.file(
+        File(imagePath),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          print('Error loading image: $error');
+          return Icon(Icons.error);
+        },
+      );
+    }
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Product'),
+          content: Text('Are you sure you want to delete this product?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _deleteProduct(widget.productId);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../entities/Shop/Product.dart';
@@ -76,7 +77,7 @@ class ProductGridPage extends StatelessWidget {
                         decoration: BoxDecoration(
                           borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
                           image: DecorationImage(
-                            image: NetworkImage(product.imagePath),
+                            image: _getImageProvider(product.imagePath),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -128,5 +129,13 @@ class ProductGridPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  ImageProvider _getImageProvider(String imagePath) {
+    if (imagePath.startsWith('http')) {
+      return NetworkImage(imagePath);
+    } else {
+      return FileImage(File(imagePath));
+    }
   }
 }
