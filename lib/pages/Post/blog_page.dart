@@ -11,7 +11,8 @@ class BlogPage extends StatelessWidget {
         'title': 'The Future of AI in Art',
         'author': 'Jane Doe',
         'date': '2023-05-15',
-        'excerpt': 'Exploring how artificial intelligence is revolutionizing the art world...',
+        'excerpt':
+            'Exploring how artificial intelligence is revolutionizing the art world...',
         'imageUrl': 'https://picsum.photos/seed/ai_art/400/300',
         'likes': 156,
         'comments': 23,
@@ -20,7 +21,8 @@ class BlogPage extends StatelessWidget {
         'title': 'Top 10 Photography Tips for Beginners',
         'author': 'John Smith',
         'date': '2023-05-10',
-        'excerpt': 'Essential tips to help you start your photography journey on the right foot...',
+        'excerpt':
+            'Essential tips to help you start your photography journey on the right foot...',
         'imageUrl': 'https://picsum.photos/seed/photo_tips/400/300',
         'likes': 89,
         'comments': 15,
@@ -29,7 +31,8 @@ class BlogPage extends StatelessWidget {
         'title': 'The Rise of Digital Sculpture',
         'author': 'Emily Johnson',
         'date': '2023-05-05',
-        'excerpt': 'How digital tools are changing the landscape of sculptural art...',
+        'excerpt':
+            'How digital tools are changing the landscape of sculptural art...',
         'imageUrl': 'https://picsum.photos/seed/digital_sculpture/400/300',
         'likes': 112,
         'comments': 18,
@@ -87,11 +90,15 @@ class BlogPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary, size: 16),
+                            Icon(Icons.favorite,
+                                color: Theme.of(context).colorScheme.secondary,
+                                size: 16),
                             const SizedBox(width: 4),
                             Text('${post['likes']}'),
                             const SizedBox(width: 16),
-                            Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary, size: 16),
+                            Icon(Icons.comment,
+                                color: Theme.of(context).colorScheme.secondary,
+                                size: 16),
                             const SizedBox(width: 4),
                             Text('${post['comments']}'),
                           ],

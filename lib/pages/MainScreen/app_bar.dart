@@ -1,14 +1,17 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
   final VoidCallback onMenuPressed;
+  final List<Widget>? actions;
 
-  const CustomAppBar({
-    Key? key,
-    required this.title,
-    required this.onMenuPressed,
-  }) : super(key: key);
+  const CustomAppBar(
+      {Key? key,
+      required this.title,
+      required this.onMenuPressed,
+      this.actions})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +39,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.settings),
+          onPressed: () {
+            Navigator.pushNamed(context, "/updateUser");
+          },
+          tooltip: 'Settings',
+        ),
+        IconButton(
           icon: const Icon(Icons.search),
           onPressed: () {},
           tooltip: 'Search',
@@ -44,6 +54,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.send),
           onPressed: () {},
           tooltip: 'Messages',
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            FirebaseAuth.instance.signOut();
+          },
+          tooltip: 'Logout',
         ),
       ],
     );

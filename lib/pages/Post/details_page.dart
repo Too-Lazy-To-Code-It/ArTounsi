@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'fullscreen_photo_view.dart';
 
 class DetailsPage extends StatefulWidget {
   final List<Map<String, dynamic>> allPosts;
@@ -51,28 +52,43 @@ class _DetailsPageState extends State<DetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.network(
-                  post['imageUrl'],
-                  fit: BoxFit.cover,
-                  width: double.infinity,
-                  height: 300,
+                GestureDetector(
+                  onTap: () async {
+                    final int? newIndex = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FullscreenPhotoView(
+                          imageUrls: widget.allPosts
+                              .map((post) => post['imageUrl'] as String)
+                              .toList(),
+                          initialIndex: index,
+                        ),
+                      ),
+                    );
+                    if (newIndex != null && newIndex != index) {
+                      _pageController.jumpToPage(newIndex);
+                    }
+                  },
+                  child: Image.network(
+                    post['imageUrl'],
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 300,
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Chip(
-                        label: Text(post['tag']),
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
-                        labelStyle: TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(height: 8),
                       Text(
                         post['title'],
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -82,13 +98,20 @@ class _DetailsPageState extends State<DetailsPage> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
+                          Icon(Icons.favorite,
+                              color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
                           Text('${post['likes']} likes'),
                           const SizedBox(width: 24),
-                          Icon(Icons.visibility, color: Theme.of(context).colorScheme.secondary),
+                          Icon(Icons.visibility,
+                              color: Theme.of(context).colorScheme.secondary),
                           const SizedBox(width: 8),
                           Text('${post['views']} views'),
+                          const SizedBox(width: 16),
+                          Icon(Icons.comment,
+                              color: Theme.of(context).colorScheme.secondary),
+                          const SizedBox(width: 8),
+                          Text('${post['comments'].length} comments'),
                         ],
                       ),
                       const SizedBox(height: 24),

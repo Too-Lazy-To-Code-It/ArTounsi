@@ -30,7 +30,8 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
   }
 
   Future<XFile?> _getImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery);
     return pickedFile;
   }
 
@@ -38,7 +39,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Project'),
+        title: Text('Create New Job'),
       ),
       body: Form(
         key: _formKey,
@@ -47,7 +48,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
           children: [
             TextFormField(
               decoration: InputDecoration(
-                labelText: 'Project Title',
+                labelText: 'Job Title',
                 errorStyle: TextStyle(color: Colors.red),
               ),
               validator: (value) {
@@ -63,7 +64,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
             SizedBox(height: 16.0),
             TextFormField(
               decoration: InputDecoration(
-                labelText: 'Project Description',
+                labelText: 'Job Description',
                 errorStyle: TextStyle(color: Colors.red),
               ),
               maxLines: 3,
@@ -84,13 +85,14 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Hover Project Image', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Hover Job Image',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8.0),
                     GestureDetector(
                       onTap: () => _showImageSourceDialog(isMain: true),
                       child: Container(
                         height: MediaQuery.sizeOf(context).width * 0.6,
-                        width: MediaQuery.sizeOf(context).width ,
+                        width: MediaQuery.sizeOf(context).width,
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(4.0),
@@ -119,7 +121,8 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Additional Images (Optional)', style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text('Additional Images (Optional)',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                     SizedBox(height: 8.0),
                     GridView.builder(
                       shrinkWrap: true,
@@ -143,7 +146,8 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
                             ),
                           );
                         }
-                        return Image.file(_additionalImages[index], fit: BoxFit.cover);
+                        return Image.file(_additionalImages[index],
+                            fit: BoxFit.cover);
                       },
                     ),
                   ],
@@ -153,7 +157,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
             SizedBox(height: 16.0),
             TextFormField(
               decoration: InputDecoration(
-                labelText: 'Project Link (Optional)',
+                labelText: 'Job Link (Optional)',
                 errorStyle: TextStyle(color: Colors.red),
               ),
               onSaved: (value) {
@@ -169,7 +173,8 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
                   print('Title: $_title');
                   print('Description: $_description');
                   print('Main Image: ${_mainImage?.path}');
-                  print('Additional Images: ${_additionalImages.map((file) => file.path).toList()}');
+                  print(
+                      'Additional Images: ${_additionalImages.map((file) => file.path).toList()}');
                   print('Project Link: $_projectLink');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -180,7 +185,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
                   );
                 }
               },
-              child: Text('Create Project'),
+              child: Text('Create Job'),
             ),
           ],
         ),

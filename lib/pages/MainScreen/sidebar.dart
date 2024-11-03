@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../Post/blog_page.dart';
 
 class CustomSidebar extends StatelessWidget {
   final Function(int) onItemTapped;
@@ -50,6 +51,12 @@ class CustomSidebar extends StatelessWidget {
             _buildDrawerItem(context, Icons.home, 'Home', 0),
             _buildDrawerItem(context, Icons.work, 'Jobs', 1),
             _buildDrawerItem(context, Icons.school, 'Learning', 2),
+            _buildDrawerItem(context, Icons.article, 'Blog', -1, onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const BlogPage()),
+              );
+            }),
             const Divider(),
             _buildDrawerItem(context, Icons.shopping_cart, 'Shop', 3),
             _buildDrawerItem(context, Icons.event, 'Events', 4),
@@ -63,16 +70,18 @@ class CustomSidebar extends StatelessWidget {
   }
 
   Widget _buildDrawerItem(
-      BuildContext context, IconData icon, String title, int index) {
+      BuildContext context, IconData icon, String title, int index,
+      {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
-      onTap: () {
-        if (index >= 0) {
-          onItemTapped(index);
-        }
-        Navigator.pop(context);
-      },
+      onTap: onTap ??
+          () {
+            if (index >= 0) {
+              onItemTapped(index);
+            }
+            Navigator.pop(context);
+          },
     );
   }
 }

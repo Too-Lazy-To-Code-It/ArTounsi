@@ -1,5 +1,3 @@
-// lib/pages/Shop/fullscreen_image_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
@@ -55,7 +53,8 @@ class _FullscreenImageViewState extends State<FullscreenImageView> {
                 initialScale: PhotoViewComputedScale.contained,
                 minScale: PhotoViewComputedScale.contained,
                 maxScale: PhotoViewComputedScale.covered * 2,
-                heroAttributes: PhotoViewHeroAttributes(tag: 'productImage${widget.imageUrls[index]}'),
+                heroAttributes: PhotoViewHeroAttributes(
+                    tag: 'productImage${widget.imageUrls[index]}'),
               );
             },
             itemCount: widget.imageUrls.length,

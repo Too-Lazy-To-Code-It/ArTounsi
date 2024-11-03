@@ -13,11 +13,36 @@ class _LearningPageState extends State<LearningPage> {
 
   // Mock data for courses
   final List<Map<String, dynamic>> _courses = [
-    {'id': 1, 'title': 'Fondamentaux du dessin', 'type': 'course', 'progress': 60},
-    {'id': 2, 'title': 'Peinture numérique avancée', 'type': 'course', 'progress': 30},
-    {'id': 3, 'title': 'Animation 3D pour débutants', 'type': 'course', 'progress': 0},
-    {'id': 4, 'title': 'Techniques de sculpture digitale', 'type': 'video', 'progress': 80},
-    {'id': 5, 'title': 'Atelier en direct: Concept Art', 'type': 'workshop', 'progress': 0},
+    {
+      'id': 1,
+      'title': 'Fondamentaux du dessin',
+      'type': 'course',
+      'progress': 60
+    },
+    {
+      'id': 2,
+      'title': 'Peinture numérique avancée',
+      'type': 'course',
+      'progress': 30
+    },
+    {
+      'id': 3,
+      'title': 'Animation 3D pour débutants',
+      'type': 'course',
+      'progress': 0
+    },
+    {
+      'id': 4,
+      'title': 'Techniques de sculpture digitale',
+      'type': 'video',
+      'progress': 80
+    },
+    {
+      'id': 5,
+      'title': 'Atelier en direct: Concept Art',
+      'type': 'workshop',
+      'progress': 0
+    },
   ];
 
   // Mock data for certificates
@@ -27,8 +52,10 @@ class _LearningPageState extends State<LearningPage> {
   ];
 
   List<Map<String, dynamic>> get _filteredCourses {
-    return _courses.where((course) =>
-        course['title'].toLowerCase().contains(_searchTerm.toLowerCase())).toList();
+    return _courses
+        .where((course) =>
+            course['title'].toLowerCase().contains(_searchTerm.toLowerCase()))
+        .toList();
   }
 
   @override
@@ -97,11 +124,13 @@ class _LearningPageState extends State<LearningPage> {
     List<Map<String, dynamic>> displayedCourses = _filteredCourses;
     if (_selectedTabIndex > 0) {
       String type = ['course', 'video', 'workshop'][_selectedTabIndex - 1];
-      displayedCourses = displayedCourses.where((course) => course['type'] == type).toList();
+      displayedCourses =
+          displayedCourses.where((course) => course['type'] == type).toList();
     }
 
     return Column(
-      children: displayedCourses.map((course) => _buildCourseCard(course)).toList(),
+      children:
+          displayedCourses.map((course) => _buildCourseCard(course)).toList(),
     );
   }
 
@@ -153,7 +182,8 @@ class _LearningPageState extends State<LearningPage> {
               const SizedBox(height: 8),
               LinearProgressIndicator(value: course['progress'] / 100),
             ] else
-              Text('Pas encore commencé', style: Theme.of(context).textTheme.bodySmall),
+              Text('Pas encore commencé',
+                  style: Theme.of(context).textTheme.bodySmall),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
@@ -171,7 +201,8 @@ class _LearningPageState extends State<LearningPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Mes certificats', style: Theme.of(context).textTheme.headlineSmall),
+        Text('Mes certificats',
+            style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 16),
         ..._certificates.map((cert) => _buildCertificateCard(cert)),
       ],
@@ -188,7 +219,8 @@ class _LearningPageState extends State<LearningPage> {
           children: [
             Text(cert['title'], style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 8),
-            Text('Obtenu le ${cert['date']}', style: Theme.of(context).textTheme.bodyMedium),
+            Text('Obtenu le ${cert['date']}',
+                style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
