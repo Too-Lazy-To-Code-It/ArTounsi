@@ -5,18 +5,30 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'blog_post.dart';
 
-class AddBlogPost extends StatefulWidget {
+class EditBlogPost extends StatefulWidget {
+  final BlogPost post;
+
+  const EditBlogPost({Key? key, required this.post}) : super(key: key);
+
   @override
-  _AddBlogPostState createState() => _AddBlogPostState();
+  _EditBlogPostState createState() => _EditBlogPostState();
 }
 
-class _AddBlogPostState extends State<AddBlogPost> {
+class _EditBlogPostState extends State<EditBlogPost> {
   final _formKey = GlobalKey<FormState>();
-  final _titleController = TextEditingController();
-  final _excerptController = TextEditingController();
-  final _contentController = TextEditingController();
+  late TextEditingController _titleController;
+  late TextEditingController _excerptController;
+  late TextEditingController _contentController;
   File? _image;
   final picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.post.title);
+    _excerptController = TextEditingController(text: widget.post.excerpt);
+    _contentController = TextEditingController(text: widget.post.content);
+  }
 
   Future getImage() async {
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
@@ -28,24 +40,35 @@ class _AddBlogPostState extends State<AddBlogPost> {
   }
 
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() && _image != null) {
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('blog_images/$fileName');
-      UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
-      TaskSnapshot taskSnapshot = await uploadTask;
-      String imageUrl = await taskSnapshot.ref.getDownloadURL();
+    if (_formKey.currentState!.validate()) {
+      String imageUrl = widget.post.imageUrl;
 
-      BlogPost newPost = BlogPost(
-        id: '',
-        title: _titleController.text,
-        author: 'Unknown', // Replace with actual user name when you implement authentication
-        date: DateTime.now(),
-        excerpt: _excerptController.text,
-        content: _contentController.text,
-        imageUrl: imageUrl,
-      );
+      if (_image != null) {
+        // Delete old image
+        if (widget.post.imageUrl.isNotEmpty) {
+          try {
+            await FirebaseStorage.instance.refFromURL(widget.post.imageUrl).delete();
+          } catch (e) {
+            print('Error deleting old image: $e');
+          }
+        }
 
-      await FirebaseFirestore.instance.collection('blog_posts').add(newPost.toMap());
+        // Upload new image
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('blog_images/$fileName');
+        UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
+        TaskSnapshot taskSnapshot = await uploadTask;
+        imageUrl = await taskSnapshot.ref.getDownloadURL();
+      }
+
+      // Update blog post
+      await FirebaseFirestore.instance.collection('blog_posts').doc(widget.post.id).update({
+        'title': _titleController.text,
+        'excerpt': _excerptController.text,
+        'content': _contentController.text,
+        'imageUrl': imageUrl,
+      });
+
       Navigator.pop(context);
     }
   }
@@ -53,7 +76,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Blog Post')),
+      appBar: AppBar(title: Text('Edit Blog Post')),
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(16.0),
@@ -73,7 +96,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                 ),
                 TextFormField(
                   controller: _excerptController,
-                  decoration: InputDecoration(labelText: 'Excerpt'),
+                  decoration: InputDecoration(labelText:  'Excerpt'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter an excerpt';
@@ -94,16 +117,16 @@ class _AddBlogPostState extends State<AddBlogPost> {
                 ),
                 SizedBox(height: 20),
                 _image == null
-                    ? Text('No image selected.')
+                    ? Image.network(widget.post.imageUrl)
                     : Image.file(_image!),
                 ElevatedButton(
                   onPressed: getImage,
-                  child: Text('Pick Image'),
+                  child: Text('Change Image'),
                 ),
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text('Submit'),
+                  child: Text('Update'),
                 ),
               ],
             ),

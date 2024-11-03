@@ -27,7 +27,7 @@ class BlogPage extends StatelessWidget {
             .collection('blog_posts')
             .orderBy('date', descending: true)
             .snapshots(),
-        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
@@ -36,39 +36,55 @@ class BlogPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No blog posts found.'));
-          }
-
-          List<BlogPost> blogPosts = snapshot.data!.docs.map((doc) {
-            return BlogPost.fromFirestore(doc);
-          }).toList();
+          List<BlogPost> blogPosts = snapshot.data!.docs
+              .map((doc) => BlogPost.fromFirestore(doc))
+              .toList();
 
           return ListView.builder(
             itemCount: blogPosts.length,
             itemBuilder: (context, index) {
               final post = blogPosts[index];
-              return Card(
-                margin: const EdgeInsets.all(8.0),
-                child: ListTile(
-                  leading: post.imageUrl.isNotEmpty
-                      ? Image.network(
-                    post.imageUrl,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(Icons.error);
-                    },
-                  )
-                      : const Icon(Icons.image),
-                  title: Text(post.title),
-                  subtitle: Text(post.date.toString().split(' ')[0]),
-                  onTap: () => Navigator.push(
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => BlogPostDetails(post: post),
                     ),
+                  );
+                },
+                child: Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Image.network(
+                        post.imageUrl,
+                        height: 200,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post.title,
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 4),
+                            Text('By ${post.author} on ${post.date.toString().split(' ')[0]}'),
+                            const SizedBox(height: 4),
+                            Text(
+                              post.excerpt,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

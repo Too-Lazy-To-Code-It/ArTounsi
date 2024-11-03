@@ -1,20 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 class BlogPost {
   final String id;
   final String title;
+  final String author;
   final DateTime date;
+  final String excerpt;
   final String content;
   final String imageUrl;
-  final String author;
 
   BlogPost({
     required this.id,
     required this.title,
+    required this.author,
     required this.date,
+    required this.excerpt,
     required this.content,
     required this.imageUrl,
-    this.author = 'Unknown',
   });
 
   factory BlogPost.fromFirestore(DocumentSnapshot doc) {
@@ -22,20 +24,22 @@ class BlogPost {
     return BlogPost(
       id: doc.id,
       title: data['title'] ?? '',
+      author: data['author'] ?? 'Unknown',
       date: (data['date'] as Timestamp).toDate(),
+      excerpt: data['excerpt'] ?? '',
       content: data['content'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
-      author: data['author'] ?? 'Unknown',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'title': title,
+      'author': author,
       'date': Timestamp.fromDate(date),
+      'excerpt': excerpt,
       'content': content,
       'imageUrl': imageUrl,
-      'author': author,
     };
   }
 }
