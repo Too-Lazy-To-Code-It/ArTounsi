@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../entities/Event/Events.dart';
 import '../../entities/Event/Comments.dart';
 import '../../services/Event/CommentService.dart';
 import '../../services/Event/EventService.dart';
 import 'Full_Screen_Img.dart';
 import 'modify_event_page.dart';
+import 'WeatherService.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Events event;
@@ -23,12 +26,69 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   final CommentService _commentService = CommentService();
   bool _isLoading = false;
   bool _isEventDeleted = false;
+  bool _isWeatherLoading = false;
+  Map<String, dynamic> _weatherData = {};
 
   @override
   void initState() {
     super.initState();
     _loadComments(widget.event.id);
+    _fetchWeather(widget.event.location);
   }
+
+  Future<void> _fetchWeather(String location) async {
+    setState(() {
+      _isWeatherLoading = true;
+      _weatherData = {};
+    });
+
+    try {
+      // Construct the API URL using the provided location
+      final apiKey = '31bcf9db936c49f6ba8c2ea1fe313bfb'; // Your API key
+      final apiUrl = 'https://api.weatherbit.io/v2.0/current?city=$location&key=$apiKey';
+
+      final response = await http.get(Uri.parse(apiUrl));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+        // Ensure the data array exists and has items
+        if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
+          // Access the first item in the data array
+          final weatherInfo = jsonResponse['data'][0];
+
+          setState(() {
+            _weatherData = {
+              'temp': weatherInfo['temp'],
+              'description': weatherInfo['weather']['description'],
+              'icon': weatherInfo['weather']['icon'],
+              'rh': weatherInfo['rh'],
+              'wind_spd': weatherInfo['wind_spd'],
+            };
+          });
+        } else {
+          setState(() {
+            _weatherData = {}; // Clear data if empty
+          });
+        }
+      } else {
+        throw Exception('Failed to load weather data');
+      }
+    } catch (error) {
+      setState(() {
+        _isWeatherLoading = false;
+        _weatherData = {};
+      });
+      print('Error fetching weather data: $error');
+    }
+
+    setState(() {
+      _isWeatherLoading = false;
+    });
+  }
+
+
+
 
   Future<void> _loadComments(String eventId) async {
     try {
@@ -242,45 +302,46 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FullscreenImage(
-                      imageUrls: [widget.event.imageUrl],
-                      initialIndex: 0,
+            // Event Image with Overlay
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: widget.event.imageUrl.startsWith('http')
+                      ? Image.network(
+                    widget.event.imageUrl,
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  )
+                      : Image.asset(
+                    widget.event.imageUrl,
+                    height: 300,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  bottom: 10,
+                  left: 10,
+                  child: Container(
+                    color: Colors.black54,
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: Text(
+                      widget.event.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                );
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: widget.event.imageUrl.startsWith('http')
-                    ? Image.network(
-                  widget.event.imageUrl,
-                  height: 300,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                )
-                    : Image.asset(
-                  widget.event.imageUrl,
-                  height: 300,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
                 ),
-              ),
+              ],
             ),
             SizedBox(height: 16),
-            Text(
-              widget.event.title,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueAccent,
-              ),
-            ),
-            SizedBox(height: 8),
+
+            // Organizer Name
             Row(
               children: [
                 CircleAvatar(
@@ -295,22 +356,55 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               ],
             ),
             SizedBox(height: 16),
+
+            // Event Description
             Text(
               widget.event.description,
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 8),
-            // Add location here
-            Text(
-              'Location: ${widget.event.location}', // New line for location
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+
+            // Event Location with Icon
+            Row(
+              children: [
+                Icon(Icons.location_on, color: Colors.blue),
+                SizedBox(width: 4),
+                Text(
+                  'Location: ${widget.event.location}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
             ),
             SizedBox(height: 8),
-            Text(
-              'Date: ${widget.event.date.toString().split(' ')[0]}',
-              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+
+
+            _isWeatherLoading
+                ? Center(child: CircularProgressIndicator())
+                : _weatherData.isNotEmpty
+                ? WeatherWidget(weatherData: _weatherData)
+                : Text(
+              'Weather data not available.',
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+            ),
+
+
+
+            SizedBox(height: 16),
+
+            // Event Date with Icon
+            Row(
+              children: [
+                Icon(Icons.calendar_today, color: Colors.blue),
+                SizedBox(width: 4),
+                Text(
+                  'Date: ${widget.event.date.toString().split(' ')[0]}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
             ),
             SizedBox(height: 24),
+
+            // Join Event Button
             Center(
               child: ElevatedButton(
                 onPressed: () async {
@@ -322,23 +416,35 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               ),
             ),
             SizedBox(height: 24),
+
+            // Comments Section
             Text(
               'Comments',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 8),
+
+            // Comments List
             Column(
               children: _comments.asMap().entries.map((entry) {
                 int index = entry.key;
                 Comment comment = entry.value;
-                return _buildCommentItem(
-                  context,
-                  comment,
-                  index,
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    title: Text(comment.name),
+                    subtitle: Text(comment.comment),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _confirmDeleteComment(index),
+                    ),
+                  ),
                 );
               }).toList(),
             ),
             SizedBox(height: 16),
+
+            // Add Comment Section
             TextField(
               controller: _commentController,
               decoration: InputDecoration(
@@ -371,7 +477,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
           ),
           Positioned(
-            bottom: 10,
+            bottom: 7,
             right: 16,
             child: FloatingActionButton(
               onPressed: _modifyEvent,
@@ -383,6 +489,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       ),
     );
   }
+
+
+
 
 
   Widget _buildCommentItem(BuildContext context, Comment comment, int index) {
