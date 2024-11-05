@@ -30,19 +30,29 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     _loadComments(widget.event.id);
   }
 
-  Future<void> _loadComments(String eventId) async { // Add eventId as a parameter
+  Future<void> _loadComments(String eventId) async {
     try {
       setState(() {
         _isLoading = true;
       });
 
-      List<Comment> comments = await _commentService.getCommentsForEvent(eventId); // Fetch comments for the specific event
-      setState(() {
-        _comments.clear(); // Clear existing comments if needed
-        _comments.addAll(comments);
-      });
+      // Fetch comments for the specific event
+      List<Comment> comments = await _commentService.getCommentsForEvent(eventId);
+      print("Fetched comments: $comments"); // Debugging output for fetched comments
 
-      await _saveCommentsDocument(comments); // This method should also handle event-specific logic if necessary
+      setState(() {
+        _comments.clear();
+        _commentRefs.clear();
+
+        // Map each comment to its reference
+        _comments.addAll(comments);
+        _commentRefs.addAll(comments.map((comment) {
+          // Assuming you have a method to get a DocumentReference based on comment ID
+          DocumentReference ref = _commentService.getCommentReference(comment.id);
+          print("Comment: ${comment.name}, Reference: $ref"); // Debugging output for each comment and its reference
+          return ref; // Add reference to the list
+        }));
+      });
     } catch (e) {
       print('Error loading comments: $e');
     } finally {
@@ -51,6 +61,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       });
     }
   }
+
+
+
 
 
   Future<void> _saveCommentsDocument(List<Comment> comments) async {
@@ -128,18 +141,28 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Future<void> _addComment() async { // No need for eventId parameter here
+  Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
+      // Create a new Comment object with a temporary ID
       Comment newComment = Comment(
+        id: '', // Temporary ID, will be updated after adding to Firestore
         name: 'John Doe',
         comment: _commentController.text,
-        eventId: widget.event.id, // Use widget.event.id directly
+        eventId: widget.event.id,
       );
 
       try {
         DocumentReference newDocRef = await _commentService.addComment(newComment);
 
+        // Update the comment with the actual document ID
         setState(() {
+          newComment = Comment(
+            id: newDocRef.id, // Update the comment with the actual ID
+            name: newComment.name,
+            comment: newComment.comment,
+            eventId: newComment.eventId,
+          );
+
           _comments.add(newComment);
           _commentRefs.add(newDocRef);
           _commentController.clear();
@@ -152,6 +175,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       }
     }
   }
+
 
 
 
@@ -214,17 +238,25 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   Future<void> _deleteComment(int index) async {
     if (index < _commentRefs.length) {
       DocumentReference docRef = _commentRefs[index];
+
+      // Debug print to check the document reference
+      print("Deleting comment at index $index with ID: ${docRef.id}");
+
       await _commentService.deleteComment(docRef); // Use the document reference to delete
 
       setState(() {
         _comments.removeAt(index);
         _commentRefs.removeAt(index); // Remove the reference as well
       });
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Comment deleted!')),
       );
+    } else {
+      print("Index out of bounds: $index");
     }
   }
+
 
 
 
