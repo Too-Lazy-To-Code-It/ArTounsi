@@ -40,22 +40,12 @@ class CommentService {
 
   Future<void> deleteComment(DocumentReference commentRef) async {
     try {
-      // Print the document reference path for debugging
-      print("Attempting to delete comment at: ${commentRef.path}");
-
-      DocumentSnapshot doc = await commentRef.get(); // Step 1
-      print("Document snapshot retrieved: ${doc.exists}"); // Debugging
-
-      if (doc.exists) { // Step 2
-        print("Document exists, proceeding to delete."); // Debugging
-        await commentRef.delete(); // Step 3
-        print("Comment deleted successfully."); // Debugging
-      } else {
-        print("Document does not exist, cannot delete."); // Debugging
+      DocumentSnapshot doc = await commentRef.get();
+      if (doc.exists) {
+        await commentRef.delete();
       }
     } catch (e) {
-      print("Error deleting comment: $e"); // Step 4
+      print("Error deleting comment: $e");
     }
   }
-
 }
