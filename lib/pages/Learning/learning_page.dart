@@ -12,7 +12,7 @@ class _LearningPageState extends State<LearningPage> {
   int _selectedTabIndex = 0;
 
   // Mock data for courses
-  final List<Map<String, dynamic>> _courses = [
+  List<Map<String, dynamic>> _courses = [
     {
       'id': 1,
       'title': 'Fondamentaux du dessin',
@@ -54,7 +54,7 @@ class _LearningPageState extends State<LearningPage> {
   List<Map<String, dynamic>> get _filteredCourses {
     return _courses
         .where((course) =>
-            course['title'].toLowerCase().contains(_searchTerm.toLowerCase()))
+        course['title'].toLowerCase().contains(_searchTerm.toLowerCase()))
         .toList();
   }
 
@@ -80,6 +80,11 @@ class _LearningPageState extends State<LearningPage> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showCourseDialog(),
+        tooltip: 'Ajouter un cours',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -130,7 +135,7 @@ class _LearningPageState extends State<LearningPage> {
 
     return Column(
       children:
-          displayedCourses.map((course) => _buildCourseCard(course)).toList(),
+      displayedCourses.map((course) => _buildCourseCard(course)).toList(),
     );
   }
 
@@ -171,6 +176,12 @@ class _LearningPageState extends State<LearningPage> {
                     course['title'],
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.edit),
+                  onPressed: () {
+                    _showCourseDialog(course);
+                  },
                 ),
               ],
             ),
@@ -232,5 +243,79 @@ class _LearningPageState extends State<LearningPage> {
         ),
       ),
     );
+  }
+
+  // Show dialog to add/update course
+  void _showCourseDialog([Map<String, dynamic>? course]) {
+    final titleController = TextEditingController(text: course?['title'] ?? '');
+    final typeController = TextEditingController(text: course?['type'] ?? 'course');
+    final progressController = TextEditingController(text: course?['progress']?.toString() ?? '0');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(course == null ? 'Ajouter un Cours' : 'Modifier le Cours'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(hintText: 'Titre du cours'),
+              ),
+              TextField(
+                controller: typeController,
+                decoration: const InputDecoration(hintText: 'Type (cours, vidéo, atelier)'),
+              ),
+              TextField(
+                controller: progressController,
+                decoration: const InputDecoration(hintText: 'Progression (%)'),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                if (course == null) {
+                  _addCourse(titleController.text, typeController.text, int.parse(progressController.text));
+                } else {
+                  _updateCourse(course['id'], titleController.text, typeController.text, int.parse(progressController.text));
+                }
+                Navigator.of(context).pop();
+              },
+              child: Text(course == null ? 'Ajouter' : 'Modifier'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Add a new course
+  void _addCourse(String title, String type, int progress) {
+    setState(() {
+      _courses.add({
+        'id': _courses.length + 1, // Simple ID generation
+        'title': title,
+        'type': type,
+        'progress': progress,
+      });
+    });
+  }
+
+  // Update an existing course
+  void _updateCourse(int id, String title, String type, int progress) {
+    setState(() {
+      final index = _courses.indexWhere((course) => course['id'] == id);
+      if (index != -1) {
+        _courses[index] = {
+          'id': id,
+          'title': title,
+          'type': type,
+          'progress': progress,
+        };
+      }
+    });
   }
 }
