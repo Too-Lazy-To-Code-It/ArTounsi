@@ -14,18 +14,20 @@ class DetailsPage extends StatefulWidget {
 }
 
 class _DetailsPageState extends State<DetailsPage> {
-  late Future<DocumentSnapshot> _artworkFuture;
+  late Stream<DocumentSnapshot> _artworkStream;
+  final TextEditingController _commentController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _artworkFuture = FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get();
+    _artworkStream = FirebaseFirestore.instance
+        .collection('artworks')
+        .doc(widget.artworkId)
+        .snapshots();
   }
 
   void _handleArtworkUpdated(Map<String, dynamic> updatedArtwork) {
-    setState(() {
-      _artworkFuture = FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get();
-    });
+    setState(() {});
   }
 
   Future<void> _deleteArtwork(String artworkId, String imageUrl) async {
@@ -51,16 +53,13 @@ class _DetailsPageState extends State<DetailsPage> {
 
     if (confirmDelete == true) {
       try {
-        // Delete the artwork document from Firestore
         await FirebaseFirestore.instance.collection('artworks').doc(artworkId).delete();
 
-        // Delete the image from Firebase Storage
         if (imageUrl.isNotEmpty) {
           try {
             await FirebaseStorage.instance.refFromURL(imageUrl).delete();
           } catch (e) {
             print('Error deleting image from storage: $e');
-            // Even if image deletion fails, we continue with the process
           }
         }
 
@@ -76,10 +75,38 @@ class _DetailsPageState extends State<DetailsPage> {
     }
   }
 
+  void _likeArtwork() {
+    FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
+      'likes': FieldValue.increment(1),
+    });
+  }
+
+  void _addComment() {
+    if (_commentController.text.isNotEmpty) {
+      FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
+        'comments': FieldValue.arrayUnion([
+          {
+            'text': _commentController.text,
+            'timestamp': DateTime.now().toUtc().millisecondsSinceEpoch,
+          }
+        ]),
+      }).then((_) {
+        setState(() {
+          _commentController.clear();
+        });
+      }).catchError((error) {
+        print('Error adding comment: $error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add comment. Please try again.')),
+        );
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<DocumentSnapshot>(
-      future: _artworkFuture,
+    return StreamBuilder<DocumentSnapshot>(
+      stream: _artworkStream,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -104,6 +131,8 @@ class _DetailsPageState extends State<DetailsPage> {
 
         Map<String, dynamic> artwork = snapshot.data!.data() as Map<String, dynamic>;
         artwork['id'] = snapshot.data!.id;
+
+        List<dynamic> comments = (artwork['comments'] is List) ? artwork['comments'] : [];
 
         return Scaffold(
           appBar: AppBar(
@@ -174,7 +203,10 @@ class _DetailsPageState extends State<DetailsPage> {
                       SizedBox(height: 16),
                       Row(
                         children: [
-                          Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
+                          GestureDetector(
+                            onTap: _likeArtwork,
+                            child: Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
+                          ),
                           SizedBox(width: 8),
                           Text('${artwork['likes'] ?? 0} likes', style: TextStyle(color: Colors.white)),
                           SizedBox(width: 24),
@@ -184,7 +216,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           SizedBox(width: 24),
                           Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary),
                           SizedBox(width: 8),
-                          Text('${(artwork['comments'] as List?)?.length ?? 0} comments', style: TextStyle(color: Colors.white)),
+                          Text('${comments.length} comments', style: TextStyle(color: Colors.white)),
                         ],
                       ),
                       SizedBox(height: 24),
@@ -224,8 +256,32 @@ class _DetailsPageState extends State<DetailsPage> {
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
                       SizedBox(height: 8),
-                      _buildCommentsList(artwork['comments'] as List<dynamic>? ?? []),
+                      _buildCommentsList(comments),
                       SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _commentController,
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                hintText: 'Add a comment...',
+                                hintStyle: TextStyle(color: Colors.white54),
+                                enabledBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white54),
+                                ),
+                                focusedBorder: UnderlineInputBorder(
+                                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
+                            onPressed: _addComment,
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -260,11 +316,13 @@ class _DetailsPageState extends State<DetailsPage> {
       itemBuilder: (context, index) {
         final comment = comments[index] as Map<String, dynamic>? ?? {};
         return ListTile(
-          leading: CircleAvatar(
-            child: Text(comment['author']?[0] ?? ''),
+          title: Text(comment['text'] ?? '', style: TextStyle(color: Colors.white)),
+          subtitle: Text(
+            comment['timestamp'] != null
+                ? DateTime.fromMillisecondsSinceEpoch(comment['timestamp']).toString()
+                : 'Unknown time',
+            style: TextStyle(color: Colors.white70),
           ),
-          title: Text(comment['author'] ?? 'Unknown', style: TextStyle(color: Colors.white)),
-          subtitle: Text(comment['content'] ?? '', style: TextStyle(color: Colors.white)),
         );
       },
     );

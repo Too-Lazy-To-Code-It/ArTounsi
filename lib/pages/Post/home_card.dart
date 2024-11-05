@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeCard extends StatelessWidget {
+  final String id;
   final String imageUrl;
   final String title;
   final String author;
@@ -12,8 +14,8 @@ class HomeCard extends StatelessWidget {
 
   const HomeCard({
     Key? key,
+    required this.id,
     required this.imageUrl,
-
     required this.title,
     required this.author,
     required this.likes,
@@ -31,7 +33,12 @@ class HomeCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: InkWell(
-        onTap: onTap,
+        onTap: () {
+          FirebaseFirestore.instance.collection('artworks').doc(id).update({
+            'views': FieldValue.increment(1),
+          });
+          onTap();
+        },
         child: Image.network(
           imageUrl,
           fit: BoxFit.cover,

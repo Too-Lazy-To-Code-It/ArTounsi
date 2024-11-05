@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'home_card.dart';
 import 'add_art_page.dart';
 import 'details_page.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -39,7 +39,6 @@ class _HomePageState extends State<HomePage> {
       context,
       MaterialPageRoute(builder: (context) => const AddArtPage()),
     );
-    // No need to manually refresh, StreamBuilder will handle updates
   }
 
   @override
@@ -71,7 +70,7 @@ class _HomePageState extends State<HomePage> {
               'author': data['author'] as String? ?? 'Unknown Author',
               'likes': data['likes'] as int? ?? 0,
               'views': data['views'] as int? ?? 0,
-              'comments': List<Map<String, dynamic>>.from(data['comments'] ?? []),
+              'comments': (data['commentsList'] as List?)?.length ?? 0,
             };
           }).toList();
 
@@ -94,12 +93,13 @@ class _HomePageState extends State<HomePage> {
                       }
                       final post = posts[index];
                       return HomeCard(
+                        id: post['id'],
                         imageUrl: post['imageUrl'],
                         title: post['title'],
                         author: post['author'],
                         likes: post['likes'],
                         views: post['views'],
-                        comments: (post['comments'] as List).length,
+                        comments: post['comments'],
                         tag: post['tag'],
                         onTap: () {
                           Navigator.push(
