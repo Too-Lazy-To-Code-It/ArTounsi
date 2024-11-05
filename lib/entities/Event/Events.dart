@@ -1,16 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Event {
+class Events {
   String id;
   String title;
   String imageUrl;
   DateTime date;
   String description;
+  String location; // New field for location
 
-  Event(this.id, this.title, this.imageUrl, this.date, this.description);
+  Events(this.id, this.title, this.imageUrl, this.date, this.description, this.location);
 
-  factory Event.fromMap(String id, Map<String, dynamic> map) {
-    return Event(
+  factory Events.fromMap(String id, Map<String, dynamic> map) {
+    return Events(
       id,
       map['title'] ?? 'Untitled Event',
       map['imageUrl'] ?? '',
@@ -18,6 +19,7 @@ class Event {
           ? (map['date'] as Timestamp).toDate()
           : DateTime.tryParse(map['date'] ?? '') ?? DateTime.now(),
       map['description'] ?? 'No description available',
+      map['location'] ?? 'No location specified', // Add location with a default value
     );
   }
 
@@ -27,6 +29,7 @@ class Event {
       'imageUrl': imageUrl,
       'date': date,
       'description': description,
+      'location': location, // Include location in the map
     };
   }
 }

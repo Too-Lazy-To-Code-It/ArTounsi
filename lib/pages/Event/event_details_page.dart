@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../entities/Event/Events.dart';
-import 'Full_Screen_Img.dart';
-import '../../services/Event/EventService.dart';
-import 'modify_event_page.dart';
 import '../../entities/Event/Comments.dart';
 import '../../services/Event/CommentService.dart';
+import '../../services/Event/EventService.dart';
+import 'Full_Screen_Img.dart';
+import 'modify_event_page.dart';
 
 class EventDetailsPage extends StatefulWidget {
-  final Event event;
+  final Events event;
 
   EventDetailsPage({required this.event});
 
@@ -19,7 +19,7 @@ class EventDetailsPage extends StatefulWidget {
 class _EventDetailsPageState extends State<EventDetailsPage> {
   final TextEditingController _commentController = TextEditingController();
   final List<Comment> _comments = [];
-  final List<DocumentReference> _commentRefs = []; // Store document references
+  final List<DocumentReference> _commentRefs = [];
   final CommentService _commentService = CommentService();
   bool _isLoading = false;
   bool _isEventDeleted = false;
@@ -36,21 +36,18 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
         _isLoading = true;
       });
 
-      // Fetch comments for the specific event
       List<Comment> comments = await _commentService.getCommentsForEvent(eventId);
-      print("Fetched comments: $comments"); // Debugging output for fetched comments
+      print("Fetched comments: $comments");
 
       setState(() {
         _comments.clear();
         _commentRefs.clear();
 
-        // Map each comment to its reference
         _comments.addAll(comments);
         _commentRefs.addAll(comments.map((comment) {
-          // Assuming you have a method to get a DocumentReference based on comment ID
           DocumentReference ref = _commentService.getCommentReference(comment.id);
-          print("Comment: ${comment.name}, Reference: $ref"); // Debugging output for each comment and its reference
-          return ref; // Add reference to the list
+          print("Comment: ${comment.name}, Reference: $ref");
+          return ref;
         }));
       });
     } catch (e) {
@@ -62,22 +59,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
-
-
-
-
-  Future<void> _saveCommentsDocument(List<Comment> comments) async {
-    try {
-      final docRef = FirebaseFirestore.instance.collection('commentsCollection').doc('commentsDocId');
-      final commentsData = {
-        'comments': comments.map((comment) => comment.toMap()).toList(),
-        'timestamp': FieldValue.serverTimestamp(),
-      };
-      await docRef.set(commentsData);
-    } catch (e) {
-      print('Error saving comments document: $e');
-    }
-  }
 
 
 
@@ -113,7 +94,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
-
   void _confirmDeleteEvent() {
     showDialog(
       context: context,
@@ -143,9 +123,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
-      // Create a new Comment object with a temporary ID
       Comment newComment = Comment(
-        id: '', // Temporary ID, will be updated after adding to Firestore
+        id: '',
         name: 'John Doe',
         comment: _commentController.text,
         eventId: widget.event.id,
@@ -154,10 +133,9 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       try {
         DocumentReference newDocRef = await _commentService.addComment(newComment);
 
-        // Update the comment with the actual document ID
         setState(() {
           newComment = Comment(
-            id: newDocRef.id, // Update the comment with the actual ID
+            id: newDocRef.id,
             name: newComment.name,
             comment: newComment.comment,
             eventId: newComment.eventId,
@@ -175,9 +153,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       }
     }
   }
-
-
-
 
   void _modifyEvent() async {
     QuerySnapshot querySnapshot = await FirebaseFirestore.instance
@@ -239,14 +214,13 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     if (index < _commentRefs.length) {
       DocumentReference docRef = _commentRefs[index];
 
-      // Debug print to check the document reference
       print("Deleting comment at index $index with ID: ${docRef.id}");
 
-      await _commentService.deleteComment(docRef); // Use the document reference to delete
+      await _commentService.deleteComment(docRef);
 
       setState(() {
         _comments.removeAt(index);
-        _commentRefs.removeAt(index); // Remove the reference as well
+        _commentRefs.removeAt(index);
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -256,9 +230,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       print("Index out of bounds: $index");
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -329,6 +300,12 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 8),
+            // Add location here
+            Text(
+              'Location: ${widget.event.location}', // New line for location
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+            ),
+            SizedBox(height: 8),
             Text(
               'Date: ${widget.event.date.toString().split(' ')[0]}',
               style: TextStyle(fontSize: 14, color: Colors.grey[600]),
@@ -336,7 +313,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             SizedBox(height: 24),
             Center(
               child: ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('You have joined the event!')),
                   );
@@ -406,6 +383,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       ),
     );
   }
+
 
   Widget _buildCommentItem(BuildContext context, Comment comment, int index) {
     return Card(

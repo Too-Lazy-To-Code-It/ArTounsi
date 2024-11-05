@@ -19,12 +19,21 @@ class _ModifyEventState extends State<ModifyEvent> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _locationController = TextEditingController();
   final EventService _eventService = EventService();
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
   String? _existingImageUrl;
-  bool _isLoading = false; // Loading state
-  bool _hasUnsavedChanges = false; // Unsaved changes state
+  bool _isLoading = false;
+  bool _hasUnsavedChanges = false;
+
+  // List of Tunisian cities for the dropdown
+  final List<String> _cities = [
+    'Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Bizerte', 'Nabeul', 'Gabes', 'Ariana', 'Ben Arous', 'Medenine',
+    'Tozeur', 'Tataouine', 'Sidi Bouzid', 'El Kef', 'Jendouba', 'Manouba', 'Siliana', 'Zaghouan', 'Mahdia', 'Kasserine',
+  ];
+
+  String? _selectedCity;
 
   @override
   void initState() {
@@ -36,13 +45,15 @@ class _ModifyEventState extends State<ModifyEvent> {
     DocumentSnapshot doc = await widget.eventRef.get();
     if (doc.exists && doc.data() != null) {
       String eventId = doc.id;
-      var event = Event.fromMap(eventId, doc.data() as Map<String, dynamic>);
+      var event = Events.fromMap(eventId, doc.data() as Map<String, dynamic>);
 
       setState(() {
         _titleController.text = event.title;
         _descriptionController.text = event.description;
         _selectedDate = event.date;
         _existingImageUrl = event.imageUrl;
+        _locationController.text = event.location;
+        _selectedCity = event.location; // Assuming event location is the city
         _imagePath = null;
       });
     } else {
@@ -77,7 +88,6 @@ class _ModifyEventState extends State<ModifyEvent> {
         _hasUnsavedChanges = true;
       });
     }
-
   }
 
   Future<void> _submitForm() async {
@@ -86,12 +96,13 @@ class _ModifyEventState extends State<ModifyEvent> {
         _isLoading = true; // Set loading state
       });
       try {
-        final updatedEvent = Event(
+        final updatedEvent = Events(
           widget.eventRef.id, // Pass the event ID for modification
           _titleController.text,
           '', // Image URL will be updated
           _selectedDate,
           _descriptionController.text,
+          _selectedCity ?? '', // Use selected city as location
         );
 
         await _eventService.modifyEvent(
@@ -116,7 +127,6 @@ class _ModifyEventState extends State<ModifyEvent> {
       }
     }
   }
-
 
   Future<bool> _onWillPop() async {
     if (_hasUnsavedChanges) {
@@ -166,7 +176,7 @@ class _ModifyEventState extends State<ModifyEvent> {
                   }
                   return null;
                 },
-                onChanged: (_) => _hasUnsavedChanges = true, // Track changes
+                onChanged: (_) => _hasUnsavedChanges = true,
               ),
               SizedBox(height: 16),
               TextFormField(
@@ -179,7 +189,30 @@ class _ModifyEventState extends State<ModifyEvent> {
                   }
                   return null;
                 },
-                onChanged: (_) => _hasUnsavedChanges = true, // Track changes
+                onChanged: (_) => _hasUnsavedChanges = true,
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCity,
+                decoration: InputDecoration(labelText: 'Event Location (City)'),
+                items: _cities.map((city) {
+                  return DropdownMenuItem<String>(
+                    value: city,
+                    child: Text(city),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCity = value;
+                    _hasUnsavedChanges = true;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a city for the event location';
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 16),
               Row(

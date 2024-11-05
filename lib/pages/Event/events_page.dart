@@ -10,7 +10,7 @@ class EventPage extends StatefulWidget {
 }
 
 class _EventPageState extends State<EventPage> {
-  List<Event> events = [];
+  List<Events> events = [];
   final EventService _eventService = EventService();
   bool isLoading = true;
 
@@ -22,7 +22,7 @@ class _EventPageState extends State<EventPage> {
 
   Future<void> _fetchEvents() async {
     try {
-      List<Event> fetchedEvents = await _eventService.getEvents();
+      List<Events> fetchedEvents = await _eventService.getEvents();
       setState(() {
         events = fetchedEvents;
         isLoading = false;
@@ -47,7 +47,7 @@ class _EventPageState extends State<EventPage> {
     }
   }
 
-  void _navigateToEventDetailsPage(Event event) async {
+  void _navigateToEventDetailsPage(Events event) async {
     bool? shouldReload = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EventDetailsPage(event: event)),

@@ -19,6 +19,35 @@ class _AddEventState extends State<AddEvent> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
+  // List of Tunisian cities
+  final List<String> _tunisianCities = [
+    'Tunis',
+    'Sfax',
+    'Sousse',
+    'Gabès',
+    'Bizerte',
+    'Ariana',
+    'Gafsa',
+    'Monastir',
+    'Kairouan',
+    'Ben Arous',
+    'Tozeur',
+    'Kasserine',
+    'Médenine',
+    'Nabeul',
+    'Mahdia',
+    'Sidi Bouzid',
+    'Kébili',
+    'Jendouba',
+    'Beja',
+    'Zaghouan',
+    'Siliana',
+    'Tataouine',
+    'Manouba'
+  ];
+
+  String? _selectedCity;
+
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -55,16 +84,23 @@ class _AddEventState extends State<AddEvent> {
         );
         return;
       }
+      if (_selectedCity == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please select a location.')),
+        );
+        return;
+      }
       setState(() {
         _isLoading = true;
       });
       try {
-        final newEvent = Event(
+        final newEvent = Events(
           '',
           _titleController.text,
           '',
           _selectedDate,
           _descriptionController.text,
+          _selectedCity!, // Add selected city here
         );
 
         final imageFile = File(_imagePath!);
@@ -80,6 +116,7 @@ class _AddEventState extends State<AddEvent> {
         _titleController.clear();
         _descriptionController.clear();
         setState(() {
+          _selectedCity = null; // Reset selected city
           _imagePath = null;
           _selectedDate = DateTime.now();
         });
@@ -143,6 +180,32 @@ class _AddEventState extends State<AddEvent> {
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter an event description';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedCity,
+                hint: Text('Select Location'),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Location',
+                ),
+                items: _tunisianCities.map((String city) {
+                  return DropdownMenuItem<String>(
+                    value: city,
+                    child: Text(city),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedCity = newValue;
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a location';
                   }
                   return null;
                 },
