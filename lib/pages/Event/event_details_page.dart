@@ -5,7 +5,7 @@ import 'Full_Screen_Img.dart';
 import '../../services/Event/EventService.dart';
 import 'modify_event_page.dart';
 import '../../entities/Event/Comments.dart';
-import '../../services/Event/ComlmentService.dart';
+import '../../services/Event/CommentService.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Event event;
@@ -27,31 +27,31 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   @override
   void initState() {
     super.initState();
-    _loadComments();
+    _loadComments(widget.event.id);
   }
 
-  Future<void> _loadComments() async {
+  Future<void> _loadComments(String eventId) async { // Add eventId as a parameter
     try {
       setState(() {
-        // Optionally show loading state
         _isLoading = true;
       });
 
-      List<Comment> comments = await _commentService.getComments();
+      List<Comment> comments = await _commentService.getCommentsForEvent(eventId); // Fetch comments for the specific event
       setState(() {
+        _comments.clear(); // Clear existing comments if needed
         _comments.addAll(comments);
       });
 
-      await _saveCommentsDocument(comments);
+      await _saveCommentsDocument(comments); // This method should also handle event-specific logic if necessary
     } catch (e) {
-      // Handle errors, e.g., show a message to the user
       print('Error loading comments: $e');
     } finally {
       setState(() {
-        _isLoading = false; // Hide loading state
+        _isLoading = false;
       });
     }
   }
+
 
   Future<void> _saveCommentsDocument(List<Comment> comments) async {
     try {
@@ -62,7 +62,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       };
       await docRef.set(commentsData);
     } catch (e) {
-      // Handle errors while saving the document
       print('Error saving comments document: $e');
     }
   }
@@ -129,22 +128,31 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     );
   }
 
-  Future<void> _addComment() async {
+  Future<void> _addComment() async { // No need for eventId parameter here
     if (_commentController.text.isNotEmpty) {
       Comment newComment = Comment(
         name: 'John Doe',
         comment: _commentController.text,
+        eventId: widget.event.id, // Use widget.event.id directly
       );
 
-      DocumentReference newDocRef = await _commentService.addComment(newComment);
+      try {
+        DocumentReference newDocRef = await _commentService.addComment(newComment);
 
-      setState(() {
-        _comments.add(newComment);
-        _commentRefs.add(newDocRef);
-        _commentController.clear();
-      });
+        setState(() {
+          _comments.add(newComment);
+          _commentRefs.add(newDocRef);
+          _commentController.clear();
+        });
+      } catch (e) {
+        print('Error adding comment: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add comment.')),
+        );
+      }
     }
   }
+
 
 
   void _modifyEvent() async {
@@ -176,21 +184,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     }
   }
 
-  Future<void> _deleteComment(int index) async {
-    if (index < _commentRefs.length) {
-      DocumentReference docRef = _commentRefs[index];
-      await _commentService.deleteComment(docRef); // Use the document reference to delete
-
-      setState(() {
-        _comments.removeAt(index);
-        _commentRefs.removeAt(index); // Remove the reference as well
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Comment deleted!')),
-      );
-    }
-  }
-
   void _confirmDeleteComment(int index) {
     showDialog(
       context: context,
@@ -217,6 +210,23 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       },
     );
   }
+
+  Future<void> _deleteComment(int index) async {
+    if (index < _commentRefs.length) {
+      DocumentReference docRef = _commentRefs[index];
+      await _commentService.deleteComment(docRef); // Use the document reference to delete
+
+      setState(() {
+        _comments.removeAt(index);
+        _commentRefs.removeAt(index); // Remove the reference as well
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Comment deleted!')),
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
