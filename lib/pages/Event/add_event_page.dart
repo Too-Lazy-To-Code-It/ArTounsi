@@ -17,6 +17,7 @@ class _AddEventState extends State<AddEvent> {
   final EventService _eventService = EventService();
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
+  bool _isLoading = false;
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -39,37 +40,69 @@ class _AddEventState extends State<AddEvent> {
       setState(() {
         _imagePath = pickedFile.path;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No image selected.')),
+      );
     }
   }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      if (_imagePath == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please select an image.')),
+        );
+        return;
+      }
+      setState(() {
+        _isLoading = true;
+      });
       try {
         final newEvent = Event(
+          '',
           _titleController.text,
           '',
           _selectedDate,
           _descriptionController.text,
         );
 
-        if (_imagePath != null) {
-          final imageFile = File(_imagePath!);
-          await _eventService.addEvent(newEvent, imageFile);
+        final imageFile = File(_imagePath!);
+        final imageUrl = await _eventService.uploadImage(imageFile);
+        newEvent.imageUrl = imageUrl;
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Event added successfully!')),
-          );
-          Navigator.pop(context, true);
-        } else {
-          throw Exception('Please select an image.');
-        }
+        await _eventService.addEvent(newEvent, imageFile);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Event added successfully!')),
+        );
+
+        _titleController.clear();
+        _descriptionController.clear();
+        setState(() {
+          _imagePath = null;
+          _selectedDate = DateTime.now();
+        });
+
+        Navigator.pop(context, true);
       } catch (e) {
         print('Error adding event: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to add event: $e')),
         );
+      } finally {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 
   @override
@@ -78,82 +111,92 @@ class _AddEventState extends State<AddEvent> {
       appBar: AppBar(
         title: Text('Add Event'),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(16.0),
-          children: [
-            TextFormField(
-              controller: _titleController,
-              decoration: InputDecoration(labelText: 'Event Title'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an event title';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Event Description'),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an event description';
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _imagePath != null
-                        ? 'Image selected: ${_imagePath!.split('/').last}'
-                        : 'No image selected',
-                  ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: InputDecoration(
+                  labelText: 'Event Title',
+                  border: OutlineInputBorder(),
                 ),
-                ElevatedButton(
-                  onPressed: _pickImage,
-                  child: Text('Select Image'),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            if (_imagePath != null)
-              Container(
-                margin: EdgeInsets.only(top: 16),
-                height: 200,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                ),
-                child: Image.file(
-                  File(_imagePath!),
-                  fit: BoxFit.cover,
-                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an event title';
+                  }
+                  return null;
+                },
               ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
+              SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: InputDecoration(
+                  labelText: 'Event Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter an event description';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      _imagePath != null
+                          ? 'Image selected: ${_imagePath!.split('/').last}'
+                          : 'No image selected',
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _pickImage,
+                    child: Text('Select Image'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              if (_imagePath != null)
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  height: 200,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: Image.file(
+                    File(_imagePath!),
+                    fit: BoxFit.cover,
                   ),
                 ),
-                ElevatedButton(
-                  onPressed: () => _selectDate(context),
-                  child: Text('Select Date'),
-                ),
-              ],
-            ),
-            SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _submitForm,
-              child: Text('Add Event'),
-            ),
-          ],
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}',
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: Text('Select Date'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _submitForm,
+                child: Text('Add Event'),
+              ),
+            ],
+          ),
         ),
       ),
     );

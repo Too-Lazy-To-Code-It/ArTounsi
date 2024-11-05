@@ -34,8 +34,10 @@ class _ModifyEventState extends State<ModifyEvent> {
 
   Future<void> _loadEventData() async {
     DocumentSnapshot doc = await widget.eventRef.get();
-    if (doc.exists) {
-      var event = Event.fromMap(doc.data() as Map<String, dynamic>);
+    if (doc.exists && doc.data() != null) {
+      String eventId = doc.id;
+      var event = Event.fromMap(eventId, doc.data() as Map<String, dynamic>);
+
       setState(() {
         _titleController.text = event.title;
         _descriptionController.text = event.description;
@@ -43,6 +45,10 @@ class _ModifyEventState extends State<ModifyEvent> {
         _existingImageUrl = event.imageUrl;
         _imagePath = null;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Event not found or has no data.')),
+      );
     }
   }
 
@@ -56,7 +62,7 @@ class _ModifyEventState extends State<ModifyEvent> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
-        _hasUnsavedChanges = true; // Mark as having unsaved changes
+        _hasUnsavedChanges = true;
       });
     }
   }
@@ -65,11 +71,13 @@ class _ModifyEventState extends State<ModifyEvent> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      print('Image picked: ${pickedFile.path}');
       setState(() {
         _imagePath = pickedFile.path;
-        _hasUnsavedChanges = true; // Mark as having unsaved changes
+        _hasUnsavedChanges = true;
       });
     }
+
   }
 
   Future<void> _submitForm() async {
@@ -79,16 +87,17 @@ class _ModifyEventState extends State<ModifyEvent> {
       });
       try {
         final updatedEvent = Event(
+          widget.eventRef.id, // Pass the event ID for modification
           _titleController.text,
-          '',
+          '', // Image URL will be updated
           _selectedDate,
           _descriptionController.text,
         );
 
         await _eventService.modifyEvent(
-          widget.eventRef,
+          widget.eventRef.id, // Pass the event ID
           updatedEvent,
-          newImage: _imagePath != null && File(_imagePath!).existsSync() ? File(_imagePath!) : null,
+          newImage: _imagePath != null ? File(_imagePath!) : null, // Pass new image if available
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -107,6 +116,7 @@ class _ModifyEventState extends State<ModifyEvent> {
       }
     }
   }
+
 
   Future<bool> _onWillPop() async {
     if (_hasUnsavedChanges) {

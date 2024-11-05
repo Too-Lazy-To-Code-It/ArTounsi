@@ -79,8 +79,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           .get();
 
       if (querySnapshot.docs.isNotEmpty) {
-        DocumentReference eventRef = querySnapshot.docs.first.reference;
-        await eventService.deleteEvent(eventRef);
+        String eventId = querySnapshot.docs.first.id;
+        await eventService.deleteEvent(eventId);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Event deleted!')),
@@ -100,6 +100,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       );
     }
   }
+
 
   void _confirmDeleteEvent() {
     showDialog(

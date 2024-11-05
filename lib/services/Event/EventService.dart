@@ -21,18 +21,20 @@ class EventService {
   Future<String> addEvent(Event event, File image) async {
     try {
       String imageUrl = await uploadImage(image);
-      Event newEvent = Event(event.title, imageUrl, event.date, event.description);
+      Event newEvent = Event('', event.title, imageUrl, event.date, event.description);
       DocumentReference docRef = await _db.collection('events').add(newEvent.toMap());
-      return docRef.id;
+      newEvent.id = docRef.id;
+      await _db.collection('events').doc(docRef.id).update({'id': newEvent.id});
+      return newEvent.id;
     } catch (e) {
       print('Error adding event: $e');
       throw Exception('Failed to add event: $e');
     }
   }
 
-  Future<void> deleteEvent(DocumentReference eventRef) async {
+  Future<void> deleteEvent(String eventId) async {
     try {
-      DocumentSnapshot doc = await eventRef.get();
+      DocumentSnapshot doc = await _db.collection('events').doc(eventId).get();
       if (doc.exists) {
         String imageUrl = (doc.data() as Map<String, dynamic>)['imageUrl'];
 
@@ -41,7 +43,7 @@ class EventService {
           await _storage.ref().child('events/$fileName').delete();
         }
 
-        await eventRef.delete();
+        await _db.collection('events').doc(eventId).delete();
       } else {
         throw Exception('Event not found');
       }
@@ -51,13 +53,13 @@ class EventService {
     }
   }
 
-  Future<void> modifyEvent(DocumentReference eventRef, Event updatedEvent, {File? newImage}) async {
+  Future<void> modifyEvent(String eventId, Event updatedEvent, {File? newImage}) async {
     try {
       String? imageUrl;
       if (newImage != null) {
         imageUrl = await uploadImage(newImage);
       } else {
-        DocumentSnapshot doc = await eventRef.get();
+        DocumentSnapshot doc = await _db.collection('events').doc(eventId).get();
         if (doc.exists) {
           imageUrl = (doc.data() as Map<String, dynamic>)['imageUrl'] as String?;
         }
@@ -70,22 +72,20 @@ class EventService {
         'description': updatedEvent.description,
       };
 
-      await eventRef.update(updatedData);
+      await _db.collection('events').doc(eventId).update(updatedData);
     } catch (e) {
       print('Error modifying event: $e');
       throw Exception('Failed to modify event: $e');
     }
   }
 
-
   Future<List<Event>> getEvents() async {
     try {
       QuerySnapshot snapshot = await _db.collection('events').get();
-      return snapshot.docs.map((doc) => Event.fromMap(doc.data() as Map<String, dynamic>)).toList();
+      return snapshot.docs.map((doc) => Event.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
     } catch (e) {
       print('Error fetching events: $e');
       throw Exception('Failed to fetch events: $e');
     }
   }
 }
-
