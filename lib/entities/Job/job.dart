@@ -17,13 +17,6 @@ class Job {
     this.JobLink = '',
   });
 
-  String generateRandomId() {
-    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    Random rnd = Random();
-    return String.fromCharCodes(Iterable.generate(
-        10, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
-  }
-
   // Convert a Job instance to a Map
   Map<String, dynamic> toMap() {
     return {
@@ -36,15 +29,15 @@ class Job {
     };
   }
 
-  // Create a Job instance from a Map
+  // Create a Job instance from a Map with null checks
   factory Job.fromMap(Map<String, dynamic> map) {
     return Job(
-      id: map['id'],
-      title: map['title'],
-      description: map['description'],
-      mainImagePath: map['mainImagePath'],
-      additionalImagePaths: List<String>.from(map['additionalImagePaths']),
-      JobLink: map['JobLink'],
+      id: map['id'] ?? '', // Default to empty string if null
+      title: map['title'] ?? '', // Default to empty string if null
+      description: map['description'] ?? '', // Default to empty string if null
+      mainImagePath: map['mainImagePath'] ?? '', // Default to empty string if null
+      additionalImagePaths: List<String>.from(map['additionalImagePaths'] ?? []),
+      JobLink: map['JobLink'] ?? '', // Default to empty string if null
     );
   }
 

@@ -1,23 +1,45 @@
+import 'package:Artounsi/pages/Job/JobService.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import '../../entities/Job/Job.dart';
 
-class ProjectCreationPage extends StatefulWidget {
+class JobCreationPage extends StatefulWidget {
+  final Job? job; // Add this parameter to accept a job for editing
+
+  JobCreationPage({Key? key, this.job}) : super(key: key);
+
   @override
-  _ProjectCreationPageState createState() => _ProjectCreationPageState();
+  _JobCreationPageState createState() => _JobCreationPageState();
 }
 
-class _ProjectCreationPageState extends State<ProjectCreationPage> {
+
+class _JobCreationPageState extends State<JobCreationPage> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
+  final JobService _jobService = JobService();
+
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.job != null) {
+      _title = widget.job!.title;
+      _description = widget.job!.description;
+      _jobLink = widget.job!.JobLink;
+      // Convert URLs to Files if necessary or load them properly
+    }
+  }
+
+
   String _title = '';
   String _description = '';
   File? _mainImage;
   List<File> _additionalImages = [];
-  String _projectLink = '';
+  String _jobLink = '';
 
   Future<void> _pickImage(ImageSource source, {bool isMain = false}) async {
-    final XFile? pickedFile = await _getImage();
+    final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
       setState(() {
         if (isMain) {
@@ -29,17 +51,45 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
     }
   }
 
-  Future<XFile?> _getImage() async {
-    final XFile? pickedFile =
-        await _picker.pickImage(source: ImageSource.gallery);
-    return pickedFile;
+  Future<void> _submitJob() async {
+    if (_formKey.currentState!.validate() && _mainImage != null) {
+      _formKey.currentState!.save();
+      try {
+        Job newJob = Job(
+          id: widget.job?.id ?? '',
+          title: _title,
+          description: _description,
+          mainImagePath: '', // Will be replaced by uploaded URL
+          additionalImagePaths: [],
+          JobLink: _jobLink,
+        );
+
+        if (widget.job == null) {
+          // Add new job
+          await _jobService.addJob(newJob, _mainImage!, additionalImages: _additionalImages);
+        } else {
+          // Update existing job
+          await _jobService.modifyJob(newJob.id, newJob, newMainImage: _mainImage, newAdditionalImages: _additionalImages);
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Job ${widget.job == null ? 'created' : 'updated'} successfully!')),
+        );
+        Navigator.pop(context);
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save job: $e')),
+        );
+      }
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create New Job'),
+        title: Text(widget.job == null ? 'Create New Job' : 'Edit Job'),
       ),
       body: Form(
         key: _formKey,
@@ -79,81 +129,10 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
               },
             ),
             SizedBox(height: 16.0),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Hover Job Image',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8.0),
-                    GestureDetector(
-                      onTap: () => _showImageSourceDialog(isMain: true),
-                      child: Container(
-                        height: MediaQuery.sizeOf(context).width * 0.6,
-                        width: MediaQuery.sizeOf(context).width,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(4.0),
-                        ),
-                        child: _mainImage != null
-                            ? Image.file(_mainImage!, fit: BoxFit.cover)
-                            : Center(child: Text('Upload image')),
-                      ),
-                    ),
-                    if (_mainImage == null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'Required main image',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
+            _buildImagePicker('Main Job Image', isMain: true),
             SizedBox(height: 16.0),
-            Card(
-              child: Padding(
-                padding: EdgeInsets.all(8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Additional Images (Optional)',
-                        style: TextStyle(fontWeight: FontWeight.bold)),
-                    SizedBox(height: 8.0),
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        crossAxisSpacing: 8,
-                        mainAxisSpacing: 8,
-                      ),
-                      itemCount: _additionalImages.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == _additionalImages.length) {
-                          return GestureDetector(
-                            onTap: () => _showImageSourceDialog(),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey),
-                                borderRadius: BorderRadius.circular(4.0),
-                              ),
-                              child: Icon(Icons.add),
-                            ),
-                          );
-                        }
-                        return Image.file(_additionalImages[index],
-                            fit: BoxFit.cover);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            _buildImagePicker('Additional Images (Optional)',
+                isMain: false, isAdditional: true),
             SizedBox(height: 16.0),
             TextFormField(
               decoration: InputDecoration(
@@ -161,35 +140,79 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
                 errorStyle: TextStyle(color: Colors.red),
               ),
               onSaved: (value) {
-                _projectLink = value ?? '';
+                _jobLink = value ?? '';
               },
             ),
             SizedBox(height: 24.0),
             ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate() && _mainImage != null) {
-                  _formKey.currentState!.save();
-                  // TODO: Implement save project logic here
-                  print('Title: $_title');
-                  print('Description: $_description');
-                  print('Main Image: ${_mainImage?.path}');
-                  print(
-                      'Additional Images: ${_additionalImages.map((file) => file.path).toList()}');
-                  print('Project Link: $_projectLink');
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Please fill in all required fields'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
+              onPressed: _submitJob,
               child: Text('Create Job'),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildImagePicker(String label,
+      {bool isMain = false, bool isAdditional = false}) {
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 8.0),
+            if (isMain)
+              GestureDetector(
+                onTap: () => _showImageSourceDialog(isMain: true),
+                child: _buildImageContainer(_mainImage),
+              ),
+            if (!isMain && isAdditional)
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 8,
+                ),
+                itemCount: _additionalImages.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == _additionalImages.length) {
+                    return GestureDetector(
+                      onTap: () => _showImageSourceDialog(),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        child: Icon(Icons.add),
+                      ),
+                    );
+                  }
+                  return Image.file(_additionalImages[index],
+                      fit: BoxFit.cover);
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageContainer(File? image) {
+    return Container(
+      height: MediaQuery.sizeOf(context).width * 0.6,
+      width: MediaQuery.sizeOf(context).width,
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: image != null
+          ? Image.file(image, fit: BoxFit.cover)
+          : Center(child: Text('Upload image')),
     );
   }
 
