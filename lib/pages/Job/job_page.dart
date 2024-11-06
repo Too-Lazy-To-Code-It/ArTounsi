@@ -3,6 +3,7 @@ import 'package:Artounsi/pages/Job/project_creation_page.dart';
 import 'package:flutter/material.dart';
 import '../../entities/Job/CustomFloatingActionButton.dart';
 import 'package:Artounsi/entities/Job/Job.dart';
+
 class JobPage extends StatefulWidget {
   const JobPage({Key? key}) : super(key: key);
 

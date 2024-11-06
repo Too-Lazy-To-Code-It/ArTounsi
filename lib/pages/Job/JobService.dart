@@ -3,6 +3,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 import 'dart:math';
 import 'package:Artounsi/entities/Job/Job.dart';
+
 class JobService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
@@ -12,14 +13,14 @@ class JobService {
       String fileName = 'jobs/${DateTime.now().millisecondsSinceEpoch}.jpg';
       final ref = _storage.ref().child(fileName);
       TaskSnapshot snapshot = await ref.putFile(image);
+      await Future.delayed(Duration(seconds: 1));
       return await snapshot.ref.getDownloadURL();
     } catch (e) {
       throw Exception('Failed to upload image: $e');
     }
   }
 
-  Future<String> addJob(Job job, File mainImage,
-      {List<File>? additionalImages}) async {
+  Future<String> addJob(Job job, File mainImage, {List<File>? additionalImages}) async {
     try {
       String mainImageUrl = await uploadImage(mainImage);
       List<String> additionalImageUrls = [];
@@ -39,8 +40,7 @@ class JobService {
         JobLink: job.JobLink,
       );
 
-      DocumentReference docRef =
-          await _db.collection('jobs').add(newJob.toMap());
+      DocumentReference docRef = await _db.collection('jobs').add(newJob.toMap());
       newJob.id = docRef.id;
       await _db.collection('jobs').doc(docRef.id).update({'id': newJob.id});
       return newJob.id;
@@ -56,8 +56,7 @@ class JobService {
       if (doc.exists) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
         String mainImagePath = data['mainImagePath'];
-        List<String> additionalImagePaths =
-            List<String>.from(data['additionalImagePaths']);
+        List<String> additionalImagePaths = List<String>.from(data['additionalImagePaths']);
 
         await _storage.refFromURL(mainImagePath).delete();
         for (String imagePath in additionalImagePaths) {
@@ -74,8 +73,7 @@ class JobService {
     }
   }
 
-  Future<void> modifyJob(String jobId, Job updatedJob,
-      {File? newMainImage, List<File>? newAdditionalImages}) async {
+  Future<void> modifyJob(String jobId, Job updatedJob, {File? newMainImage, List<File>? newAdditionalImages}) async {
     try {
       String? mainImageUrl;
       if (newMainImage != null) {
@@ -88,15 +86,14 @@ class JobService {
       }
 
       List<String> additionalImageUrls = [];
-      if (newAdditionalImages != null) {
+      if (newAdditionalImages != null && newAdditionalImages.isNotEmpty) {
         for (File image in newAdditionalImages) {
           additionalImageUrls.add(await uploadImage(image));
         }
       } else {
         DocumentSnapshot doc = await _db.collection('jobs').doc(jobId).get();
         if (doc.exists) {
-          additionalImageUrls = List<String>.from(
-              (doc.data() as Map<String, dynamic>)['additionalImagePaths']);
+          additionalImageUrls = List<String>.from((doc.data() as Map<String, dynamic>)['additionalImagePaths']);
         }
       }
 
@@ -127,5 +124,5 @@ class JobService {
       throw Exception('Failed to fetch jobs: $e');
     }
   }
-
 }
+
