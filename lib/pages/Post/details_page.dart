@@ -16,6 +16,7 @@ class DetailsPage extends StatefulWidget {
 class _DetailsPageState extends State<DetailsPage> {
   late Stream<DocumentSnapshot> _artworkStream;
   final TextEditingController _commentController = TextEditingController();
+  final TextEditingController _editCommentController = TextEditingController();
 
   @override
   void initState() {
@@ -35,15 +36,17 @@ class _DetailsPageState extends State<DetailsPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Delete Artwork'),
-          content: Text('Are you sure you want to delete this artwork?'),
+          backgroundColor: Colors.grey[900],
+          title: Text('Delete Artwork', style: TextStyle(color: Colors.white)),
+          content: Text('Are you sure you want to delete this artwork?',
+              style: TextStyle(color: Colors.white)),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text('Delete'),
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
@@ -88,6 +91,7 @@ class _DetailsPageState extends State<DetailsPage> {
           {
             'text': _commentController.text,
             'timestamp': DateTime.now().toUtc().millisecondsSinceEpoch,
+            'id': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
           }
         ]),
       }).then((_) {
@@ -101,6 +105,123 @@ class _DetailsPageState extends State<DetailsPage> {
         );
       });
     }
+  }
+
+  void _editComment(Map<String, dynamic> comment) {
+    if (comment['text'] == null) return;
+
+    _editCommentController.text = comment['text'].toString();
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: Text('Edit Comment', style: TextStyle(color: Colors.white)),
+          content: TextField(
+            controller: _editCommentController,
+            style: TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: "Edit your comment",
+              hintStyle: TextStyle(color: Colors.white54),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white54),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).primaryColor),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Save', style: TextStyle(color: Theme.of(context).primaryColor)),
+              onPressed: () {
+                if (_editCommentController.text.isNotEmpty) {
+                  FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
+                    List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
+                    int index = comments.indexWhere((c) => c['id'] == comment['id']);
+                    if (index != -1) {
+                      comments[index]['text'] = _editCommentController.text;
+                      FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
+                        'comments': comments,
+                      }).then((_) {
+                        Navigator.of(context).pop();
+                      }).catchError((error) {
+                        print('Error updating comment: $error');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Failed to update comment. Please try again.')),
+                        );
+                      });
+                    }
+                  });
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteComment(Map<String, dynamic> comment) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          title: Text('Delete Comment', style: TextStyle(color: Colors.white)),
+          content: Text('Are you sure you want to delete this comment?',
+              style: TextStyle(color: Colors.white)),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
+                  List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
+                  comments.removeWhere((c) => c['id'] == comment['id']);
+                  FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
+                    'comments': comments,
+                  }).then((_) {
+                    Navigator.of(context).pop();
+                  }).catchError((error) {
+                    print('Error deleting comment: $error');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to delete comment. Please try again.')),
+                    );
+                  });
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildTag(String tag) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Theme.of(context).colorScheme.secondary),
+      ),
+      child: Text(
+        tag,
+        style: TextStyle(color: Theme.of(context).colorScheme.secondary),
+      ),
+    );
   }
 
   @override
@@ -132,7 +253,7 @@ class _DetailsPageState extends State<DetailsPage> {
         Map<String, dynamic> artwork = snapshot.data!.data() as Map<String, dynamic>;
         artwork['id'] = snapshot.data!.id;
 
-        List<dynamic> comments = (artwork['comments'] is List) ? artwork['comments'] : [];
+        List<dynamic> comments = List.from(artwork['comments'] ?? []);
 
         return Scaffold(
           appBar: AppBar(
@@ -238,7 +359,9 @@ class _DetailsPageState extends State<DetailsPage> {
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 4.0,
-                        children: (artwork['tags'] as List<dynamic>? ?? []).map((tag) => _buildTag(tag.toString())).toList(),
+                        children: (artwork['tags'] as List<dynamic>? ?? [])
+                            .map((tag) => _buildTag(tag.toString()))
+                            .toList(),
                       ),
                       SizedBox(height: 24),
                       Text(
@@ -256,7 +379,39 @@ class _DetailsPageState extends State<DetailsPage> {
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
                       SizedBox(height: 8),
-                      _buildCommentsList(comments),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: comments.length,
+                        itemBuilder: (context, index) {
+                          final comment = comments[index] as Map<String, dynamic>;
+                          return ListTile(
+                            title: Text(
+                              comment['text']?.toString() ?? '',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            subtitle: Text(
+                              comment['timestamp'] != null
+                                  ? DateTime.fromMillisecondsSinceEpoch(comment['timestamp']).toString()
+                                  : 'Unknown time',
+                              style: TextStyle(color: Colors.white70),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: Icon(Icons.edit, color: Colors.white),
+                                  onPressed: () => _editComment(comment),
+                                ),
+                                IconButton(
+                                  icon: Icon(Icons.delete, color: Colors.white),
+                                  onPressed: () => _deleteComment(comment),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                       SizedBox(height: 16),
                       Row(
                         children: [
@@ -293,38 +448,10 @@ class _DetailsPageState extends State<DetailsPage> {
     );
   }
 
-  Widget _buildTag(String tag) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).colorScheme.secondary),
-      ),
-      child: Text(
-        tag,
-        style: TextStyle(color: Theme.of(context).colorScheme.secondary),
-      ),
-    );
-  }
-
-  Widget _buildCommentsList(List<dynamic> comments) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: comments.length,
-      itemBuilder: (context, index) {
-        final comment = comments[index] as Map<String, dynamic>? ?? {};
-        return ListTile(
-          title: Text(comment['text'] ?? '', style: TextStyle(color: Colors.white)),
-          subtitle: Text(
-            comment['timestamp'] != null
-                ? DateTime.fromMillisecondsSinceEpoch(comment['timestamp']).toString()
-                : 'Unknown time',
-            style: TextStyle(color: Colors.white70),
-          ),
-        );
-      },
-    );
+  @override
+  void dispose() {
+    _commentController.dispose();
+    _editCommentController.dispose();
+    super.dispose();
   }
 }
