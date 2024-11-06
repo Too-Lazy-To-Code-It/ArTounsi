@@ -232,14 +232,14 @@ class _JobPageState extends State<JobPage> {
 
   void _incrementCounter() {
     setState(() {
-      _counter++;
+      _counter =1;
     });
   }
 
   void _decrementCounter() {
     setState(() {
       if (_counter > 0) {
-        _counter--;
+        _counter=2;
       }
     });
   }
