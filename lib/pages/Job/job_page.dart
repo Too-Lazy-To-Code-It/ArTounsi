@@ -209,67 +209,8 @@ class _JobPageState extends State<JobPage> {
 
 
 
-  void _showInspirePopPi(BuildContext context) {
-    Random random = Random();
-    int randomNumber = random.nextInt(imageUrls.length) ;
-    String imageUrl = imageUrls[randomNumber];
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.0),
-          ),
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7,
-              maxWidth: MediaQuery.of(context).size.width * 0.9,
-            ),
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(15.0),
-                      child: Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (BuildContext context, Widget child,
-                            ImageChunkEvent? loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Text('Failed to load image');
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 16.0),
-                    Text(
-                      "Image from Network",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
+  void _showInspirePopup(BuildContext context) {
+
   }
 
 
@@ -326,7 +267,7 @@ class _JobPageState extends State<JobPage> {
             onPressedAdd: _incrementCounter,
             onPressedSubtract: _decrementCounter,
           ),
-          Inscpire(APIcall:() => _showInspirePopPi(context) ),
+          Inscpire(imageUrl: GetRandomUrlImage(), ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -340,6 +281,23 @@ class _JobPageState extends State<JobPage> {
       ),
     );
   }
+
+
+  String GetRandomUrlImage() {
+    if (imageUrls.isEmpty) {
+      print("Warning: imageUrls is empty");
+      return "https://via.placeholder.com/300x200?text=No+Image+Available";
+    }
+
+    Random random = Random();
+    int randomNumber = random.nextInt(imageUrls.length);
+    String imageUrl = imageUrls[randomNumber];
+
+    print("Selected image index: $randomNumber");
+
+    return imageUrl;
+  }
+
 
   void _incrementCounter() {
     setState(() {
