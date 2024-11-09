@@ -1,3 +1,4 @@
+import 'package:Artounsi/pages/Job/FavorisService.dart';
 import 'package:flutter/material.dart';
 
 class Inscpire extends StatelessWidget {
@@ -95,6 +96,8 @@ class AnimatedImageDialog extends StatefulWidget {
 class _AnimatedImageDialogState extends State<AnimatedImageDialog> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
+
+  final FavorisService _favorisService = FavorisService();
 
   @override
   void initState() {
@@ -225,6 +228,8 @@ class _AnimatedImageDialogState extends State<AnimatedImageDialog> with SingleTi
                           ),
                           onPressed: () {
                             // Add your favorite functionality here
+                            // here we change the session user
+                            _favorisService.addFavoris("userId", widget.imageUrl);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text("Added to favorites!")),
                             );

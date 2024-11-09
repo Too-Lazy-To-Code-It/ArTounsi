@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:Artounsi/pages/Job/FavorisService.dart';
 import 'package:Artounsi/pages/Job/JobService.dart';
 import 'package:Artounsi/pages/Job/inscpire.dart';
 import 'package:Artounsi/pages/Job/project_creation_page.dart';
@@ -19,6 +20,8 @@ class JobPage extends StatefulWidget {
 
 class _JobPageState extends State<JobPage> {
   final JobService _jobService = JobService();
+  final FavorisService _favorisService = FavorisService();
+
   List<Job> _jobList = [];
   int _counter = 2;
 
