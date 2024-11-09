@@ -1,9 +1,15 @@
+import 'dart:convert';
+
 import 'package:Artounsi/pages/Job/JobService.dart';
+import 'package:Artounsi/pages/Job/inscpire.dart';
 import 'package:Artounsi/pages/Job/project_creation_page.dart';
 import 'package:flutter/material.dart';
 import '../../entities/Job/CustomFloatingActionButton.dart';
 import 'package:Artounsi/entities/Job/Job.dart';
+import 'dart:math';
 
+
+import 'package:http/http.dart' as http;
 class JobPage extends StatefulWidget {
   const JobPage({Key? key}) : super(key: key);
 
@@ -17,9 +23,10 @@ class _JobPageState extends State<JobPage> {
   int _counter = 2;
 
   @override
-  void initState() {
+  void initState(){
     super.initState();
     _fetchJobs();
+    getAPIunl();
   }
 
   Future<void> _fetchJobs() async {
@@ -165,6 +172,109 @@ class _JobPageState extends State<JobPage> {
     );
   }
 
+
+  List<String> imageUrls = []; // List to store the 'raw' URLs
+  var url ;
+
+  void getAPIunl() async {
+    var u = Uri.parse("https://api.unsplash.com/photos/?client_id=si9Fs5mcDDsHcExeFqsf1NG12sdYA7X9Po4-etSxsyI");
+
+    try {
+      final res = await http.get(u);
+
+      if (res.statusCode == 200) {
+        // Parse the JSON response
+        setState(() {
+          var data = jsonDecode(res.body);
+          imageUrls = []; // Clear the list before adding new items
+
+          for (var item in data) {
+            if (item['urls'] != null && item['urls']['raw'] != null) {
+              imageUrls.add(item['urls']['raw']); // Add each 'raw' URL to imageUrls
+            }
+          }
+
+          print(imageUrls); // Print the list of 'raw' URLs
+          print("Total URLs: ${imageUrls.length}");
+        });
+      } else {
+        throw Exception('Failed to load data: ${res.statusCode}');
+      }
+    } catch (e) {
+      print("An error occurred: $e");
+    }
+    print("********************************");
+  }
+
+
+
+
+  void _showInspirePopPi(BuildContext context) {
+    Random random = Random();
+    int randomNumber = random.nextInt(imageUrls.length) ;
+    String imageUrl = imageUrls[randomNumber];
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+              maxWidth: MediaQuery.of(context).size.width * 0.9,
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(15.0),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Text('Failed to load image');
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Text(
+                      "Image from Network",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -177,7 +287,7 @@ class _JobPageState extends State<JobPage> {
                     ? Center(child: CircularProgressIndicator())
                     : GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: _counter <= 0 ? 1 : _counter,
+                    crossAxisCount: _counter! <= 0 ? 1 : _counter!,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                   ),
@@ -216,6 +326,7 @@ class _JobPageState extends State<JobPage> {
             onPressedAdd: _incrementCounter,
             onPressedSubtract: _decrementCounter,
           ),
+          Inscpire(APIcall:() => _showInspirePopPi(context) ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
