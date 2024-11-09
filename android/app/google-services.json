@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "386687796064",
-    "project_id": "artounsi-329e6",
-    "storage_bucket": "artounsi-329e6.appspot.com"
+    "project_number": "806716394604",
+    "project_id": "artounsi-a601e",
+    "storage_bucket": "artounsi-a601e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:386687796064:android:bd257699ad0411df55d405",
+        "mobilesdk_app_id": "1:806716394604:android:e26bb5a150cfe2727edc49",
         "android_client_info": {
-          "package_name": "com.NetEvent.artounsi"
+          "package_name": "com.artounsi.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAgTj7qLH7lPVmfEYFmsg7tIfII23mhI68"
+          "current_key": "AIzaSyBUEAifgyGm7pAbUxmRm_OFHWRz1M305R8"
         }
       ],
       "services": {
