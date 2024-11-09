@@ -7,22 +7,22 @@ import 'edit_blog_post.dart';
 class BlogPostDetails extends StatelessWidget {
   final BlogPost post;
 
-  const BlogPostDetails({Key? key, required this.post}) : super(key: key);
+  const BlogPostDetails({super.key, required this.post});
 
   Future<void> _deleteBlogPost(BuildContext context) async {
     bool confirmDelete = await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Delete Blog Post'),
-          content: Text('Are you sure you want to delete this blog post?'),
+          title: const Text('Delete Blog Post'),
+          content: const Text('Are you sure you want to delete this blog post?'),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text('Delete'),
+              child: const Text('Delete'),
               onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
@@ -60,7 +60,7 @@ class BlogPostDetails extends StatelessWidget {
         title: Text(post.title),
         actions: [
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: () {
               Navigator.push(
                 context,
@@ -71,7 +71,7 @@ class BlogPostDetails extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: Icon(Icons.delete),
+            icon: const Icon(Icons.delete),
             onPressed: () => _deleteBlogPost(context),
           ),
         ],
@@ -97,12 +97,12 @@ class BlogPostDetails extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Text(
                     'By ${post.author} on ${post.date.toString().split(' ')[0]}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   Text(
                     post.content,
                     style: Theme.of(context).textTheme.bodyLarge,

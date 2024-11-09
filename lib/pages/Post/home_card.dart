@@ -13,7 +13,7 @@ class HomeCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const HomeCard({
-    Key? key,
+    super.key,
     required this.id,
     required this.imageUrl,
     required this.title,
@@ -23,7 +23,7 @@ class HomeCard extends StatelessWidget {
     required this.comments,
     required this.tag,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

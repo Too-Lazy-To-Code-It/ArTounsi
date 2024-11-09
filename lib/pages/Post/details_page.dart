@@ -7,7 +7,7 @@ import 'fullscreen_photo_view.dart';
 class DetailsPage extends StatefulWidget {
   final String artworkId;
 
-  const DetailsPage({Key? key, required this.artworkId}) : super(key: key);
+  const DetailsPage({super.key, required this.artworkId});
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -37,8 +37,8 @@ class _DetailsPageState extends State<DetailsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: Text('Delete Artwork', style: TextStyle(color: Colors.white)),
-          content: Text('Are you sure you want to delete this artwork?',
+          title: const Text('Delete Artwork', style: TextStyle(color: Colors.white)),
+          content: const Text('Are you sure you want to delete this artwork?',
               style: TextStyle(color: Colors.white)),
           actions: <Widget>[
             TextButton(
@@ -46,7 +46,7 @@ class _DetailsPageState extends State<DetailsPage> {
               onPressed: () => Navigator.of(context).pop(false),
             ),
             TextButton(
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () => Navigator.of(context).pop(true),
             ),
           ],
@@ -67,7 +67,7 @@ class _DetailsPageState extends State<DetailsPage> {
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Artwork deleted successfully')),
+          const SnackBar(content: Text('Artwork deleted successfully')),
         );
         Navigator.of(context).pop();
       } catch (e) {
@@ -101,7 +101,7 @@ class _DetailsPageState extends State<DetailsPage> {
       }).catchError((error) {
         print('Error adding comment: $error');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add comment. Please try again.')),
+          const SnackBar(content: Text('Failed to add comment. Please try again.')),
         );
       });
     }
@@ -116,14 +116,14 @@ class _DetailsPageState extends State<DetailsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: Text('Edit Comment', style: TextStyle(color: Colors.white)),
+          title: const Text('Edit Comment', style: TextStyle(color: Colors.white)),
           content: TextField(
             controller: _editCommentController,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
             decoration: InputDecoration(
               hintText: "Edit your comment",
-              hintStyle: TextStyle(color: Colors.white54),
-              enabledBorder: UnderlineInputBorder(
+              hintStyle: const TextStyle(color: Colors.white54),
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.white54),
               ),
               focusedBorder: UnderlineInputBorder(
@@ -154,7 +154,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       }).catchError((error) {
                         print('Error updating comment: $error');
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to update comment. Please try again.')),
+                          const SnackBar(content: Text('Failed to update comment. Please try again.')),
                         );
                       });
                     }
@@ -174,8 +174,8 @@ class _DetailsPageState extends State<DetailsPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: Text('Delete Comment', style: TextStyle(color: Colors.white)),
-          content: Text('Are you sure you want to delete this comment?',
+          title: const Text('Delete Comment', style: TextStyle(color: Colors.white)),
+          content: const Text('Are you sure you want to delete this comment?',
               style: TextStyle(color: Colors.white)),
           actions: <Widget>[
             TextButton(
@@ -185,7 +185,7 @@ class _DetailsPageState extends State<DetailsPage> {
               },
             ),
             TextButton(
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
               onPressed: () {
                 FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
                   List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
@@ -197,7 +197,7 @@ class _DetailsPageState extends State<DetailsPage> {
                   }).catchError((error) {
                     print('Error deleting comment: $error');
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to delete comment. Please try again.')),
+                      const SnackBar(content: Text('Failed to delete comment. Please try again.')),
                     );
                   });
                 });
@@ -211,7 +211,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
   Widget _buildTag(String tag) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
@@ -231,22 +231,22 @@ class _DetailsPageState extends State<DetailsPage> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
-            appBar: AppBar(title: Text('Loading...')),
-            body: Center(child: CircularProgressIndicator()),
+            appBar: AppBar(title: const Text('Loading...')),
+            body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (snapshot.hasError) {
           return Scaffold(
-            appBar: AppBar(title: Text('Error')),
+            appBar: AppBar(title: const Text('Error')),
             body: Center(child: Text('Error: ${snapshot.error}')),
           );
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return Scaffold(
-            appBar: AppBar(title: Text('Not Found')),
-            body: Center(child: Text('Artwork not found')),
+            appBar: AppBar(title: const Text('Not Found')),
+            body: const Center(child: Text('Artwork not found')),
           );
         }
 
@@ -257,7 +257,7 @@ class _DetailsPageState extends State<DetailsPage> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Artwork Details'),
+            title: const Text('Artwork Details'),
             backgroundColor: Colors.black,
             actions: [
               IconButton(
@@ -316,46 +316,46 @@ class _DetailsPageState extends State<DetailsPage> {
                           color: Colors.white,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         'By ${artwork['author'] ?? 'Unknown'}',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           GestureDetector(
                             onTap: _likeArtwork,
                             child: Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
                           ),
-                          SizedBox(width: 8),
-                          Text('${artwork['likes'] ?? 0} likes', style: TextStyle(color: Colors.white)),
-                          SizedBox(width: 24),
+                          const SizedBox(width: 8),
+                          Text('${artwork['likes'] ?? 0} likes', style: const TextStyle(color: Colors.white)),
+                          const SizedBox(width: 24),
                           Icon(Icons.visibility, color: Theme.of(context).colorScheme.secondary),
-                          SizedBox(width: 8),
-                          Text('${artwork['views'] ?? 0} views', style: TextStyle(color: Colors.white)),
-                          SizedBox(width: 24),
+                          const SizedBox(width: 8),
+                          Text('${artwork['views'] ?? 0} views', style: const TextStyle(color: Colors.white)),
+                          const SizedBox(width: 24),
                           Icon(Icons.comment, color: Theme.of(context).colorScheme.secondary),
-                          SizedBox(width: 8),
-                          Text('${comments.length} comments', style: TextStyle(color: Colors.white)),
+                          const SizedBox(width: 8),
+                          Text('${comments.length} comments', style: const TextStyle(color: Colors.white)),
                         ],
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       Text(
                         'Description',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         artwork['description'] ?? 'No description available',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       Text(
                         'Tags',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8.0,
                         runSpacing: 4.0,
@@ -363,48 +363,48 @@ class _DetailsPageState extends State<DetailsPage> {
                             .map((tag) => _buildTag(tag.toString()))
                             .toList(),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       Text(
                         'Software Used',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         artwork['softwareUsed'] ?? 'Not specified',
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 24),
+                      const SizedBox(height: 24),
                       Text(
                         'Comments',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       ListView.builder(
                         shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         itemCount: comments.length,
                         itemBuilder: (context, index) {
                           final comment = comments[index] as Map<String, dynamic>;
                           return ListTile(
                             title: Text(
                               comment['text']?.toString() ?? '',
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                             ),
                             subtitle: Text(
                               comment['timestamp'] != null
                                   ? DateTime.fromMillisecondsSinceEpoch(comment['timestamp']).toString()
                                   : 'Unknown time',
-                              style: TextStyle(color: Colors.white70),
+                              style: const TextStyle(color: Colors.white70),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
-                                  icon: Icon(Icons.edit, color: Colors.white),
+                                  icon: const Icon(Icons.edit, color: Colors.white),
                                   onPressed: () => _editComment(comment),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.white),
+                                  icon: const Icon(Icons.delete, color: Colors.white),
                                   onPressed: () => _deleteComment(comment),
                                 ),
                               ],
@@ -412,17 +412,17 @@ class _DetailsPageState extends State<DetailsPage> {
                           );
                         },
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Row(
                         children: [
                           Expanded(
                             child: TextField(
                               controller: _commentController,
-                              style: TextStyle(color: Colors.white),
+                              style: const TextStyle(color: Colors.white),
                               decoration: InputDecoration(
                                 hintText: 'Add a comment...',
-                                hintStyle: TextStyle(color: Colors.white54),
-                                enabledBorder: UnderlineInputBorder(
+                                hintStyle: const TextStyle(color: Colors.white54),
+                                enabledBorder: const UnderlineInputBorder(
                                   borderSide: BorderSide(color: Colors.white54),
                                 ),
                                 focusedBorder: UnderlineInputBorder(

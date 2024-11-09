@@ -8,7 +8,7 @@ import 'blog_post.dart';
 class EditBlogPost extends StatefulWidget {
   final BlogPost post;
 
-  const EditBlogPost({Key? key, required this.post}) : super(key: key);
+  const EditBlogPost({super.key, required this.post});
 
   @override
   _EditBlogPostState createState() => _EditBlogPostState();
@@ -76,17 +76,17 @@ class _EditBlogPostState extends State<EditBlogPost> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Edit Blog Post')),
+      appBar: AppBar(title: const Text('Edit Blog Post')),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
               children: <Widget>[
                 TextFormField(
                   controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Title'),
+                  decoration: const InputDecoration(labelText: 'Title'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a title';
@@ -96,7 +96,7 @@ class _EditBlogPostState extends State<EditBlogPost> {
                 ),
                 TextFormField(
                   controller: _excerptController,
-                  decoration: InputDecoration(labelText:  'Excerpt'),
+                  decoration: const InputDecoration(labelText:  'Excerpt'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter an excerpt';
@@ -106,7 +106,7 @@ class _EditBlogPostState extends State<EditBlogPost> {
                 ),
                 TextFormField(
                   controller: _contentController,
-                  decoration: InputDecoration(labelText: 'Content'),
+                  decoration: const InputDecoration(labelText: 'Content'),
                   maxLines: 5,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -115,18 +115,18 @@ class _EditBlogPostState extends State<EditBlogPost> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _image == null
                     ? Image.network(widget.post.imageUrl)
                     : Image.file(_image!),
                 ElevatedButton(
                   onPressed: getImage,
-                  child: Text('Change Image'),
+                  child: const Text('Change Image'),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text('Update'),
+                  child: const Text('Update'),
                 ),
               ],
             ),

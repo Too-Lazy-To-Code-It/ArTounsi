@@ -5,7 +5,7 @@ import 'blog_post_details.dart';
 import 'add_blog_post.dart';
 
 class BlogPage extends StatelessWidget {
-  const BlogPage({Key? key}) : super(key: key);
+  const BlogPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class BlogPage extends StatelessWidget {
             icon: const Icon(Icons.add),
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AddBlogPost()),
+              MaterialPageRoute(builder: (context) => const AddBlogPost()),
             ),
           ),
         ],

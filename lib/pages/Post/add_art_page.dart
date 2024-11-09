@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class AddArtPage extends StatefulWidget {
-  const AddArtPage({Key? key}) : super(key: key);
+  const AddArtPage({super.key});
 
   @override
   _AddArtPageState createState() => _AddArtPageState();
@@ -131,15 +131,15 @@ class _AddArtPageState extends State<AddArtPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white70),
+        labelStyle: const TextStyle(color: Colors.white70),
         prefixIcon: Icon(icon, color: Colors.white70),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white70),
+          borderSide: const BorderSide(color: Colors.white70),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white70),
+          borderSide: const BorderSide(color: Colors.white70),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -149,7 +149,7 @@ class _AddArtPageState extends State<AddArtPage> {
         fillColor: Colors.grey[900],
         errorStyle: TextStyle(color: Colors.red[300]),
       ),
-      style: TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white),
       maxLines: maxLines,
       validator: validator,
     );
@@ -159,7 +159,7 @@ class _AddArtPageState extends State<AddArtPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Art Categories',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
@@ -173,7 +173,7 @@ class _AddArtPageState extends State<AddArtPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(tag['icon'], size: 18, color: _selectedTags.contains(tag['name']) ? Colors.black : Theme.of(context).primaryColor),
-                  SizedBox(width: 4),
+                  const SizedBox(width: 4),
                   Text(tag['name']),
                 ],
               ),
@@ -215,7 +215,7 @@ class _AddArtPageState extends State<AddArtPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Art Image',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
@@ -237,11 +237,11 @@ class _AddArtPageState extends State<AddArtPage> {
                 fit: BoxFit.cover,
               ),
             )
-                : Column(
+                : const Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.add_photo_alternate, size: 50, color: Colors.white70),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   'Tap to upload image',
                   style: TextStyle(color: Colors.white70),
@@ -268,21 +268,21 @@ class _AddArtPageState extends State<AddArtPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.grey[900],
-          title: Text('Choose Image Source', style: TextStyle(color: Colors.white)),
+          title: const Text('Choose Image Source', style: TextStyle(color: Colors.white)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ListTile(
-                leading: Icon(Icons.camera, color: Colors.white70),
-                title: Text('Camera', style: TextStyle(color: Colors.white)),
+                leading: const Icon(Icons.camera, color: Colors.white70),
+                title: const Text('Camera', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.of(context).pop();
                   _pickImage(ImageSource.camera);
                 },
               ),
               ListTile(
-                leading: Icon(Icons.photo_library, color: Colors.white70),
-                title: Text('Gallery', style: TextStyle(color: Colors.white)),
+                leading: const Icon(Icons.photo_library, color: Colors.white70),
+                title: const Text('Gallery', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.of(context).pop();
                   _pickImage(ImageSource.gallery);
@@ -316,7 +316,7 @@ class _AddArtPageState extends State<AddArtPage> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Art added successfully!'),
+            content: const Text('Art added successfully!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -349,7 +349,7 @@ class _AddArtPageState extends State<AddArtPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please fill in all required fields, select at least one category, and select an image'),
+          content: const Text('Please fill in all required fields, select at least one category, and select an image'),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

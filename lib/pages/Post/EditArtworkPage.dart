@@ -9,10 +9,10 @@ class EditArtworkPage extends StatefulWidget {
   final Function(Map<String, dynamic>) onArtworkUpdated;
 
   const EditArtworkPage({
-    Key? key,
+    super.key,
     required this.artwork,
     required this.onArtworkUpdated,
-  }) : super(key: key);
+  });
 
   @override
   _EditArtworkPageState createState() => _EditArtworkPageState();
@@ -113,7 +113,7 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
         widget.onArtworkUpdated(fullUpdatedArtwork);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Artwork updated successfully')),
+          const SnackBar(content: Text('Artwork updated successfully')),
         );
 
         Navigator.of(context).pop();
@@ -129,7 +129,7 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Artwork'),
+        title: const Text('Edit Artwork'),
         backgroundColor: Colors.black,
       ),
       backgroundColor: Colors.black,
@@ -145,8 +145,8 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                   controller: _titleController,
                   decoration: InputDecoration(
                     labelText: 'Title',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.white70),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -155,7 +155,7 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                     filled: true,
                     fillColor: Colors.grey[900],
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a title';
@@ -163,13 +163,13 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _descriptionController,
                   decoration: InputDecoration(
                     labelText: 'Description',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.white70),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -178,16 +178,16 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                     filled: true,
                     fillColor: Colors.grey[900],
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   maxLines: 3,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _softwareController,
                   decoration: InputDecoration(
                     labelText: 'Software Used',
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    enabledBorder: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.white70),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -196,11 +196,11 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                     filled: true,
                     fillColor: Colors.grey[900],
                   ),
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
-                SizedBox(height: 16),
-                Text('Tags', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                SizedBox(height: 8),
+                const SizedBox(height: 16),
+                const Text('Tags', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -226,27 +226,27 @@ class _EditArtworkPageState extends State<EditArtworkPage> {
                     );
                   }).toList(),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _pickImage,
-                  child: Text('Pick Image', style: TextStyle(color: Colors.black)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
+                  child: const Text('Pick Image', style: TextStyle(color: Colors.black)),
                 ),
                 if (_newArtImage != null)
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
                     child: Image.file(_newArtImage!, height: 200, width: 200),
                   ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text('Update Artwork', style: TextStyle(color: Colors.black)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
-                    minimumSize: Size(double.infinity, 50),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
+                  child: const Text('Update Artwork', style: TextStyle(color: Colors.black)),
                 ),
               ],
             ),

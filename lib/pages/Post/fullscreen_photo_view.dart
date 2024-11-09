@@ -7,10 +7,10 @@ class FullscreenPhotoView extends StatefulWidget {
   final int initialIndex;
 
   const FullscreenPhotoView({
-    Key? key,
+    super.key,
     required this.imageUrls,
     required this.initialIndex,
-  }) : super(key: key);
+  });
 
   @override
   _FullscreenPhotoViewState createState() => _FullscreenPhotoViewState();
@@ -45,7 +45,9 @@ class _FullscreenPhotoViewState extends State<FullscreenPhotoView> {
             itemCount: widget.imageUrls.length,
             loadingBuilder: (context, event) => Center(
               child: CircularProgressIndicator(
-                value: event == null ? 0 : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
+                value: event == null
+                    ? 0
+                    : event.cumulativeBytesLoaded / event.expectedTotalBytes!,
               ),
             ),
             backgroundDecoration: const BoxDecoration(color: Colors.black),

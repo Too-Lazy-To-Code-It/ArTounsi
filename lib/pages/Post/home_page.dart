@@ -5,7 +5,7 @@ import 'details_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -64,7 +64,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Art Gallery'),
+        title: const Text('Art Gallery'),
         backgroundColor: Colors.black,
       ),
       body: Column(
@@ -75,7 +75,7 @@ class _HomePageState extends State<HomePage> {
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search artworks...',
-                prefixIcon: Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: BorderSide(color: Theme.of(context).primaryColor),
@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
                     .toList();
 
                 return posts.isEmpty
-                    ? Center(child: Text('No artworks found'))
+                    ? const Center(child: Text('No artworks found'))
                     : GridView.builder(
                   controller: _scrollController,
                   padding: const EdgeInsets.all(8),
@@ -160,8 +160,8 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _navigateToAddArtPage,
-        child: const Icon(Icons.add, color: Colors.black),
         backgroundColor: Theme.of(context).primaryColor,
+        child: const Icon(Icons.add, color: Colors.black),
       ),
     );
   }

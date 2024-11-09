@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'blog_post.dart';
 
 class AddBlogPost extends StatefulWidget {
+  const AddBlogPost({super.key});
+
   @override
   _AddBlogPostState createState() => _AddBlogPostState();
 }
@@ -53,17 +55,17 @@ class _AddBlogPostState extends State<AddBlogPost> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Blog Post')),
+      appBar: AppBar(title: const Text('Add Blog Post')),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Form(
             key: _formKey,
             child: Column(
               children: <Widget>[
                 TextFormField(
                   controller: _titleController,
-                  decoration: InputDecoration(labelText: 'Title'),
+                  decoration: const InputDecoration(labelText: 'Title'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a title';
@@ -73,7 +75,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                 ),
                 TextFormField(
                   controller: _excerptController,
-                  decoration: InputDecoration(labelText: 'Excerpt'),
+                  decoration: const InputDecoration(labelText: 'Excerpt'),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter an excerpt';
@@ -83,7 +85,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                 ),
                 TextFormField(
                   controller: _contentController,
-                  decoration: InputDecoration(labelText: 'Content'),
+                  decoration: const InputDecoration(labelText: 'Content'),
                   maxLines: 5,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -92,18 +94,18 @@ class _AddBlogPostState extends State<AddBlogPost> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 _image == null
-                    ? Text('No image selected.')
+                    ? const Text('No image selected.')
                     : Image.file(_image!),
                 ElevatedButton(
                   onPressed: getImage,
-                  child: Text('Pick Image'),
+                  child: const Text('Pick Image'),
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: _submitForm,
-                  child: Text('Submit'),
+                  child: const Text('Submit'),
                 ),
               ],
             ),
