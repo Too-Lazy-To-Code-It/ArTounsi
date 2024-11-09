@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'add_event_page.dart';
+
 import '../../entities/Event/Events.dart';
+import 'add_event_page.dart';
 import 'event_details_page.dart';
 
 class EventPage extends StatefulWidget {

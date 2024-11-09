@@ -6,9 +6,10 @@ import 'package:Artounsi/pages/Post/home_page.dart';
 import 'package:Artounsi/pages/Shop/shop_page.dart';
 import 'package:Artounsi/pages/User/profile_page.dart';
 import 'package:flutter/material.dart';
+
+import 'app_bar.dart';
 import 'bottom_navigation_bar.dart';
 import 'sidebar.dart';
-import 'app_bar.dart';
 
 class MainScreen extends StatefulWidget {
   final Cart cart;

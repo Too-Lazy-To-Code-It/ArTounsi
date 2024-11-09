@@ -1,9 +1,11 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
+
 import '../../entities/Shop/Product.dart';
 
 class AddProductForm extends StatefulWidget {
@@ -37,7 +39,8 @@ class _AddProductFormState extends State<AddProductForm> {
 
   Future<void> _getImage() async {
     try {
-      final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+      final pickedFile =
+          await _imagePicker.pickImage(source: ImageSource.gallery);
       if (pickedFile != null) {
         setState(() {
           _image = File(pickedFile.path);
@@ -53,7 +56,8 @@ class _AddProductFormState extends State<AddProductForm> {
 
   Future<String> _uploadImageToFirebase(File image) async {
     final String fileName = Uuid().v4();
-    final Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('product_images/$fileName');
+    final Reference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child('product_images/$fileName');
     final UploadTask uploadTask = firebaseStorageRef.putFile(image);
     final TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
     final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
@@ -78,7 +82,10 @@ class _AddProductFormState extends State<AddProductForm> {
           price: double.parse(_priceController.text),
           artist: _artistController.text,
           imageUrl: imageUrl,
-          categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
+          categories: _categoriesController.text
+              .split(',')
+              .map((e) => e.trim())
+              .toList(),
           rating: 0,
           reviewCount: 0,
           type: _productType,
@@ -121,30 +128,37 @@ class _AddProductFormState extends State<AddProductForm> {
                 TextFormField(
                   controller: _nameController,
                   decoration: InputDecoration(labelText: 'Product Name'),
-                  validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a name' : null,
                 ),
                 TextFormField(
                   controller: _priceController,
                   decoration: InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
-                  validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter a price' : null,
                 ),
                 TextFormField(
                   controller: _artistController,
                   decoration: InputDecoration(labelText: 'Artist'),
-                  validator: (value) => value!.isEmpty ? 'Please enter an artist' : null,
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter an artist' : null,
                 ),
                 TextFormField(
                   controller: _categoriesController,
-                  decoration: InputDecoration(labelText: 'Categories (comma-separated)'),
-                  validator: (value) => value!.isEmpty ? 'Please enter categories' : null,
+                  decoration: InputDecoration(
+                      labelText: 'Categories (comma-separated)'),
+                  validator: (value) =>
+                      value!.isEmpty ? 'Please enter categories' : null,
                 ),
                 DropdownButtonFormField<ProductType>(
                   value: _productType,
-                  items: ProductType.values.map((type) => DropdownMenuItem(
-                    value: type,
-                    child: Text(type.toString().split('.').last),
-                  )).toList(),
+                  items: ProductType.values
+                      .map((type) => DropdownMenuItem(
+                            value: type,
+                            child: Text(type.toString().split('.').last),
+                          ))
+                      .toList(),
                   onChanged: (value) {
                     setState(() {
                       _productType = value!;
@@ -164,7 +178,9 @@ class _AddProductFormState extends State<AddProductForm> {
                 SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
-                  child: _isLoading ? CircularProgressIndicator() : Text('Add Product'),
+                  child: _isLoading
+                      ? CircularProgressIndicator()
+                      : Text('Add Product'),
                 ),
               ],
             ),

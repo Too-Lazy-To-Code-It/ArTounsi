@@ -1,7 +1,8 @@
+import 'dart:math';
+
 import 'package:Artounsi/entities/Job/project.dart';
 import 'package:Artounsi/pages/Job/project_creation_page.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
 
 class JobPage extends StatefulWidget {
   const JobPage({super.key});

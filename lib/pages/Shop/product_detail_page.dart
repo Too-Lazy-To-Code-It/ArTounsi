@@ -1,8 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import '../../entities/Shop/Product.dart';
+import 'package:flutter/material.dart';
+
 import '../../entities/Shop/Cart.dart';
+import '../../entities/Shop/Product.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
@@ -73,7 +74,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
   Future<void> _deleteProduct(String productId, String imageUrl) async {
     try {
       // Delete the product document from Firestore
-      await  FirebaseFirestore.instance
+      await FirebaseFirestore.instance
           .collection('Product')
           .doc(productId)
           .delete();
@@ -130,9 +131,11 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
 
           if (_isEditing) {
             _nameController = TextEditingController(text: product.name);
-            _priceController = TextEditingController(text: product.price.toString());
+            _priceController =
+                TextEditingController(text: product.price.toString());
             _artistController = TextEditingController(text: product.artist);
-            _categoriesController = TextEditingController(text: product.categories.join(', '));
+            _categoriesController =
+                TextEditingController(text: product.categories.join(', '));
           }
 
           return SingleChildScrollView(
@@ -158,51 +161,57 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     children: [
                       _isEditing
                           ? TextField(
-                        controller: _nameController,
-                        decoration: InputDecoration(labelText: 'Product Name'),
-                      )
+                              controller: _nameController,
+                              decoration:
+                                  InputDecoration(labelText: 'Product Name'),
+                            )
                           : Text(
-                        product.name,
-                        style: Theme.of(context).textTheme.headlineSmall,
-                      ),
+                              product.name,
+                              style: Theme.of(context).textTheme.headlineSmall,
+                            ),
                       SizedBox(height: 8),
                       _isEditing
                           ? TextField(
-                        controller: _priceController,
-                        decoration: InputDecoration(labelText: 'Price'),
-                        keyboardType: TextInputType.number,
-                      )
+                              controller: _priceController,
+                              decoration: InputDecoration(labelText: 'Price'),
+                              keyboardType: TextInputType.number,
+                            )
                           : Text(
-                        '\$${product.price.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Theme.of(context).primaryColor,
-                        ),
-                      ),
+                              '\$${product.price.toStringAsFixed(2)}',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                            ),
                       SizedBox(height: 16),
                       _isEditing
                           ? TextField(
-                        controller: _artistController,
-                        decoration: InputDecoration(labelText: 'Artist'),
-                      )
+                              controller: _artistController,
+                              decoration: InputDecoration(labelText: 'Artist'),
+                            )
                           : Text(
-                        'Artist: ${product.artist}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                              'Artist: ${product.artist}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                       SizedBox(height: 8),
                       _isEditing
                           ? TextField(
-                        controller: _categoriesController,
-                        decoration: InputDecoration(labelText: 'Categories (comma-separated)'),
-                      )
+                              controller: _categoriesController,
+                              decoration: InputDecoration(
+                                  labelText: 'Categories (comma-separated)'),
+                            )
                           : Text(
-                        'Categories: ${product.categories.join(", ")}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                              'Categories: ${product.categories.join(", ")}',
+                              style: Theme.of(context).textTheme.titleMedium,
+                            ),
                       SizedBox(height: 16),
                       Row(
                         children: [
                           Icon(Icons.star, color: Colors.amber),
-                          Text(' ${product.rating} (${product.reviewCount} reviews)'),
+                          Text(
+                              ' ${product.rating} (${product.reviewCount} reviews)'),
                         ],
                       ),
                       SizedBox(height: 24),
@@ -211,7 +220,9 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           onPressed: () {
                             widget.cart.addItem(product);
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${product.name} added to cart')),
+                              SnackBar(
+                                  content:
+                                      Text('${product.name} added to cart')),
                             );
                           },
                           style: ElevatedButton.styleFrom(
@@ -225,10 +236,14 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                             final updatedProduct = Product(
                               id: product.id,
                               name: _nameController.text,
-                              price: double.tryParse(_priceController.text) ?? product.price,
+                              price: double.tryParse(_priceController.text) ??
+                                  product.price,
                               artist: _artistController.text,
                               imageUrl: product.imageUrl,
-                              categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
+                              categories: _categoriesController.text
+                                  .split(',')
+                                  .map((e) => e.trim())
+                                  .toList(),
                               rating: product.rating,
                               reviewCount: product.reviewCount,
                               type: product.type,

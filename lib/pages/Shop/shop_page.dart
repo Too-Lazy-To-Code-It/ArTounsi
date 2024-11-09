@@ -1,8 +1,9 @@
 import 'package:Artounsi/pages/Shop/add_product_button.dart';
 import 'package:flutter/material.dart';
+
 import '../../entities/Shop/Cart.dart';
-import 'product_grid_page.dart';
 import '../../entities/Shop/Product.dart';
+import 'product_grid_page.dart';
 
 class ShopPage extends StatefulWidget {
   final Cart cart;

@@ -63,7 +63,9 @@ class Product {
   static ProductType _parseProductType(dynamic value) {
     if (value is String) {
       return ProductType.values.firstWhere(
-            (type) => type.toString().split('.').last.toLowerCase() == value.toLowerCase(),
+        (type) =>
+            type.toString().split('.').last.toLowerCase() ==
+            value.toLowerCase(),
         orElse: () => ProductType.marketplace,
       );
     }

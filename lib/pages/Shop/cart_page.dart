@@ -1,6 +1,7 @@
 // In a new file named cart_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../Services/Shop//cart_provider.dart';
 
 class CartPage extends StatelessWidget {
@@ -22,7 +23,8 @@ class CartPage extends StatelessWidget {
             itemBuilder: (context, index) {
               final item = cartProvider.cart.items[index];
               return ListTile(
-                leading: Image.network(item.product.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
+                leading: Image.network(item.product.imageUrl,
+                    width: 50, height: 50, fit: BoxFit.cover),
                 title: Text(item.product.name),
                 subtitle: Text('\$${item.product.price.toStringAsFixed(2)}'),
                 trailing: Row(
@@ -31,14 +33,16 @@ class CartPage extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.remove),
                       onPressed: () {
-                        cartProvider.updateQuantity(item.product.id, item.quantity - 1);
+                        cartProvider.updateQuantity(
+                            item.product.id, item.quantity - 1);
                       },
                     ),
                     Text('${item.quantity}'),
                     IconButton(
                       icon: Icon(Icons.add),
                       onPressed: () {
-                        cartProvider.updateQuantity(item.product.id, item.quantity + 1);
+                        cartProvider.updateQuantity(
+                            item.product.id, item.quantity + 1);
                       },
                     ),
                     IconButton(

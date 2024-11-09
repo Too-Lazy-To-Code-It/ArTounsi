@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'blog_post_details.dart';
 
 class BlogPage extends StatelessWidget {

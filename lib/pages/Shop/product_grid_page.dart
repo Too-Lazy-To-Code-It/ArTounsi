@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../entities/Shop/Product.dart';
+import 'package:flutter/material.dart';
+
 import '../../entities/Shop/Cart.dart';
+import '../../entities/Shop/Product.dart';
 import 'product_detail_page.dart';
 
 class ProductGridPage extends StatelessWidget {
@@ -19,7 +20,8 @@ class ProductGridPage extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
           .collection('Product')
-          .where('type', isEqualTo: productType.toString().split('.').last.toLowerCase())
+          .where('type',
+              isEqualTo: productType.toString().split('.').last.toLowerCase())
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -67,14 +69,16 @@ class ProductGridPage extends StatelessWidget {
               },
               child: Card(
                 elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(16)),
                           image: DecorationImage(
                             image: NetworkImage(product.imageUrl),
                             fit: BoxFit.cover,
@@ -89,17 +93,23 @@ class ProductGridPage extends StatelessWidget {
                         children: [
                           Text(
                             product.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
                             '\$${product.price.toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleSmall
+                                ?.copyWith(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
                           ),
                           const SizedBox(height: 4),
                           Row(
