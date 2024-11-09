@@ -7,10 +7,10 @@ class FullscreenImageView extends StatefulWidget {
   final int initialIndex;
 
   const FullscreenImageView({
-    Key? key,
+    super.key,
     required this.imageUrls,
     required this.initialIndex,
-  }) : super(key: key);
+  });
 
   @override
   _FullscreenImageViewState createState() => _FullscreenImageViewState();

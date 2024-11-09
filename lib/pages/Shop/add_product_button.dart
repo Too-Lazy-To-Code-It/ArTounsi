@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class AddProductButton extends StatelessWidget {
   final VoidCallback? onProductAdded;
 
-  const AddProductButton({Key? key, this.onProductAdded}) : super(key: key);
+  const AddProductButton({super.key, this.onProductAdded});
 
   @override
   Widget build(BuildContext context) {
@@ -19,8 +19,8 @@ class AddProductButton extends StatelessWidget {
           },
         );
       },
-      child: const Icon(Icons.add),
       backgroundColor: Theme.of(context).primaryColor,
+      child: const Icon(Icons.add),
     );
   }
 }

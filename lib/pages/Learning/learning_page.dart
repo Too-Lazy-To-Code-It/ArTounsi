@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LearningPage extends StatefulWidget {
-  const LearningPage({Key? key}) : super(key: key);
+  const LearningPage({super.key});
 
   @override
   _LearningPageState createState() => _LearningPageState();

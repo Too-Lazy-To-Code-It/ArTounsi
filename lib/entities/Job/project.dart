@@ -57,7 +57,7 @@ class Project {
     String? projectLink,
   }) {
     return Project(
-      id: this.id,
+      id: id,
       title: title ?? this.title,
       description: description ?? this.description,
       mainImagePath: mainImagePath ?? this.mainImagePath,

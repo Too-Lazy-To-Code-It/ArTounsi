@@ -5,10 +5,10 @@ class BlogPostDetails extends StatefulWidget {
   final int initialIndex;
 
   const BlogPostDetails({
-    Key? key,
+    super.key,
     required this.allPosts,
     required this.initialIndex,
-  }) : super(key: key);
+  });
 
   @override
   _BlogPostDetailsState createState() => _BlogPostDetailsState();

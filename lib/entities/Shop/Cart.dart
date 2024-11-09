@@ -10,7 +10,7 @@ class CartItem {
 }
 
 class Cart extends ChangeNotifier {
-  List<CartItem> _items = [];
+  final List<CartItem> _items = [];
 
   List<CartItem> get items => _items;
 

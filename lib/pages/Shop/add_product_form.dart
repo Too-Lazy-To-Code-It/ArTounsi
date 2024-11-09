@@ -9,7 +9,7 @@ import '../../entities/Shop/Product.dart';
 class AddProductForm extends StatefulWidget {
   final VoidCallback? onProductAdded;
 
-  const AddProductForm({Key? key, this.onProductAdded}) : super(key: key);
+  const AddProductForm({super.key, this.onProductAdded});
 
   @override
   _AddProductFormState createState() => _AddProductFormState();

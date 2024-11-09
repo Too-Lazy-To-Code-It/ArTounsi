@@ -13,7 +13,7 @@ import 'app_bar.dart';
 class MainScreen extends StatefulWidget {
   final Cart cart;
 
-  const MainScreen({Key? key, required this.cart}) : super(key: key);
+  const MainScreen({super.key, required this.cart});
 
   @override
   _MainScreenState createState() => _MainScreenState();

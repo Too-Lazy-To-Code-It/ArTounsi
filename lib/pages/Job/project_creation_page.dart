@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class ProjectCreationPage extends StatefulWidget {
+  const ProjectCreationPage({super.key});
+
   @override
   _ProjectCreationPageState createState() => _ProjectCreationPageState();
 }
@@ -13,7 +15,7 @@ class _ProjectCreationPageState extends State<ProjectCreationPage> {
   String _title = '';
   String _description = '';
   File? _mainImage;
-  List<File> _additionalImages = [];
+  final List<File> _additionalImages = [];
   String _projectLink = '';
 
   Future<void> _pickImage(ImageSource source, {bool isMain = false}) async {

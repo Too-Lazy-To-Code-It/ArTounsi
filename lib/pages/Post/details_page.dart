@@ -5,10 +5,10 @@ class DetailsPage extends StatefulWidget {
   final int initialIndex;
 
   const DetailsPage({
-    Key? key,
+    super.key,
     required this.allPosts,
     required this.initialIndex,
-  }) : super(key: key);
+  });
 
   @override
   _DetailsPageState createState() => _DetailsPageState();

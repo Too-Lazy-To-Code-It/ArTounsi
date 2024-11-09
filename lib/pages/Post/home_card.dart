@@ -13,7 +13,7 @@ class HomeCard extends StatelessWidget {
   final int index;
 
   const HomeCard({
-    Key? key,
+    super.key,
     required this.imageUrl,
     required this.title,
     required this.author,
@@ -23,7 +23,7 @@ class HomeCard extends StatelessWidget {
     required this.tag,
     required this.allPosts,
     required this.index,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -107,10 +107,10 @@ class DetailsPage extends StatefulWidget {
   final int initialIndex;
 
   const DetailsPage({
-    Key? key,
+    super.key,
     required this.allPosts,
     required this.initialIndex,
-  }) : super(key: key);
+  });
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -291,8 +291,7 @@ class _DetailsPageState extends State<DetailsPage> {
 class FullscreenPhotoView extends StatelessWidget {
   final String imageUrl;
 
-  const FullscreenPhotoView({Key? key, required this.imageUrl})
-      : super(key: key);
+  const FullscreenPhotoView({super.key, required this.imageUrl});
 
   @override
   Widget build(BuildContext context) {

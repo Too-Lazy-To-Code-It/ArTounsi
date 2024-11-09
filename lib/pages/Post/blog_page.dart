@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'blog_post_details.dart';
 
 class BlogPage extends StatelessWidget {
-  const BlogPage({Key? key}) : super(key: key);
+  const BlogPage({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import '../../entities/Event/Events.dart';
 
 class add_event extends StatefulWidget {
+  const add_event({super.key});
+
   @override
   _add_eventState createState() => _add_eventState();
 }

@@ -23,6 +23,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   final Cart cart = Cart();
 
+  MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 class JobPage extends StatefulWidget {
-  const JobPage({Key? key}) : super(key: key);
+  const JobPage({super.key});
 
   @override
   _JobPageState createState() => _JobPageState();

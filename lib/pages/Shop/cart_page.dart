@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import '../../Services/Shop//cart_provider.dart';
 
 class CartPage extends StatelessWidget {
+  const CartPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -5,7 +5,7 @@ import 'Full_Screen_Img.dart';
 class EventDetailsPage extends StatelessWidget {
   final Event event;
 
-  EventDetailsPage({required this.event});
+  const EventDetailsPage({super.key, required this.event});
 
   @override
   Widget build(BuildContext context) {

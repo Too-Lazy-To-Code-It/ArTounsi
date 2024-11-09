@@ -9,10 +9,10 @@ class ProductDetailPage extends StatefulWidget {
   final Cart cart;
 
   const ProductDetailPage({
-    Key? key,
+    super.key,
     required this.productId,
     required this.cart,
-  }) : super(key: key);
+  });
 
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
@@ -139,7 +139,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
+                SizedBox(
                   height: 300,
                   width: double.infinity,
                   child: Image.network(
@@ -208,7 +208,6 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       SizedBox(height: 24),
                       if (!_isEditing)
                         ElevatedButton(
-                          child: Text('Add to Cart'),
                           onPressed: () {
                             widget.cart.addItem(product);
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -218,10 +217,10 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(double.infinity, 50),
                           ),
+                          child: Text('Add to Cart'),
                         ),
                       if (_isEditing)
                         ElevatedButton(
-                          child: Text('Save Changes'),
                           onPressed: () {
                             final updatedProduct = Product(
                               id: product.id,
@@ -239,6 +238,7 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                           style: ElevatedButton.styleFrom(
                             minimumSize: Size(double.infinity, 50),
                           ),
+                          child: Text('Save Changes'),
                         ),
                     ],
                   ),

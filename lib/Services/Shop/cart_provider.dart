@@ -1,6 +1,5 @@
 import '../../entities/Shop/Product.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import '../../entities/Shop/Cart.dart';
 
 class CartProvider extends ChangeNotifier {

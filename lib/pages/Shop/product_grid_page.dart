@@ -9,10 +9,10 @@ class ProductGridPage extends StatelessWidget {
   final Cart cart;
 
   const ProductGridPage({
-    Key? key,
+    super.key,
     required this.productType,
     required this.cart,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

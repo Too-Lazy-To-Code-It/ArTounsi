@@ -4,6 +4,8 @@ import '../../entities/Event/Events.dart';
 import 'event_details_page.dart';
 
 class EventPage extends StatefulWidget {
+  const EventPage({super.key});
+
   @override
   _EventPageState createState() => _EventPageState();
 }
@@ -79,7 +81,7 @@ class _EventPageState extends State<EventPage> {
                       style: TextStyle(color: Colors.blue),
                     ),
                     subtitle: Text(
-                      '${events[index].date.toString().split(' ')[0]}',
+                      events[index].date.toString().split(' ')[0],
                       style: TextStyle(color: Colors.white),
                     ),
                   ),

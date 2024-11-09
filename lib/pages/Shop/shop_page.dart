@@ -7,7 +7,7 @@ import '../../entities/Shop/Product.dart';
 class ShopPage extends StatefulWidget {
   final Cart cart;
 
-  const ShopPage({Key? key, required this.cart}) : super(key: key);
+  const ShopPage({super.key, required this.cart});
 
   @override
   _ShopPageState createState() => _ShopPageState();
