@@ -8,9 +8,20 @@ class BlogPostDetails extends StatelessWidget {
   final BlogPost post;
   final bool isAuthor;
 
-  const BlogPostDetails({Key? key, required this.post, required this.isAuthor}) : super(key: key);
+  const BlogPostDetails({
+    Key? key,
+    required this.post,
+    required this.isAuthor,
+  }) : super(key: key);
 
   Future<void> _deleteBlogPost(BuildContext context) async {
+    if (!isAuthor) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You can only delete your own posts')),
+      );
+      return;
+    }
+
     bool confirmDelete = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -34,7 +45,10 @@ class BlogPostDetails extends StatelessWidget {
     if (confirmDelete == true) {
       try {
         // Delete the blog post document from Firestore
-        await FirebaseFirestore.instance.collection('blog_posts').doc(post.id).delete();
+        await FirebaseFirestore.instance
+            .collection('blog_posts')
+            .doc(post.id)
+            .delete();
 
         // Delete the image from Firebase Storage
         if (post.imageUrl.isNotEmpty) {
@@ -59,8 +73,7 @@ class BlogPostDetails extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(post.title),
-        actions: isAuthor
-            ? [
+        actions: isAuthor ? [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
@@ -76,8 +89,7 @@ class BlogPostDetails extends StatelessWidget {
             icon: const Icon(Icons.delete),
             onPressed: () => _deleteBlogPost(context),
           ),
-        ]
-            : null,
+        ] : null,
       ),
       body: SingleChildScrollView(
         child: Column(

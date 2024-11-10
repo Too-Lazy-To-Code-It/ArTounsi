@@ -74,6 +74,12 @@ class _AddBlogPostState extends State<AddBlogPost> {
         setState(() => _isLoading = true);
 
         try {
+          // Get current user
+          final User? currentUser = FirebaseAuth.instance.currentUser;
+          if (currentUser == null) {
+            throw Exception('Must be logged in to create a post');
+          }
+
           String fileName = DateTime.now().millisecondsSinceEpoch.toString();
           Reference firebaseStorageRef =
           FirebaseStorage.instance.ref().child('blog_images/$fileName');
@@ -81,12 +87,15 @@ class _AddBlogPostState extends State<AddBlogPost> {
           TaskSnapshot taskSnapshot = await uploadTask;
 
           String imageUrl = await taskSnapshot.ref.getDownloadURL();
+
+          // Add authorId when creating the post
           await FirebaseFirestore.instance.collection('blog_posts').add({
             'title': _titleController.text,
             'excerpt': _excerptController.text,
             'content': _contentController.text,
             'imageUrl': imageUrl,
             'author': _userName,
+            'authorId': currentUser.uid, // Add this line
             'createdAt': Timestamp.now(),
           });
 
@@ -96,7 +105,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
           Navigator.pop(context);
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to submit blog post. Please try again.')),
+            SnackBar(content: Text('Failed to submit blog post: ${e.toString()}')),
           );
         } finally {
           setState(() => _isLoading = false);

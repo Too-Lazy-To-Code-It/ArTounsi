@@ -27,23 +27,11 @@ class BlogPost {
       id: doc.id,
       title: data['title'] ?? '',
       authorId: data['authorId'] ?? '',
-      authorName: data['author'] ?? 'Unknown', // Changed from 'authorName' to 'author'
-      date: (data['createdAt'] as Timestamp).toDate(), // Changed from 'date' to 'createdAt'
+      authorName: data['author'] ?? 'Unknown',
+      date: (data['createdAt'] as Timestamp).toDate(),
       excerpt: data['excerpt'] ?? '',
       content: data['content'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
     );
-  }
-
-  Map<String, dynamic> toMap() {
-    return {
-      'title': title,
-      'authorId': authorId,
-      'author': authorName, // Changed from 'authorName' to 'author'
-      'createdAt': Timestamp.fromDate(date), // Changed from 'date' to 'createdAt'
-      'excerpt': excerpt,
-      'content': content,
-      'imageUrl': imageUrl,
-    };
   }
 }
