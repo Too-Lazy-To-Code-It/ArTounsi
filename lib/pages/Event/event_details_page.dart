@@ -30,7 +30,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool _isWeatherLoading = false;
   Map<String, dynamic> _weatherData = {};
   Map<String, dynamic>? userData;
-
+  String? currentUserUsername;
 
   @override
   void initState() {
@@ -309,16 +309,27 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    String username = userData?['username'] ?? 'Unknown User';
+    bool isOwner = (username == widget.event.username);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.title),
+        actions: [
+          if (isOwner) IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: _modifyEvent,
+          ),
+          if (isOwner) IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _confirmDeleteEvent,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Event Image with Overlay
             Stack(
               children: [
                 ClipRRect(
@@ -360,13 +371,13 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             // Organizer Name
             Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'), // Assuming static image or replace with dynamic image
+                Icon(
+                  Icons.person,
+                  size: 48,
                 ),
                 SizedBox(width: 8),
                 Text(
-                  widget.event.username,
+                  'Created by ${widget.event.username}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -509,28 +520,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
           ],
         ),
-      ),
-      floatingActionButton: Stack(
-        children: [
-          Positioned(
-            bottom: 70,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _confirmDeleteEvent,
-              child: Icon(Icons.delete),
-              backgroundColor: Colors.red,
-            ),
-          ),
-          Positioned(
-            bottom: 7,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _modifyEvent,
-              child: Icon(Icons.edit),
-              backgroundColor: Colors.blue,
-            ),
-          ),
-        ],
       ),
     );
   }

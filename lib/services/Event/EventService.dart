@@ -58,7 +58,6 @@ class EventService {
       // Create the event with the fetched username
       Events newEvent = Events('', event.title, imageUrl, event.date, event.description, event.location, username);
 
-      // Add the event to Firestore
       DocumentReference docRef = await _db.collection('events').add(newEvent.toMap());
       newEvent.id = docRef.id;
       await _db.collection('events').doc(docRef.id).update({'id': newEvent.id});
