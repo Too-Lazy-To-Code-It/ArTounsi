@@ -5,12 +5,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+
 class AddArtPage extends StatefulWidget {
   const AddArtPage({Key? key}) : super(key: key);
 
   @override
   _AddArtPageState createState() => _AddArtPageState();
 }
+
+Map<String, dynamic>? userData;
+
+
+
 
 class _AddArtPageState extends State<AddArtPage> {
   final _formKey = GlobalKey<FormState>();
@@ -35,7 +41,30 @@ class _AddArtPageState extends State<AddArtPage> {
     {'name': 'Fan Art', 'icon': Icons.favorite},
     {'name': 'Illustration', 'icon': Icons.image},
   ];
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+  Future<void> fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
 
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+  }
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
@@ -301,11 +330,8 @@ class _AddArtPageState extends State<AddArtPage> {
       _formKey.currentState!.save();
 
       try {
-        // Get the current user
-        User? currentUser = FirebaseAuth.instance.currentUser;
-        if (currentUser == null) {
-          throw Exception('No user logged in');
-        }
+        // Ensure that userData is fetched and contains the username
+        String authorName = userData?['username'] ?? 'Anonymous';
 
         // Upload the image to Firebase Storage and get the URL
         String imageUrl = await _uploadImage(_mainArtImage!);
@@ -318,8 +344,8 @@ class _AddArtPageState extends State<AddArtPage> {
           'softwareUsed': _softwareController.text,
           'tags': _selectedTags,
           'createdAt': FieldValue.serverTimestamp(),
-          'authorId': currentUser.uid,
-          'authorName': currentUser.displayName ?? currentUser.email?.split('@')[0] ?? 'Anonymous',
+          'authorId': FirebaseAuth.instance.currentUser!.uid,
+          'authorName': authorName,  // Uses fetched username
           'likes': 0,
           'views': 0,
           'comments': [],
@@ -371,6 +397,7 @@ class _AddArtPageState extends State<AddArtPage> {
       );
     }
   }
+
 
   Future<String> _uploadImage(File image) async {
     try {
