@@ -5,6 +5,7 @@ import 'package:Artounsi/pages/Learning/learning_page.dart';
 import 'package:Artounsi/pages/Post/home_page.dart';
 import 'package:Artounsi/pages/Shop/shop_page.dart';
 import 'package:Artounsi/pages/User/profile_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'bottom_navigation_bar.dart';
 import 'sidebar.dart';
