@@ -21,15 +21,42 @@ class _DetailsPageState extends State<DetailsPage> {
   String? _editingCommentId;
   User? currentUser;
 
+  Map<String, dynamic>? userData;
+
   @override
   void initState() {
     super.initState();
+    fetchUserData();
+
     _artworkStream = FirebaseFirestore.instance
         .collection('artworks')
         .doc(widget.artworkId)
         .snapshots();
     currentUser = FirebaseAuth.instance.currentUser;
   }
+
+  Future<void> fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+
+  }
+
+
 
   void _handleArtworkUpdated(Map<String, dynamic> updatedArtwork) {
     setState(() {});
@@ -132,7 +159,7 @@ class _DetailsPageState extends State<DetailsPage> {
             'text': _commentController.text,
             'timestamp': DateTime.now().toUtc().millisecondsSinceEpoch,
             'authorId': currentUser!.uid,
-            'authorName': currentUser!.displayName ?? 'Anonymous',
+            'authorName':  userData?['username'] ?? 'Unknown User',
           }
         ]),
       }).then((_) {
