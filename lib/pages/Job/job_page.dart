@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:Artounsi/pages/Job/FavorisPopup.dart';
 import 'package:Artounsi/pages/Job/FavorisService.dart';
 import 'package:Artounsi/pages/Job/JobService.dart';
+import 'package:Artounsi/pages/Job/getFavorisButton.dart';
 import 'package:Artounsi/pages/Job/inscpire.dart';
 import 'package:Artounsi/pages/Job/project_creation_page.dart';
 import 'package:flutter/material.dart';
@@ -271,6 +273,7 @@ class _JobPageState extends State<JobPage> {
             onPressedSubtract: _decrementCounter,
           ),
           Inscpire(imageUrl: GetRandomUrlImage(), ),
+          GetFavoris(userId:"userId"),
         ],
       ),
       floatingActionButton: FloatingActionButton(
