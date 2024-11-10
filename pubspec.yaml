@@ -38,6 +38,11 @@ dependencies:
   photo_view: ^0.14.0
   firebase_auth: ^5.3.1
   firebase_core: ^3.6.0
+  cloud_firestore: ^5.4.4
+  shared_preferences: ^2.0.15
+  toggle_switch: ^2.0.1
+  firebase_storage: ^12.3.5
+
 
 
   # The following adds the Cupertino Icons font to your application.

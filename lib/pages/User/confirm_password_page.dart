@@ -12,7 +12,7 @@ class _ConfirmPasswordPageState extends State<ConfirmPasswordPage> {
   String? _password;
   String? _password_confirmed;
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // Function to validate password strength
   String? _validatePassword(String? value) {

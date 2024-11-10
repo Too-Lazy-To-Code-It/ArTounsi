@@ -1,28 +1,73 @@
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
 
   @override
-  State<UserPage> createState() => _UserPage();
+  State<UserPage> createState() => _UserPageState();
 }
 
-class _UserPage extends State<UserPage> {
+class _UserPageState extends State<UserPage> {
   final user = FirebaseAuth.instance.currentUser!;
+  String? _userImage;
+  Map<String, dynamic>? userData;
+  late final SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    print("inside fetchUserData");
+    try {
+      // Query Firestore to get the user document by email
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      print("querySnapshot ${querySnapshot}");
+
+      print("querySnapshot.docs.isNotEmpty ${querySnapshot.docs.isNotEmpty}");
+      print("querySnapshot.docs.first.data() ${querySnapshot.docs.first.data()}");
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+          _userImage = userData?['image'] ?? ''; // if no image, set empty string
+          print("userData ${userData}");
+
+        });
+      } else {
+        // Handle the case where the user document was not found
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView(
-        padding:
-            const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
+        padding: const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
         children: [
           Center(
-            child: const CircleAvatar(
+            child: _userImage == null || _userImage!.isEmpty
+                ? const CircleAvatar(
               radius: 100,
-              backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+              backgroundImage: AssetImage('assets/images/img.png'),
+            )
+                : CircleAvatar(
+              radius: 100,
+              backgroundImage: NetworkImage(_userImage!),
             ),
           ),
           const SizedBox(height: 20),
@@ -31,7 +76,19 @@ class _UserPage extends State<UserPage> {
             children: [
               const SizedBox(width: 20),
               Text(
-                user.email!,
+                userData?['email'] ?? 'no email available',
+                style: TextStyle(color: AppTheme.primaryColor),
+              ),
+              const SizedBox(width: 4),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(width: 20),
+              Text(
+                userData?['username'] ?? 'no email username',
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),
@@ -55,7 +112,7 @@ class _UserPage extends State<UserPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '0',
+                        userData?['following']?.toString() ?? '0',
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                       Text(
@@ -80,7 +137,7 @@ class _UserPage extends State<UserPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        '0',
+                        userData?['followers']?.toString() ?? '0',
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                       Text(
@@ -94,10 +151,10 @@ class _UserPage extends State<UserPage> {
               const SizedBox(width: 10),
             ],
           ),
+
           const SizedBox(height: 20),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -110,13 +167,12 @@ class _UserPage extends State<UserPage> {
           ),
           const SizedBox(height: 10),
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20.0), // Added padding
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Ankara Methi has not yet provided a summary',
+                  userData?['summary'] ?? 'No summary available',
                   style: TextStyle(color: Colors.white),
                 ),
               ],

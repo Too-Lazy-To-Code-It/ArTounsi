@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "591725097758",
-    "project_id": "backend-flutter-5f46a",
-    "storage_bucket": "backend-flutter-5f46a.appspot.com"
+    "project_number": "806716394604",
+    "project_id": "artounsi-a601e",
+    "storage_bucket": "artounsi-a601e.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:591725097758:android:0205346053e43a81400f0f",
+        "mobilesdk_app_id": "1:806716394604:android:e26bb5a150cfe2727edc49",
         "android_client_info": {
           "package_name": "com.NetEvent.artounsi"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyANK6xGKQmT3UtWpBpu2ZN4452WtxRWFLs"
+          "current_key": "AIzaSyBUEAifgyGm7pAbUxmRm_OFHWRz1M305R8"
         }
       ],
       "services": {
