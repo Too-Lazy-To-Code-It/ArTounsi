@@ -1,6 +1,4 @@
-// In Cart.dart
 import 'package:flutter/foundation.dart';
-
 import 'Product.dart';
 
 class CartItem {
@@ -15,14 +13,13 @@ class Cart extends ChangeNotifier {
 
   List<CartItem> get items => _items;
 
-  void addItem(Product product) {
-    final existingItemIndex =
-        _items.indexWhere((item) => item.product.id == product.id);
+  void addItem(Product product, [int quantity = 1]) {
+    final existingItemIndex = _items.indexWhere((item) => item.product.id == product.id);
 
     if (existingItemIndex != -1) {
-      _items[existingItemIndex].quantity++;
+      _items[existingItemIndex].quantity += quantity;
     } else {
-      _items.add(CartItem(product: product, quantity: 1));
+      _items.add(CartItem(product: product, quantity: quantity));
     }
     notifyListeners();
   }
@@ -45,8 +42,7 @@ class Cart extends ChangeNotifier {
   }
 
   double get totalPrice {
-    return _items.fold(
-        0, (total, item) => total + (item.product.price * item.quantity));
+    return _items.fold(0, (total, item) => total + (item.product.price * item.quantity));
   }
 
   int get itemCount {
