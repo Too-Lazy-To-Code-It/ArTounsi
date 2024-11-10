@@ -5,6 +5,7 @@ import 'dart:io';
 import '../../entities/Event/Events.dart';
 import '../../services/Event/EventService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ModifyEvent extends StatefulWidget {
   final DocumentReference eventRef;
@@ -96,13 +97,17 @@ class _ModifyEventState extends State<ModifyEvent> {
         _isLoading = true; // Set loading state
       });
       try {
+        // Get current username from FirebaseAuth (or any other method you're using)
+        String username = FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous';
+
         final updatedEvent = Events(
           widget.eventRef.id, // Pass the event ID for modification
           _titleController.text,
-          '', // Image URL will be updated
+          _existingImageUrl ?? '', // Assuming an existing image URL or empty string
           _selectedDate,
           _descriptionController.text,
           _selectedCity ?? '', // Use selected city as location
+          username, // Include the username
         );
 
         await _eventService.modifyEvent(
@@ -274,7 +279,7 @@ class _ModifyEventState extends State<ModifyEvent> {
               SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text('Update Event'),
+                child: Text('Save Changes'),
               ),
             ],
           ),

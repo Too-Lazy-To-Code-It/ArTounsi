@@ -9,6 +9,7 @@ import '../../services/Event/EventService.dart';
 import 'Full_Screen_Img.dart';
 import 'modify_event_page.dart';
 import 'WeatherService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Events event;
@@ -28,12 +29,35 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool _isEventDeleted = false;
   bool _isWeatherLoading = false;
   Map<String, dynamic> _weatherData = {};
+  Map<String, dynamic>? userData;
+
 
   @override
   void initState() {
     super.initState();
     _loadComments(widget.event.id);
     _fetchWeather(widget.event.location);
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   Future<void> _fetchWeather(String location) async {
@@ -43,8 +67,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     });
 
     try {
-      // Construct the API URL using the provided location
-      final apiKey = '31bcf9db936c49f6ba8c2ea1fe313bfb'; // Your API key
+      final apiKey = 'f5c316762b8e45e7a0a51f4e7862fdd5';
       final apiUrl = 'https://api.weatherbit.io/v2.0/current?city=$location&key=$apiKey';
 
       final response = await http.get(Uri.parse(apiUrl));
@@ -52,9 +75,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-        // Ensure the data array exists and has items
         if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
-          // Access the first item in the data array
           final weatherInfo = jsonResponse['data'][0];
 
           setState(() {
@@ -68,7 +89,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           });
         } else {
           setState(() {
-            _weatherData = {}; // Clear data if empty
+            _weatherData = {};
           });
         }
       } else {
@@ -86,9 +107,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       _isWeatherLoading = false;
     });
   }
-
-
-
 
   Future<void> _loadComments(String eventId) async {
     try {
@@ -118,9 +136,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       });
     }
   }
-
-
-
 
   Future<void> _deleteEvent() async {
     final eventService = EventService();
@@ -183,9 +198,11 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
+      String username = userData?['username'] ?? 'Unknown User';
+
       Comment newComment = Comment(
         id: '',
-        name: 'John Doe',
+        name: username,
         comment: _commentController.text,
         eventId: widget.event.id,
       );
@@ -346,18 +363,18 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               children: [
                 CircleAvatar(
                   radius: 24,
-                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'), // Assuming static image or replace with dynamic image
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'Organizer Name',
+                  widget.event.username, // Dynamically display the username using widget.event.username
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
+
             SizedBox(height: 16),
 
-            // Event Description
             Text(
               widget.event.description,
               style: TextStyle(fontSize: 16),
@@ -370,28 +387,24 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 Icon(Icons.location_on, color: Colors.blue),
                 SizedBox(width: 4),
                 Text(
-                  'Location: ${widget.event.location}',
+                  'Location:',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
-            SizedBox(height: 8),
-
-
             _isWeatherLoading
                 ? Center(child: CircularProgressIndicator())
                 : _weatherData.isNotEmpty
-                ? WeatherWidget(weatherData: _weatherData)
+                ? WeatherWidget(
+              weatherData: _weatherData,
+              cityName: widget.event.location,
+            )
                 : Text(
               'Weather data not available.',
               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
             ),
 
-
-
             SizedBox(height: 16),
-
-            // Event Date with Icon
             Row(
               children: [
                 Icon(Icons.calendar_today, color: Colors.blue),
@@ -444,7 +457,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
             SizedBox(height: 16),
 
-            // Add Comment Section
             TextField(
               controller: _commentController,
               decoration: InputDecoration(

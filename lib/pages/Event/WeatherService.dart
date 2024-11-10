@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 
 class WeatherWidget extends StatelessWidget {
   final Map<String, dynamic> weatherData;
+  final String cityName;
 
-  WeatherWidget({required this.weatherData});
+  WeatherWidget({required this.weatherData, required this.cityName});
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +19,12 @@ class WeatherWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Display city name
+            Text(
+              'City: $cityName',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
             // Display weather description
             Text(
               'Weather: ${weatherData['description'] ?? 'N/A'}',
@@ -26,7 +33,6 @@ class WeatherWidget extends StatelessWidget {
             SizedBox(height: 8),
             Row(
               children: [
-                // Display the weather icon if available
                 if (weatherData['icon'] != null)
                   Image.network(
                     'https://www.weatherbit.io/static/img/icons/${weatherData['icon']}.png',
@@ -42,7 +48,6 @@ class WeatherWidget extends StatelessWidget {
               ],
             ),
             SizedBox(height: 8),
-            // Display humidity and wind speed
             Text(
               'Humidity: ${weatherData['rh'] ?? 'N/A'}%',
               style: TextStyle(fontSize: 16, color: Colors.grey[700]),

@@ -5,6 +5,8 @@ import 'dart:io';
 import '../../entities/Event/Events.dart';
 import '../../services/Event/EventService.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class AddEvent extends StatefulWidget {
   @override
   _AddEventState createState() => _AddEventState();
@@ -19,31 +21,11 @@ class _AddEventState extends State<AddEvent> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
-  // List of Tunisian cities
   final List<String> _tunisianCities = [
-    'Tunis',
-    'Sfax',
-    'Sousse',
-    'Gabès',
-    'Bizerte',
-    'Ariana',
-    'Gafsa',
-    'Monastir',
-    'Kairouan',
-    'Ben Arous',
-    'Tozeur',
-    'Kasserine',
-    'Médenine',
-    'Nabeul',
-    'Mahdia',
-    'Sidi Bouzid',
-    'Kébili',
-    'Jendouba',
-    'Beja',
-    'Zaghouan',
-    'Siliana',
-    'Tataouine',
-    'Manouba'
+    'Tunis', 'Sfax', 'Sousse', 'Gabès', 'Bizerte', 'Ariana', 'Gafsa',
+    'Monastir', 'Kairouan', 'Ben Arous', 'Tozeur', 'Kasserine', 'Médenine',
+    'Nabeul', 'Mahdia', 'Sidi Bouzid', 'Kébili', 'Jendouba', 'Beja',
+    'Zaghouan', 'Siliana', 'Tataouine', 'Manouba'
   ];
 
   String? _selectedCity;
@@ -76,6 +58,8 @@ class _AddEventState extends State<AddEvent> {
     }
   }
 
+
+
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_imagePath == null) {
@@ -94,6 +78,10 @@ class _AddEventState extends State<AddEvent> {
         _isLoading = true;
       });
       try {
+        // Fetch the current user's username from FirebaseAuth
+        User? user = FirebaseAuth.instance.currentUser;
+        String username = user != null ? user.displayName ?? 'Anonymous' : 'Anonymous';
+
         final newEvent = Events(
           '',
           _titleController.text,
@@ -101,6 +89,7 @@ class _AddEventState extends State<AddEvent> {
           _selectedDate,
           _descriptionController.text,
           _selectedCity!, // Add selected city here
+          username, // Add username here
         );
 
         final imageFile = File(_imagePath!);

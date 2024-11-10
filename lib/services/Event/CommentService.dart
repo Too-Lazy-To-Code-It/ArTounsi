@@ -17,9 +17,11 @@ class CommentService {
 
   Future<List<Comment>> getCommentsForEvent(String eventId) async {
     try {
-      QuerySnapshot snapshot = await _commentCollection.where('eventId', isEqualTo: eventId).get();
+      QuerySnapshot snapshot =
+      await _commentCollection.where('eventId', isEqualTo: eventId).get();
       return snapshot.docs.map((doc) {
-        return Comment.fromFirestore(doc.data() as Map<String, dynamic>, doc.id); // Ensure you include the ID
+        return Comment.fromFirestore(
+            doc.data() as Map<String, dynamic>, doc.id);
       }).toList();
     } catch (e) {
       print("Error fetching comments for event: $e");
