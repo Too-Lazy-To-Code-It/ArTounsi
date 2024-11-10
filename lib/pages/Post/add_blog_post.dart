@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'blog_post.dart';
@@ -31,6 +32,14 @@ class _AddBlogPostState extends State<AddBlogPost> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate() && _image != null) {
+      final User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You must be logged in to post.')),
+        );
+        return;
+      }
+
       String fileName = DateTime.now().millisecondsSinceEpoch.toString();
       Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('blog_images/$fileName');
       UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
@@ -40,7 +49,8 @@ class _AddBlogPostState extends State<AddBlogPost> {
       BlogPost newPost = BlogPost(
         id: '',
         title: _titleController.text,
-        author: 'Unknown', // Replace with actual user name when you implement authentication
+        authorId: currentUser.uid,
+        authorName: currentUser.displayName ?? 'Anonymous',
         date: DateTime.now(),
         excerpt: _excerptController.text,
         content: _contentController.text,

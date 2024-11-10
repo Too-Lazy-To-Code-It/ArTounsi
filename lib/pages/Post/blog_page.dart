@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'blog_post.dart';
 import 'blog_post_details.dart';
 import 'add_blog_post.dart';
 
 class BlogPage extends StatelessWidget {
-  const BlogPage({super.key});
+  const BlogPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final User? currentUser = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Blog'),
@@ -49,7 +52,10 @@ class BlogPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => BlogPostDetails(post: post),
+                      builder: (context) => BlogPostDetails(
+                        post: post,
+                        isAuthor: currentUser?.uid == post.authorId,
+                      ),
                     ),
                   );
                 },
@@ -74,7 +80,7 @@ class BlogPage extends StatelessWidget {
                               style: Theme.of(context).textTheme.titleLarge,
                             ),
                             const SizedBox(height: 4),
-                            Text('By ${post.author} on ${post.date.toString().split(' ')[0]}'),
+                            Text('By ${post.authorName} on ${post.date.toString().split(' ')[0]}'),
                             const SizedBox(height: 4),
                             Text(
                               post.excerpt,

@@ -6,8 +6,9 @@ import 'edit_blog_post.dart';
 
 class BlogPostDetails extends StatelessWidget {
   final BlogPost post;
+  final bool isAuthor;
 
-  const BlogPostDetails({super.key, required this.post});
+  const BlogPostDetails({Key? key, required this.post, required this.isAuthor}) : super(key: key);
 
   Future<void> _deleteBlogPost(BuildContext context) async {
     bool confirmDelete = await showDialog(
@@ -58,7 +59,8 @@ class BlogPostDetails extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(post.title),
-        actions: [
+        actions: isAuthor
+            ? [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
@@ -74,7 +76,8 @@ class BlogPostDetails extends StatelessWidget {
             icon: const Icon(Icons.delete),
             onPressed: () => _deleteBlogPost(context),
           ),
-        ],
+        ]
+            : null,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -99,7 +102,7 @@ class BlogPostDetails extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'By ${post.author} on ${post.date.toString().split(' ')[0]}',
+                    'By ${post.authorName} on ${post.date.toString().split(' ')[0]}',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 16),

@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class BlogPost {
   final String id;
   final String title;
-  final String author;
+  final String authorId;
+  final String authorName;
   final DateTime date;
   final String excerpt;
   final String content;
@@ -12,7 +13,8 @@ class BlogPost {
   BlogPost({
     required this.id,
     required this.title,
-    required this.author,
+    required this.authorId,
+    required this.authorName,
     required this.date,
     required this.excerpt,
     required this.content,
@@ -24,7 +26,8 @@ class BlogPost {
     return BlogPost(
       id: doc.id,
       title: data['title'] ?? '',
-      author: data['author'] ?? 'Unknown',
+      authorId: data['authorId'] ?? '',
+      authorName: data['authorName'] ?? 'Unknown',
       date: (data['date'] as Timestamp).toDate(),
       excerpt: data['excerpt'] ?? '',
       content: data['content'] ?? '',
@@ -35,7 +38,8 @@ class BlogPost {
   Map<String, dynamic> toMap() {
     return {
       'title': title,
-      'author': author,
+      'authorId': authorId,
+      'authorName': authorName,
       'date': Timestamp.fromDate(date),
       'excerpt': excerpt,
       'content': content,

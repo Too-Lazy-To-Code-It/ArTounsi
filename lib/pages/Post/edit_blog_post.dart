@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'blog_post.dart';
@@ -41,6 +42,14 @@ class _EditBlogPostState extends State<EditBlogPost> {
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
+      final User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null || currentUser.uid != widget.post.authorId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You do not have permission to edit this post.')),
+        );
+        return;
+      }
+
       String imageUrl = widget.post.imageUrl;
 
       if (_image != null) {
