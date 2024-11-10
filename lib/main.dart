@@ -11,7 +11,12 @@ import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  try {
+    await Firebase.initializeApp();
+    print("Firebase initialized successfully");
+  } catch (e) {
+    print("Error initializing Firebase: $e");
+  }
   runApp(MyApp());
 }
 
@@ -28,11 +33,11 @@ class MyApp extends StatelessWidget {
       routes: {
         "/loginPage": (BuildContext context) => LoginPage(),
         "/registerPage": (BuildContext context) => RegisterPage(),
-        // "/mainScreen": (BuildContext context) => MainScreen(),
         "/forgotPasswordPage": (BuildContext context) => ForgotPasswordPage(),
         "/confirmPasswordPage": (BuildContext context) => ConfirmPasswordPage(),
         "/userPage": (BuildContext context) => UserPage(),
         "/updateUser": (BuildContext context) => UpdateUser(),
+
       },
     );
   }

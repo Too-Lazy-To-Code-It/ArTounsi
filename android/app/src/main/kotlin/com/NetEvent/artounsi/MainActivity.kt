@@ -1,4 +1,5 @@
-package com.NetEvent.artounsi
+package com.artounsi.app;
+
 
 import io.flutter.embedding.android.FlutterActivity
 
