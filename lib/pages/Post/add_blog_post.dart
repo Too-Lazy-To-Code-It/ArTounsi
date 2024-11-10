@@ -21,6 +21,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
   File? _image;
   final picker = ImagePicker();
   String? _userName;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -29,37 +30,46 @@ class _AddBlogPostState extends State<AddBlogPost> {
   }
 
   Future<void> _loadUserName() async {
-    User? currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser != null) {
-      try {
+    setState(() => _isLoading = true);
+
+    try {
+      User? currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser != null) {
+        // First try to get the user document by UID
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(currentUser.uid)
             .get();
 
+        if (!userDoc.exists) {
+          // If not found by UID, try to find by email
+          final querySnapshot = await FirebaseFirestore.instance
+              .collection('users')
+              .where('email', isEqualTo: currentUser.email)
+              .get();
+
+          if (querySnapshot.docs.isNotEmpty) {
+            userDoc = querySnapshot.docs.first;
+          }
+        }
+
         if (userDoc.exists) {
+          final userData = userDoc.data() as Map<String, dynamic>;
           setState(() {
-            _userName = userDoc.get('username') as String? ??
-                currentUser.email?.split('@')[0] ??
-                'Anonymous';
-          });
-        } else {
-          // If the user document doesn't exist, use email or UID
-          setState(() {
-            _userName = currentUser.email?.split('@')[0] ??
-                currentUser.uid.substring(0, 5);
+            _userName = userData['username'] as String?;
           });
         }
-      } catch (e) {
-        print('Error loading user name: $e');
+      }
+    } catch (e) {
+      print('Error loading username: $e');
+    } finally {
+      // If username is still null after all attempts, set a default
+      if (_userName == null) {
         setState(() {
           _userName = 'Anonymous';
         });
       }
-    } else {
-      setState(() {
-        _userName = 'Anonymous';
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -83,6 +93,8 @@ class _AddBlogPostState extends State<AddBlogPost> {
       }
 
       try {
+        setState(() => _isLoading = true);
+
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
         Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('blog_images/$fileName');
         UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
@@ -107,6 +119,8 @@ class _AddBlogPostState extends State<AddBlogPost> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to submit blog post. Please try again.')),
         );
+      } finally {
+        setState(() => _isLoading = false);
       }
     } else if (_image == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,8 +132,13 @@ class _AddBlogPostState extends State<AddBlogPost> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Blog Post')),
-      body: SingleChildScrollView(
+      appBar: AppBar(
+        title: const Text('Add Blog Post'),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Form(
@@ -127,12 +146,36 @@ class _AddBlogPostState extends State<AddBlogPost> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text('Posting as: ${_userName ?? 'Loading...'}',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.person,
+                          color: Theme.of(context).primaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Posting as: $_userName',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 const SizedBox(height: 20),
                 TextFormField(
                   controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Title'),
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a title';
@@ -140,9 +183,15 @@ class _AddBlogPostState extends State<AddBlogPost> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _excerptController,
-                  decoration: const InputDecoration(labelText: 'Excerpt'),
+                  decoration: InputDecoration(
+                    labelText: 'Excerpt',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter an excerpt';
@@ -150,9 +199,15 @@ class _AddBlogPostState extends State<AddBlogPost> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _contentController,
-                  decoration: const InputDecoration(labelText: 'Content'),
+                  decoration: InputDecoration(
+                    labelText: 'Content',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   maxLines: 5,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -162,17 +217,78 @@ class _AddBlogPostState extends State<AddBlogPost> {
                   },
                 ),
                 const SizedBox(height: 20),
-                _image == null
-                    ? const Text('No image selected.')
-                    : Image.file(_image!, height: 200),
-                ElevatedButton(
-                  onPressed: getImage,
-                  child: const Text('Pick Image'),
+                if (_image != null)
+                  Container(
+                    width: double.infinity,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor.withOpacity(0.5),
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
+                        _image!,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Theme.of(context).primaryColor.withOpacity(0.5),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.image_outlined,
+                          size: 48,
+                          color: Theme.of(context).primaryColor.withOpacity(0.5),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text('No image selected'),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: getImage,
+                    icon: const Icon(Icons.add_photo_alternate),
+                    label: const Text('Pick Image'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Submit'),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _submitForm,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Submit Post',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
                 ),
               ],
             ),
