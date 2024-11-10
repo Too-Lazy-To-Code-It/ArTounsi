@@ -54,7 +54,7 @@ class _ModifyEventState extends State<ModifyEvent> {
         _selectedDate = event.date;
         _existingImageUrl = event.imageUrl;
         _locationController.text = event.location;
-        _selectedCity = event.location; // Assuming event location is the city
+        _selectedCity = event.location;
         _imagePath = null;
       });
     } else {
@@ -94,7 +94,7 @@ class _ModifyEventState extends State<ModifyEvent> {
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Set loading state
+        _isLoading = true;
       });
       try {
         String username = FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous';

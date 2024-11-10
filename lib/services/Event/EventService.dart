@@ -8,7 +8,7 @@ class EventService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  // Function to get current user's username
+
   Future<String> fetchUserData() async {
     print("inside fetchUserData");
     try {
@@ -17,7 +17,6 @@ class EventService {
         print('No user is logged in');
         return 'Unknown';
       }
-
       final querySnapshot = await FirebaseFirestore.instance
           .collection('users')
           .where('email', isEqualTo: user.email)
@@ -25,7 +24,7 @@ class EventService {
 
       if (querySnapshot.docs.isNotEmpty) {
         var userData = querySnapshot.docs.first.data();
-        String username = userData?['username'] ?? 'Unknown';  // Assuming username is stored as 'username'
+        String username = userData?['username'] ?? 'Unknown';
         return username;
       } else {
         print('User document not found');
@@ -37,7 +36,6 @@ class EventService {
     }
   }
 
-  // Function to upload image to Firebase Storage
   Future<String> uploadImage(File image) async {
     try {
       String fileName = 'events/${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -55,7 +53,6 @@ class EventService {
       String username = await fetchUserData();
       String imageUrl = await uploadImage(image);
 
-      // Create the event with the fetched username
       Events newEvent = Events('', event.title, imageUrl, event.date, event.description, event.location, username);
 
       DocumentReference docRef = await _db.collection('events').add(newEvent.toMap());
