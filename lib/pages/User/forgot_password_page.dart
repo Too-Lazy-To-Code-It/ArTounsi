@@ -15,9 +15,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final _emailcontroller = TextEditingController();
   bool _isVisible = false;
 
-  final GlobalKey<FormState> _emailFormKey =
+  GlobalKey<FormState> _emailFormKey =
   GlobalKey<FormState>(); // Separate key for email form field
-  final GlobalKey<FormState> _codeFormKey =
+  GlobalKey<FormState> _codeFormKey =
   GlobalKey<FormState>(); // Separate key for code form field
 
   Future passwordReset() async {

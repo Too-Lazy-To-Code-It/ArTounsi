@@ -1,8 +1,9 @@
 import 'dart:io';
-
+import 'package:Artounsi/pages/User/login_page.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';  // Import Firebase Storage
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -23,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
-  File? _imageFile;
+  File? _imageFile;  // Store the picked image, but don't upload yet
 
   String? _validatePassword(String? value) {
     if (value == null || value.isEmpty) {
@@ -41,48 +42,105 @@ class _RegisterPageState extends State<RegisterPage> {
     return null; // Password is valid
   }
 
-  Future Register() async {
-   try{ UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
-    await addUsersDetails(_usernameController.text.trim(), _emailController.text.trim(), _passwordController.text.trim());
-    if (userCredential.user != null && !userCredential.user!.emailVerified) {
-      await userCredential.user!.sendEmailVerification();
-      print("E-mail de vérification envoyé.");
+  Future<String> uploadImageToStorage(File imageFile) async {
+    try {
+      // Create a unique file name using the current time
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+
+      // Create a reference to Firebase Storage
+      Reference storageReference = FirebaseStorage.instance.ref().child("user_images/$fileName");
+
+      // Upload the image to Firebase Storage
+      UploadTask uploadTask = storageReference.putFile(imageFile);
+
+      // Wait for the upload to complete
+      await uploadTask;
+
+      // Get the download URL of the uploaded image
+      String downloadURL = await storageReference.getDownloadURL();
+      return downloadURL; // Return the image URL
+    } catch (e) {
+      throw Exception('Error uploading image: $e');
     }
-   } on FirebaseAuthException catch (e) {
-  if (e.code == 'weak-password') {
-    showDialog(context: context,
-      builder: (context){
-        return AlertDialog(
-          content : Text('Weak Password'),
-        );
-      },
-    );
-  } else if (e.code == 'email-already-in-use') {
-    showDialog(context: context,
-      builder: (context){
-        return AlertDialog(
-          content : Text('Email already in use'),
-        );
-      },
-    );  }
-  } catch (e) {
-  print(e);
-  }
   }
 
-  addUsersDetails(String username, String email, String password) async{
+  Future Register() async {
+    try {
+      // Create user with email and password
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim()
+      );
+
+      // Once the user is created, upload the image if selected
+      String imageUrl = '';
+      if (_imageFile != null) {
+        imageUrl = await uploadImageToStorage(_imageFile!);
+      }
+
+      // Add user details to Firestore, including the image URL
+      await addUsersDetails(
+          _usernameController.text.trim(),
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+          imageUrl
+      );
+
+      // Send email verification if needed
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        await userCredential.user!.sendEmailVerification();
+        String message = "Check your mail for complete verification! \nWelcome $_username to ArTounsi";
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text("Information"),
+                content: Text(message),
+              );
+            }
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('Weak Password'),
+            );
+          },
+        );
+      } else if (e.code == 'email-already-in-use') {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              content: Text('Email already in use'),
+            );
+          },
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // Add user details (including image URL if available)
+  addUsersDetails(String username, String email, String password, String imageUrl) async {
     await FirebaseFirestore.instance.collection('users').add({
       'username': username,
       'email': email,
-      'password': password
+      'password': password,
+      'image': imageUrl,  // Save the image URL in Firestore if available
     });
   }
 
+  // Pick image when the user selects it
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageFile = File(pickedFile.path);  // Store the selected image, but don't upload it yet
       });
     }
   }
@@ -96,9 +154,9 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             const SizedBox(height: 30),
             GestureDetector(
-              onTap: _pickImage,
+              onTap: _pickImage,  // Select an image
               child: CircleAvatar(
-                radius: 200,
+                radius: 150,
                 backgroundImage: _imageFile != null
                     ? FileImage(_imageFile!)
                     : const AssetImage('assets/images/img.png'),
@@ -116,7 +174,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
                 validator: (String? value) {
                   if (value!.isEmpty || value.length < 5) {
-                    return "Le username must have at least 5 characters";
+                    return "The username must have at least 5 characters";
                   } else {
                     return null;
                   }
@@ -165,23 +223,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: const Text("Register"),
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      await Register();
-                      String message =
-                          "Register Successful ! \n Welcome $_username to ArTounsi";
-
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text("Information"),
-                              content: Text(message),
-                            );
-                          });
+                      await Register();  // Register the user, then upload the image and save
                     }
                   },
                 ),
@@ -192,13 +239,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: const Text("Cancel"),
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   onPressed: () {
                     _formKey.currentState!.reset();
-                    // Navigator.pop(context);
                   },
-                )
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -219,7 +265,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
                   },
                 ),
               ],

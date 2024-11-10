@@ -2,6 +2,7 @@ import 'package:Artounsi/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -12,7 +13,9 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage> {
   final user = FirebaseAuth.instance.currentUser!;
+  String? _userImage;
   Map<String, dynamic>? userData;
+  late final SharedPreferences prefs;
 
   @override
   void initState() {
@@ -21,6 +24,7 @@ class _UserPageState extends State<UserPage> {
   }
 
   Future<void> fetchUserData() async {
+    print("inside fetchUserData");
     try {
       // Query Firestore to get the user document by email
       final querySnapshot = await FirebaseFirestore.instance
@@ -28,9 +32,17 @@ class _UserPageState extends State<UserPage> {
           .where('email', isEqualTo: user.email)
           .get();
 
+      print("querySnapshot ${querySnapshot}");
+
+      print("querySnapshot.docs.isNotEmpty ${querySnapshot.docs.isNotEmpty}");
+      print("querySnapshot.docs.first.data() ${querySnapshot.docs.first.data()}");
+
       if (querySnapshot.docs.isNotEmpty) {
         setState(() {
           userData = querySnapshot.docs.first.data();
+          _userImage = userData?['image'] ?? ''; // if no image, set empty string
+          print("userData ${userData}");
+
         });
       } else {
         // Handle the case where the user document was not found
@@ -48,9 +60,14 @@ class _UserPageState extends State<UserPage> {
         padding: const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
         children: [
           Center(
-            child: const CircleAvatar(
+            child: _userImage == null || _userImage!.isEmpty
+                ? const CircleAvatar(
               radius: 100,
-              backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+              backgroundImage: AssetImage('assets/images/img.png'),
+            )
+                : CircleAvatar(
+              radius: 100,
+              backgroundImage: NetworkImage(_userImage!),
             ),
           ),
           const SizedBox(height: 20),
@@ -59,7 +76,7 @@ class _UserPageState extends State<UserPage> {
             children: [
               const SizedBox(width: 20),
               Text(
-                userData?['email'],
+                userData?['email'] ?? 'no email available',
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),
@@ -71,7 +88,7 @@ class _UserPageState extends State<UserPage> {
             children: [
               const SizedBox(width: 20),
               Text(
-                userData?['username'],
+                userData?['username'] ?? 'no email username',
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),
@@ -134,6 +151,7 @@ class _UserPageState extends State<UserPage> {
               const SizedBox(width: 10),
             ],
           ),
+
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
