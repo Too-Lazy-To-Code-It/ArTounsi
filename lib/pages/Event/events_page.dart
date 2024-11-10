@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'add_event_page.dart';
 import '../../entities/Event/Events.dart';
 import 'event_details_page.dart';
+import '../../services/Event/EventService.dart';
 
 class EventPage extends StatefulWidget {
   @override
@@ -9,45 +10,51 @@ class EventPage extends StatefulWidget {
 }
 
 class _EventPageState extends State<EventPage> {
-  List<Event> events = [];
+  List<Events> events = [];
+  final EventService _eventService = EventService();
+  bool isLoading = true;
 
   @override
   void initState() {
-    events.add(Event(
-        'Art Exhibition',
-        'assets/images/event1.jpg',
-        DateTime(2023, 7, 15),
-        'A showcase of contemporary art featuring works from renowned and upcoming artists. This exhibition includes paintings, sculptures, and mixed media, all exploring themes of modern society and human expression.'));
-    events.add(Event(
-        'Digital Art Workshop',
-        'assets/images/event2.jpg',
-        DateTime(2023, 8, 1),
-        'Join us for an interactive digital art workshop where participants will learn cutting-edge techniques in digital drawing and painting. This session is perfect for both beginners and seasoned artists looking to expand their digital skill set.'));
-    events.add(Event(
-        'Photography Masterclass',
-        'assets/images/1692849792746760.jpg',
-        DateTime(2023, 9, 10),
-        'A hands-on masterclass with professional photographers, focusing on portrait and landscape photography. Attendees will gain insights into composition, lighting, and post-processing to take their photography skills to the next level.'));
-    events.add(Event(
-        'Sculpture Exhibition',
-        'assets/images/1700320394628361.jpg',
-        DateTime(2023, 9, 25),
-        'Explore an inspiring collection of sculptures from various artists, highlighting the beauty of form and material. This exhibition features large installations and intricate designs, providing a glimpse into the world of contemporary sculpture art.'));
     super.initState();
+    _fetchEvents();
   }
+
+  Future<void> _fetchEvents() async {
+    try {
+      List<Events> fetchedEvents = await _eventService.getEvents();
+      setState(() {
+        events = fetchedEvents;
+        isLoading = false;
+      });
+    } catch (e, stackTrace) {
+      print('Error fetching events: $e');
+      print(stackTrace);
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
 
   void _navigateToAddEventPage() async {
-    Navigator.push(
+    bool? eventAdded = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => add_event()),
+      MaterialPageRoute(builder: (context) => AddEvent()),
     );
+    if (eventAdded == true) {
+      _fetchEvents();
+    }
   }
 
-  void _navigateToEventDetailsPage(Event event) {
-    Navigator.push(
+  void _navigateToEventDetailsPage(Events event) async {
+    bool? shouldReload = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => EventDetailsPage(event: event)),
     );
+    if (shouldReload == true) {
+      _fetchEvents();
+    }
   }
 
   @override
@@ -57,7 +64,9 @@ class _EventPageState extends State<EventPage> {
         onPressed: _navigateToAddEventPage,
         child: Icon(Icons.add),
       ),
-      body: ListView.builder(
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
         itemCount: events.length,
         itemBuilder: (context, index) {
           return InkWell(
@@ -67,7 +76,7 @@ class _EventPageState extends State<EventPage> {
               color: Colors.white10,
               child: Column(
                 children: [
-                  Image.asset(
+                  Image.network(
                     events[index].imageUrl,
                     height: 200,
                     width: double.infinity,
