@@ -139,4 +139,59 @@ class LearningService {
       rethrow;
     }
   }
-}
+
+  // Existing fields and methods...
+
+  // Method to delete a course if the current user is the instructor
+  Future<void> deleteCourse(String courseId) async {
+  try {
+  await ensureAuthenticated();
+  DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(courseId).get();
+
+  if (!courseDoc.exists) throw Exception("Course not found");
+
+  String instructor = courseDoc['instructor'];
+  String currentUser = await getCurrentUsername();
+
+  if (instructor != currentUser) {
+  throw Exception("Only the course instructor can delete this course");
+  }
+
+  await _firestore.collection('courses').doc(courseId).delete();
+  print("Course deleted successfully: $courseId");
+
+  } catch (e) {
+  print("Error deleting course: $e");
+  rethrow;
+  }
+  }
+
+  // Method to update a course if the current user is the instructor
+  Future<void> updateCourse(String courseId, String title, String description, String imageUrl, List<String> modules) async {
+  try {
+  await ensureAuthenticated();
+  DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(courseId).get();
+
+  if (!courseDoc.exists) throw Exception("Course not found");
+
+  String instructor = courseDoc['instructor'];
+  String currentUser = await getCurrentUsername();
+
+  if (instructor != currentUser) {
+  throw Exception("Only the course instructor can update this course");
+  }
+
+  await _firestore.collection('courses').doc(courseId).update({
+  'title': title,
+  'description': description,
+  'imageUrl': imageUrl,
+  'modules': modules,
+  });
+  print("Course updated successfully: $courseId");
+
+  } catch (e) {
+  print("Error updating course: $e");
+  rethrow;
+  }
+  }
+  }

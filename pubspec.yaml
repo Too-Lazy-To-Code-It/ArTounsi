@@ -30,18 +30,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  google_fonts: ^6.2.1
-  flutter_svg: ^2.0.14
+  google_fonts: ^4.0.4
+  flutter_svg: ^1.0.0
   font_awesome_flutter: ^10.7.0
   image_picker: ^1.1.2
-  intl: ^0.19.0
-  photo_view: ^0.15.0
+  intl: ^0.18.0
+  photo_view: ^0.14.0
   firebase_auth: ^5.3.1
   firebase_core: ^3.6.0
   cloud_firestore: ^5.4.4
-  percent_indicator: ^4.0.1
+  shared_preferences: ^2.0.15
+  toggle_switch: ^2.0.1
   firebase_storage: ^12.3.5
   uuid: ^3.0.7
+
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -57,7 +59,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^4.0.0
   flutter_launcher_icons: ^0.14.1
 
 flutter_launcher_icons:

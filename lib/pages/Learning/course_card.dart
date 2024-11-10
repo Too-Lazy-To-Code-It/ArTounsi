@@ -1,14 +1,28 @@
-// File: lib/pages/Learning/course_card.dart
 import 'package:flutter/material.dart';
 import '../../entities/learning/course.dart';
 import '../../services/learning_service.dart';
 import 'course_details.dart';
+import '../../services/image_upload_service.dart';
 
-class CourseCard extends StatelessWidget {
+class CourseCard extends StatefulWidget {
   final Course course;
-  final LearningService _learningService = LearningService();
 
   CourseCard({required this.course});
+
+  @override
+  _CourseCardState createState() => _CourseCardState();
+}
+
+class _CourseCardState extends State<CourseCard> {
+  final LearningService _learningService = LearningService();
+  final ImageUploadService _imageUploadService = ImageUploadService();
+  late Course _course;
+
+  @override
+  void initState() {
+    super.initState();
+    _course = widget.course;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,19 +45,19 @@ class CourseCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    course.title,
+                    _course.title,
                     style: Theme.of(context).textTheme.titleLarge,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   SizedBox(height: 8),
                   Text(
-                    'Instructor: ${course.instructor}',
+                    'Instructor: ${_course.instructor}',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   SizedBox(height: 8),
                   Text(
-                    course.description,
+                    _course.description,
                     style: Theme.of(context).textTheme.bodySmall,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
@@ -53,7 +67,7 @@ class CourseCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '${course.modules.length} modules',
+                        '${_course.modules.length} modules',
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       ElevatedButton(
@@ -70,6 +84,31 @@ class CourseCard extends StatelessWidget {
                 ],
               ),
             ),
+            FutureBuilder<String>(
+              future: _learningService.getCurrentUsername(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                }
+
+                if (snapshot.hasData && snapshot.data == _course.instructor) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () => _showUpdateDialog(context),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => _deleteCourse(context),
+                      ),
+                    ],
+                  );
+                }
+                return Container(); // Hide buttons if the current user is not the instructor
+              },
+            ),
           ],
         ),
       ),
@@ -77,9 +116,9 @@ class CourseCard extends StatelessWidget {
   }
 
   Widget _buildImage() {
-    return course.imageUrl.isNotEmpty
+    return _course.imageUrl.isNotEmpty
         ? Image.network(
-      course.imageUrl,
+      _course.imageUrl,
       height: 150,
       width: double.infinity,
       fit: BoxFit.cover,
@@ -112,21 +151,129 @@ class CourseCard extends StatelessWidget {
         minChildSize: 0.5,
         maxChildSize: 0.9,
         expand: false,
-        builder: (_, controller) => CourseDetails(course: course, scrollController: controller),
+        builder: (_, controller) => CourseDetails(course: _course, scrollController: controller),
       ),
     );
   }
 
   void _enrollInCourse(BuildContext context) async {
     try {
-      await _learningService.enrollInCourse(course);
+      await _learningService.enrollInCourse(_course);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Successfully enrolled in ${course.title}')),
+        SnackBar(content: Text('Successfully enrolled in ${_course.title}')),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to enroll: $e')),
       );
     }
+  }
+
+  void _showUpdateDialog(BuildContext context) {
+    final _formKey = GlobalKey<FormState>();
+    String updatedTitle = _course.title;
+    String updatedDescription = _course.description;
+    String updatedImageUrl = _course.imageUrl;
+    List<String> updatedModules = List.from(_course.modules);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text("Update Course"),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextFormField(
+                        initialValue: updatedTitle,
+                        decoration: InputDecoration(labelText: 'Title'),
+                        validator: (value) => value!.isEmpty ? 'Please enter a title' : null,
+                        onSaved: (value) => updatedTitle = value!,
+                      ),
+                      TextFormField(
+                        initialValue: updatedDescription,
+                        decoration: InputDecoration(labelText: 'Description'),
+                        validator: (value) => value!.isEmpty ? 'Please enter a description' : null,
+                        onSaved: (value) => updatedDescription = value!,
+                      ),
+                      ElevatedButton(
+                        child: Text('Update Image'),
+                        onPressed: () async {
+                          String? newImageUrl = await _imageUploadService.pickAndUploadImage();
+                          if (newImageUrl != null) {
+                            setState(() {
+                              updatedImageUrl = newImageUrl;
+                            });
+                          }
+                        },
+                      ),
+                      if (updatedImageUrl.isNotEmpty)
+                        Image.network(updatedImageUrl, height: 100, width: 100, fit: BoxFit.cover),
+                      ElevatedButton(
+                        child: Text('Update Course'),
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            _learningService.updateCourse(_course.id, updatedTitle, updatedDescription, updatedImageUrl, updatedModules);
+                            setState(() {
+                              _course = Course(
+                                id: _course.id,
+                                title: updatedTitle,
+                                description: updatedDescription,
+                                imageUrl: updatedImageUrl,
+                                modules: updatedModules,
+                                instructor: _course.instructor,
+                              );  // Update the course with the new details
+                            });
+                            Navigator.pop(context);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("Cancel"),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+
+  void _deleteCourse(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Delete Course"),
+          content: Text("Are you sure you want to delete this course?"),
+          actions: <Widget>[
+            TextButton(
+              child: Text("Cancel"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            TextButton(
+              child: Text("Delete"),
+              onPressed: () {
+                _learningService.deleteCourse(_course.id);
+                Navigator.pop(context);
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

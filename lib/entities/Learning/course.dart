@@ -1,10 +1,9 @@
-// File: lib/entities/learning/course.dart
 class Course {
   final String id;
   final String title;
   final String description;
   final String instructor;
-  final String imageUrl;
+  final String imageUrl; // imageUrl remains final
   final List<String> modules;
 
   Course({
@@ -37,6 +36,7 @@ class Course {
       'modules': modules,
     };
   }
+
   @override
   String toString() {
     return 'Course{id: $id, title: $title, instructor: $instructor}';
