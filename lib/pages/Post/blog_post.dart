@@ -27,8 +27,8 @@ class BlogPost {
       id: doc.id,
       title: data['title'] ?? '',
       authorId: data['authorId'] ?? '',
-      authorName: data['authorName'] ?? 'Unknown',
-      date: (data['date'] as Timestamp).toDate(),
+      authorName: data['author'] ?? 'Unknown', // Changed from 'authorName' to 'author'
+      date: (data['createdAt'] as Timestamp).toDate(), // Changed from 'date' to 'createdAt'
       excerpt: data['excerpt'] ?? '',
       content: data['content'] ?? '',
       imageUrl: data['imageUrl'] ?? '',
@@ -39,8 +39,8 @@ class BlogPost {
     return {
       'title': title,
       'authorId': authorId,
-      'authorName': authorName,
-      'date': Timestamp.fromDate(date),
+      'author': authorName, // Changed from 'authorName' to 'author'
+      'createdAt': Timestamp.fromDate(date), // Changed from 'date' to 'createdAt'
       'excerpt': excerpt,
       'content': content,
       'imageUrl': imageUrl,

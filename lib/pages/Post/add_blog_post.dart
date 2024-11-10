@@ -31,23 +31,19 @@ class _AddBlogPostState extends State<AddBlogPost> {
 
   Future<void> _loadUserName() async {
     setState(() => _isLoading = true);
-
     try {
       User? currentUser = FirebaseAuth.instance.currentUser;
       if (currentUser != null) {
-        // First try to get the user document by UID
         DocumentSnapshot userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(currentUser.uid)
             .get();
 
         if (!userDoc.exists) {
-          // If not found by UID, try to find by email
           final querySnapshot = await FirebaseFirestore.instance
               .collection('users')
               .where('email', isEqualTo: currentUser.email)
               .get();
-
           if (querySnapshot.docs.isNotEmpty) {
             userDoc = querySnapshot.docs.first;
           }
@@ -63,7 +59,6 @@ class _AddBlogPostState extends State<AddBlogPost> {
     } catch (e) {
       print('Error loading username: $e');
     } finally {
-      // If username is still null after all attempts, set a default
       if (_userName == null) {
         setState(() {
           _userName = 'Anonymous';
@@ -73,60 +68,52 @@ class _AddBlogPostState extends State<AddBlogPost> {
     }
   }
 
-  Future getImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      }
-    });
-  }
-
   Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate() && _image != null) {
-      final User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('You must be logged in to post.')),
-        );
-        return;
-      }
-
-      try {
+    if (_formKey.currentState?.validate() ?? false) {
+      if (_image != null) {
         setState(() => _isLoading = true);
 
-        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        Reference firebaseStorageRef = FirebaseStorage.instance.ref().child('blog_images/$fileName');
-        UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
-        TaskSnapshot taskSnapshot = await uploadTask;
-        String imageUrl = await taskSnapshot.ref.getDownloadURL();
+        try {
+          String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+          Reference firebaseStorageRef =
+          FirebaseStorage.instance.ref().child('blog_images/$fileName');
+          UploadTask uploadTask = firebaseStorageRef.putFile(_image!);
+          TaskSnapshot taskSnapshot = await uploadTask;
 
-        BlogPost newPost = BlogPost(
-          id: '',
-          title: _titleController.text,
-          authorId: currentUser.uid,
-          authorName: _userName ?? 'Anonymous',
-          date: DateTime.now(),
-          excerpt: _excerptController.text,
-          content: _contentController.text,
-          imageUrl: imageUrl,
-        );
+          String imageUrl = await taskSnapshot.ref.getDownloadURL();
+          await FirebaseFirestore.instance.collection('blog_posts').add({
+            'title': _titleController.text,
+            'excerpt': _excerptController.text,
+            'content': _contentController.text,
+            'imageUrl': imageUrl,
+            'author': _userName,
+            'createdAt': Timestamp.now(),
+          });
 
-        await FirebaseFirestore.instance.collection('blog_posts').add(newPost.toMap());
-        Navigator.pop(context);
-      } catch (e) {
-        print('Error submitting blog post: $e');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Blog post submitted successfully')),
+          );
+          Navigator.pop(context);
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to submit blog post. Please try again.')),
+          );
+        } finally {
+          setState(() => _isLoading = false);
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to submit blog post. Please try again.')),
+          const SnackBar(content: Text('Please select an image')),
         );
-      } finally {
-        setState(() => _isLoading = false);
       }
-    } else if (_image == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select an image for your blog post.')),
-      );
     }
+  }
+
+  Future<void> getImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _image = pickedFile != null ? File(pickedFile.path) : null;
+    });
   }
 
   @override
@@ -154,8 +141,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.person,
-                          color: Theme.of(context).primaryColor),
+                      Icon(Icons.person, color: Theme.of(context).primaryColor),
                       const SizedBox(width: 8),
                       Text(
                         'Posting as: $_userName',
@@ -176,12 +162,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
+                  validator: (value) => value?.isEmpty ?? true ? 'Please enter a title' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -192,12 +173,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter an excerpt';
-                    }
-                    return null;
-                  },
+                  validator: (value) => value?.isEmpty ?? true ? 'Please enter an excerpt' : null,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
@@ -209,12 +185,7 @@ class _AddBlogPostState extends State<AddBlogPost> {
                     ),
                   ),
                   maxLines: 5,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter content';
-                    }
-                    return null;
-                  },
+                  validator: (value) => value?.isEmpty ?? true ? 'Please enter content' : null,
                 ),
                 const SizedBox(height: 20),
                 if (_image != null)

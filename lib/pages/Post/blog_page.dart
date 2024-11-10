@@ -28,7 +28,7 @@ class BlogPage extends StatelessWidget {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('blog_posts')
-            .orderBy('date', descending: true)
+            .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -42,6 +42,10 @@ class BlogPage extends StatelessWidget {
           List<BlogPost> blogPosts = snapshot.data!.docs
               .map((doc) => BlogPost.fromFirestore(doc))
               .toList();
+
+          if (blogPosts.isEmpty) {
+            return const Center(child: Text('No blog posts yet.'));
+          }
 
           return ListView.builder(
             itemCount: blogPosts.length,
