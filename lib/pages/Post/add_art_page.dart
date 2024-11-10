@@ -3,9 +3,10 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AddArtPage extends StatefulWidget {
-  const AddArtPage({super.key});
+  const AddArtPage({Key? key}) : super(key: key);
 
   @override
   _AddArtPageState createState() => _AddArtPageState();
@@ -300,6 +301,12 @@ class _AddArtPageState extends State<AddArtPage> {
       _formKey.currentState!.save();
 
       try {
+        // Get the current user
+        User? currentUser = FirebaseAuth.instance.currentUser;
+        if (currentUser == null) {
+          throw Exception('No user logged in');
+        }
+
         // Upload the image to Firebase Storage and get the URL
         String imageUrl = await _uploadImage(_mainArtImage!);
 
@@ -309,8 +316,13 @@ class _AddArtPageState extends State<AddArtPage> {
           'description': _descriptionController.text,
           'imageUrl': imageUrl,
           'softwareUsed': _softwareController.text,
-          'tags': _selectedTags, // Changed from 'tag' to 'tags'
+          'tags': _selectedTags,
           'createdAt': FieldValue.serverTimestamp(),
+          'authorId': currentUser.uid,
+          'authorName': currentUser.displayName ?? currentUser.email?.split('@')[0] ?? 'Anonymous',
+          'likes': 0,
+          'views': 0,
+          'comments': [],
         });
 
         // Show success message

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'EditArtworkPage.dart';
 import 'fullscreen_photo_view.dart';
 
 class DetailsPage extends StatefulWidget {
   final String artworkId;
 
-  const DetailsPage({super.key, required this.artworkId});
+  const DetailsPage({Key? key, required this.artworkId}) : super(key: key);
 
   @override
   _DetailsPageState createState() => _DetailsPageState();
@@ -17,6 +18,8 @@ class _DetailsPageState extends State<DetailsPage> {
   late Stream<DocumentSnapshot> _artworkStream;
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _editCommentController = TextEditingController();
+  String? _editingCommentId;
+  User? currentUser;
 
   @override
   void initState() {
@@ -25,10 +28,11 @@ class _DetailsPageState extends State<DetailsPage> {
         .collection('artworks')
         .doc(widget.artworkId)
         .snapshots();
+    currentUser = FirebaseAuth.instance.currentUser;
   }
 
   void _handleArtworkUpdated(Map<String, dynamic> updatedArtwork) {
-    setState(() {});
+    setState(() {}); // Trigger a rebuild
   }
 
   Future<void> _deleteArtwork(String artworkId, String imageUrl) async {
@@ -85,13 +89,15 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   void _addComment() {
-    if (_commentController.text.isNotEmpty) {
+    if (_commentController.text.isNotEmpty && currentUser != null) {
       FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
         'comments': FieldValue.arrayUnion([
           {
+            'id': DateTime.now().millisecondsSinceEpoch.toString(),
             'text': _commentController.text,
             'timestamp': DateTime.now().toUtc().millisecondsSinceEpoch,
-            'id': DateTime.now().toUtc().millisecondsSinceEpoch.toString(),
+            'authorId': currentUser!.uid,
+            'authorName': currentUser!.displayName ?? 'Anonymous',
           }
         ]),
       }).then((_) {
@@ -108,105 +114,52 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   void _editComment(Map<String, dynamic> comment) {
-    if (comment['text'] == null) return;
-
-    _editCommentController.text = comment['text'].toString();
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: const Text('Edit Comment', style: TextStyle(color: Colors.white)),
-          content: TextField(
-            controller: _editCommentController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: "Edit your comment",
-              hintStyle: const TextStyle(color: Colors.white54),
-              enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white54),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).primaryColor),
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Save', style: TextStyle(color: Theme.of(context).primaryColor)),
-              onPressed: () {
-                if (_editCommentController.text.isNotEmpty) {
-                  FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
-                    List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
-                    int index = comments.indexWhere((c) => c['id'] == comment['id']);
-                    if (index != -1) {
-                      comments[index]['text'] = _editCommentController.text;
-                      FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
-                        'comments': comments,
-                      }).then((_) {
-                        Navigator.of(context).pop();
-                      }).catchError((error) {
-                        print('Error updating comment: $error');
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Failed to update comment. Please try again.')),
-                        );
-                      });
-                    }
-                  });
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
+    setState(() {
+      _editingCommentId = comment['id'];
+      _editCommentController.text = comment['text'];
+    });
   }
 
-  void _deleteComment(Map<String, dynamic> comment) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: Colors.grey[900],
-          title: const Text('Delete Comment', style: TextStyle(color: Colors.white)),
-          content: const Text('Are you sure you want to delete this comment?',
-              style: TextStyle(color: Colors.white)),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel', style: TextStyle(color: Theme.of(context).primaryColor)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () {
-                FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
-                  List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
-                  comments.removeWhere((c) => c['id'] == comment['id']);
-                  FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
-                    'comments': comments,
-                  }).then((_) {
-                    Navigator.of(context).pop();
-                  }).catchError((error) {
-                    print('Error deleting comment: $error');
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Failed to delete comment. Please try again.')),
-                    );
-                  });
-                });
-              },
-            ),
-          ],
+  void _saveEditedComment(String commentId) {
+    if (_editCommentController.text.isNotEmpty) {
+      FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
+        List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
+        int index = comments.indexWhere((c) => c['id'] == commentId);
+        if (index != -1) {
+          comments[index]['text'] = _editCommentController.text;
+          FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
+            'comments': comments,
+          }).then((_) {
+            setState(() {
+              _editingCommentId = null;
+              _editCommentController.clear();
+            });
+          }).catchError((error) {
+            print('Error updating comment: $error');
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to update comment. Please try again.')),
+            );
+          });
+        }
+      });
+    }
+  }
+
+  void _deleteComment(String commentId) {
+    FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).get().then((doc) {
+      List<dynamic> comments = List.from(doc.data()!['comments'] ?? []);
+      comments.removeWhere((c) => c['id'] == commentId);
+      FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
+        'comments': comments,
+      }).then((_) {
+        setState(() {});
+      }).catchError((error) {
+        print('Error deleting comment: $error');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete comment. Please try again.')),
         );
-      },
-    );
+      });
+    });
   }
 
   Widget _buildTag(String tag) {
@@ -254,12 +207,13 @@ class _DetailsPageState extends State<DetailsPage> {
         artwork['id'] = snapshot.data!.id;
 
         List<dynamic> comments = List.from(artwork['comments'] ?? []);
+        bool isOwner = currentUser?.uid == artwork['authorId'];
 
         return Scaffold(
           appBar: AppBar(
             title: const Text('Artwork Details'),
             backgroundColor: Colors.black,
-            actions: [
+            actions: isOwner ? [
               IconButton(
                 icon: Icon(Icons.edit, color: Theme.of(context).primaryColor),
                 onPressed: () {
@@ -278,7 +232,7 @@ class _DetailsPageState extends State<DetailsPage> {
                 icon: Icon(Icons.delete, color: Theme.of(context).primaryColor),
                 onPressed: () => _deleteArtwork(artwork['id'], artwork['imageUrl']),
               ),
-            ],
+            ] : null,
           ),
           backgroundColor: Colors.black,
           body: SingleChildScrollView(
@@ -318,7 +272,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'By ${artwork['author'] ?? 'Unknown'}',
+                        'By ${artwork['authorName'] ?? 'Unknown'}',
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white),
                       ),
                       const SizedBox(height: 16),
@@ -385,18 +339,29 @@ class _DetailsPageState extends State<DetailsPage> {
                         itemCount: comments.length,
                         itemBuilder: (context, index) {
                           final comment = comments[index] as Map<String, dynamic>;
+                          final bool isCommentOwner = currentUser?.uid == comment['authorId'];
                           return ListTile(
-                            title: Text(
-                              comment['text']?.toString() ?? '',
+                            title: _editingCommentId == comment['id']
+                                ? TextField(
+                              controller: _editCommentController,
+                              style: const TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                  icon: const Icon(Icons.check, color: Colors.green),
+                                  onPressed: () => _saveEditedComment(comment['id']),
+                                ),
+                              ),
+                            )
+                                : Text(
+                              comment['text'] ?? '',
                               style: const TextStyle(color: Colors.white),
                             ),
                             subtitle: Text(
-                              comment['timestamp'] != null
-                                  ? DateTime.fromMillisecondsSinceEpoch(comment['timestamp']).toString()
-                                  : 'Unknown time',
+                              '${comment['authorName']} - ${DateTime.fromMillisecondsSinceEpoch(comment['timestamp']).toString()}',
                               style: const TextStyle(color: Colors.white70),
                             ),
-                            trailing: Row(
+                            trailing: isCommentOwner
+                                ? Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
@@ -405,10 +370,11 @@ class _DetailsPageState extends State<DetailsPage> {
                                 ),
                                 IconButton(
                                   icon: const Icon(Icons.delete, color: Colors.white),
-                                  onPressed: () => _deleteComment(comment),
+                                  onPressed: () => _deleteComment(comment['id']),
                                 ),
                               ],
-                            ),
+                            )
+                                : null,
                           );
                         },
                       ),
