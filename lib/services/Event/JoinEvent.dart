@@ -76,4 +76,18 @@ class joinevent {
       print('Error joining event: $e');
     }
   }
+  Future<int> getJoinedCount(String eventId) async {
+    try {
+      final eventSnapshot = await FirebaseFirestore.instance.collection('events').doc(eventId).get();
+      if (eventSnapshot.exists) {
+        final eventData = eventSnapshot.data() as Map<String, dynamic>;
+        final joinedMembers = List.from(eventData['joinedMembers'] ?? []);
+        return joinedMembers.length; // Count of joined members
+      }
+      return 0; // Event not found, return 0
+    } catch (e) {
+      print('Error getting joined count: $e');
+      return 0;
+    }
+  }
 }

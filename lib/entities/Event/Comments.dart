@@ -1,11 +1,11 @@
 class Comment {
-  final String id; // Add this line
+  final String id;
   final String name;
   final String comment;
   final String eventId;
 
   Comment({
-    required this.id, // Include id in the constructor
+    required this.id,
     required this.name,
     required this.comment,
     required this.eventId,

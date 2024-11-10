@@ -19,13 +19,11 @@ class WeatherWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Display city name
             Text(
               'City: $cityName',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 8),
-            // Display weather description
             Text(
               'Weather: ${weatherData['description'] ?? 'N/A'}',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -40,7 +38,6 @@ class WeatherWidget extends StatelessWidget {
                     height: 50,
                   ),
                 SizedBox(width: 8),
-                // Display temperature
                 Text(
                   'Temperature: ${weatherData['temp'] ?? 'N/A'}°C',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),

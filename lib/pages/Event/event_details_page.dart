@@ -12,8 +12,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/Event/JoinEvent.dart';
 
 class EventDetailsPage extends StatefulWidget {
-  final Events event;
 
+  final Events event;
   EventDetailsPage({required this.event});
 
   @override
@@ -31,6 +31,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   Map<String, dynamic> _weatherData = {};
   Map<String, dynamic>? userData;
   String? currentUserUsername;
+  int joinedCount = 0;
 
   @override
   void initState() {
@@ -38,6 +39,14 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     _loadComments(widget.event.id);
     _fetchWeather(widget.event.location);
     fetchUserData();
+    _getJoinedCount();
+  }
+
+  Future<void> _getJoinedCount() async {
+    int count = await joinevent().getJoinedCount(widget.event.id);
+    setState(() {
+      joinedCount = count;
+    });
   }
 
   Future<void> fetchUserData() async {
@@ -310,16 +319,20 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   @override
   Widget build(BuildContext context) {
     String username = userData?['username'] ?? 'Unknown User';
-    bool isOwner = (username == widget.event.username);
+
+    bool isOwnerEvent = (username == widget.event.username);
+
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.title),
         actions: [
-          if (isOwner) IconButton(
+          if (isOwnerEvent) IconButton(
             icon: Icon(Icons.edit),
             onPressed: _modifyEvent,
           ),
-          if (isOwner) IconButton(
+          if (isOwnerEvent) IconButton(
             icon: Icon(Icons.delete),
             onPressed: _confirmDeleteEvent,
           ),
@@ -373,6 +386,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               children: [
                 Icon(
                   Icons.person,
+                  color: Colors.blue,
                   size: 48,
                 ),
                 SizedBox(width: 8),
@@ -424,8 +438,19 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ),
               ],
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 16),
 
+            Row(
+              children: [
+                Icon(Icons.people, color: Colors.blue),
+                SizedBox(width: 4),
+                Text(
+                  '$joinedCount people joined',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
             Center(
               child: ElevatedButton(
                 onPressed: () async {
@@ -481,20 +506,22 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
               style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 8),
-
             Column(
               children: _comments.asMap().entries.map((entry) {
                 int index = entry.key;
                 Comment comment = entry.value;
+                bool isOwnerComm = (username == comment.name);
                 return Card(
                   margin: EdgeInsets.symmetric(vertical: 4),
                   child: ListTile(
                     title: Text(comment.name),
                     subtitle: Text(comment.comment),
-                    trailing: IconButton(
+                    trailing: isOwnerComm
+                        ? IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _confirmDeleteComment(index),
-                    ),
+                    )
+                        : null,
                   ),
                 );
               }).toList(),
