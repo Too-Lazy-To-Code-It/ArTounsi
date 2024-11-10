@@ -1,13 +1,52 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../Post/blog_page.dart';
 
-class CustomSidebar extends StatelessWidget {
+class CustomSidebar extends StatefulWidget {
   final Function(int) onItemTapped;
 
   const CustomSidebar({
     Key? key,
     required this.onItemTapped,
   }) : super(key: key);
+
+  @override
+  _CustomSidebarState createState() => _CustomSidebarState();
+}
+
+class _CustomSidebarState extends State<CustomSidebar> {
+  String? _userImage;
+  Map<String, dynamic>? userData;
+
+  final user = FirebaseAuth.instance.currentUser!;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+
+  Future<void> fetchUserData() async {
+    print("inside fetchUserData");
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+          _userImage = userData?['image'] ?? ''; // if no image, set empty string
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,21 +64,25 @@ class CustomSidebar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const CircleAvatar(
+                  _userImage == null || _userImage!.isEmpty
+                      ? const CircleAvatar(
                     radius: 30,
-                    backgroundImage:
-                        AssetImage('assets/images/profile_picture.jpg'),
+                    backgroundImage: AssetImage('assets/images/img.png'),
+                  )
+                      : CircleAvatar(
+                    radius: 30,
+                    backgroundImage: NetworkImage(_userImage!),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Ankara Methi',
+                    userData?['username'] ?? 'not username available',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge
                         ?.copyWith(color: Colors.white),
                   ),
                   Text(
-                    'ankara.methi@example.com',
+                    user.email ?? 'Unknown Email',
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium
@@ -76,9 +119,9 @@ class CustomSidebar extends StatelessWidget {
       leading: Icon(icon, color: Colors.white),
       title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
       onTap: onTap ??
-          () {
+              () {
             if (index >= 0) {
-              onItemTapped(index);
+              widget.onItemTapped(index);
             }
             Navigator.pop(context);
           },

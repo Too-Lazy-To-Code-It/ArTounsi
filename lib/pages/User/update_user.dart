@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class UpdateUser extends StatefulWidget {
   const UpdateUser({super.key});
@@ -19,6 +20,7 @@ class _UpdateUserState extends State<UpdateUser> {
   bool? _fullTime;
   bool? _freelance;
   String? _userId;
+  String? _userImage;
 
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
@@ -61,6 +63,8 @@ class _UpdateUserState extends State<UpdateUser> {
           _summaryController.text = userData?['summary'] ?? '';
           _freelance = userData?['freelance'] ?? false;
           _fullTime = userData?['fulltime'] ?? false;
+          _fullTime = userData?['fulltime'] ?? false;
+          _userImage = userData?['image'] ?? '';
           _userId = querySnapshot.docs.first.id;
           print("User ID: $_userId");
         });
@@ -78,8 +82,57 @@ class _UpdateUserState extends State<UpdateUser> {
       setState(() {
         _imageFile = File(pickedFile.path);
       });
+
+      // Upload the image to Firebase Storage
+      try {
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString(); // Unique file name
+        firebase_storage.Reference storageReference = firebase_storage.FirebaseStorage.instance
+            .ref()
+            .child('user_images/$fileName');
+
+        // Upload the file
+        firebase_storage.UploadTask uploadTask = storageReference.putFile(_imageFile!);
+        await uploadTask;
+
+        // Get the download URL
+        String downloadURL = await storageReference.getDownloadURL();
+
+        // Update Firestore with the image URL
+        await updateUserImage(downloadURL);
+
+        print("Image uploaded successfully: $downloadURL");
+      } catch (e) {
+        print("Error uploading image: $e");
+      }
     }
   }
+
+  Future<void> updateUserImage(String imageUrl) async {
+    print("inside updaloadUserImage");
+    print("_userId $_userId");
+    if (_userId != null) {
+      try {
+        print("inside updaloadUserImage 5");
+        final userDoc = FirebaseFirestore.instance.collection('users').doc(_userId);
+        await userDoc.update({
+          'image': imageUrl,  // Store the image URL in Firestore
+        });
+
+        print("User image URL updated successfully");
+        // Optionally show a success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile image updated successfully!")),
+        );
+      } catch (e) {
+        print("Error updating user image: $e");
+        // Optionally show an error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Failed to update profile image")),
+        );
+      }
+    }
+  }
+
 
   Future<void> updateUserData() async {
     if(_userId != null)
@@ -133,7 +186,9 @@ class _UpdateUserState extends State<UpdateUser> {
                   radius: 200,
                   backgroundImage: _imageFile != null
                       ? FileImage(_imageFile!)
-                      : const AssetImage('assets/images/profile_picture.jpg'),
+                      : (_userImage != null && _userImage!.isNotEmpty)
+                      ? NetworkImage(_userImage!)  // Use NetworkImage for URLs
+                      : const AssetImage('assets/images/img.png') as ImageProvider,
                 ),
               ),
               const SizedBox(height: 20),

@@ -13,6 +13,7 @@ class UserPage extends StatefulWidget {
 
 class _UserPageState extends State<UserPage> {
   final user = FirebaseAuth.instance.currentUser!;
+  String? _userImage;
   Map<String, dynamic>? userData;
   late final SharedPreferences prefs;
 
@@ -39,6 +40,7 @@ class _UserPageState extends State<UserPage> {
       if (querySnapshot.docs.isNotEmpty) {
         setState(() {
           userData = querySnapshot.docs.first.data();
+          _userImage = userData?['image'] ?? ''; // if no image, set empty string
           print("userData ${userData}");
 
         });
@@ -58,9 +60,14 @@ class _UserPageState extends State<UserPage> {
         padding: const EdgeInsets.symmetric(vertical: 30), // Add vertical padding
         children: [
           Center(
-            child: const CircleAvatar(
+            child: _userImage == null || _userImage!.isEmpty
+                ? const CircleAvatar(
               radius: 100,
-              backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+              backgroundImage: AssetImage('assets/images/img.png'),
+            )
+                : CircleAvatar(
+              radius: 100,
+              backgroundImage: NetworkImage(_userImage!),
             ),
           ),
           const SizedBox(height: 20),
