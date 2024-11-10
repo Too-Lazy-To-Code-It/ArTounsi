@@ -32,7 +32,7 @@ class _DetailsPageState extends State<DetailsPage> {
   }
 
   void _handleArtworkUpdated(Map<String, dynamic> updatedArtwork) {
-    setState(() {}); // Trigger a rebuild
+    setState(() {});
   }
 
   Future<void> _deleteArtwork(String artworkId, String imageUrl) async {
@@ -82,9 +82,44 @@ class _DetailsPageState extends State<DetailsPage> {
     }
   }
 
-  void _likeArtwork() {
-    FirebaseFirestore.instance.collection('artworks').doc(widget.artworkId).update({
-      'likes': FieldValue.increment(1),
+  void _likeArtwork(String artworkId) async {
+    if (currentUser == null) return;
+
+    final artworkRef = FirebaseFirestore.instance.collection('artworks').doc(artworkId);
+    final userLikesRef = FirebaseFirestore.instance.collection('user_likes').doc(currentUser!.uid);
+
+    FirebaseFirestore.instance.runTransaction((transaction) async {
+      final artworkSnapshot = await transaction.get(artworkRef);
+      final userLikesSnapshot = await transaction.get(userLikesRef);
+
+      if (!artworkSnapshot.exists) {
+        throw Exception("Artwork does not exist!");
+      }
+
+      List<String> likedArtworks = [];
+      if (userLikesSnapshot.exists) {
+        likedArtworks = List<String>.from(userLikesSnapshot.data()?['liked_artworks'] ?? []);
+      }
+
+      if (likedArtworks.contains(artworkId)) {
+        // User has already liked this artwork, so remove the like
+        likedArtworks.remove(artworkId);
+        transaction.update(artworkRef, {'likes': FieldValue.increment(-1)});
+      } else {
+        // User hasn't liked this artwork yet, so add the like
+        likedArtworks.add(artworkId);
+        transaction.update(artworkRef, {'likes': FieldValue.increment(1)});
+      }
+
+      transaction.set(userLikesRef, {'liked_artworks': likedArtworks}, SetOptions(merge: true));
+    }).then((_) {
+      // Transaction successful
+      setState(() {}); // Trigger a rebuild to update the UI
+    }).catchError((error) {
+      print("Error updating like: $error");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update like. Please try again.')),
+      );
     });
   }
 
@@ -279,7 +314,7 @@ class _DetailsPageState extends State<DetailsPage> {
                       Row(
                         children: [
                           GestureDetector(
-                            onTap: _likeArtwork,
+                            onTap: () => _likeArtwork(artwork['id']),
                             child: Icon(Icons.favorite, color: Theme.of(context).colorScheme.secondary),
                           ),
                           const SizedBox(width: 8),
