@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
-import 'details_page.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeCard extends StatelessWidget {
+  final String id;
   final String imageUrl;
   final String title;
   final String author;
   final int likes;
   final int views;
   final int comments;
-  final String tag;
-  final List<Map<String, dynamic>> allPosts;
-  final int index;
+  final List<String> tag;
+  final VoidCallback onTap;
 
   const HomeCard({
-    Key? key,
+    super.key,
+    required this.id,
     required this.imageUrl,
     required this.title,
     required this.author,
@@ -21,9 +22,8 @@ class HomeCard extends StatelessWidget {
     required this.views,
     required this.comments,
     required this.tag,
-    required this.allPosts,
-    required this.index,
-  }) : super(key: key);
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +34,10 @@ class HomeCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => DetailsPage(
-                allPosts: allPosts,
-                initialIndex: index,
-              ),
-            ),
-          );
+          FirebaseFirestore.instance.collection('artworks').doc(id).update({
+            'views': FieldValue.increment(1),
+          });
+          onTap();
         },
         child: Image.network(
           imageUrl,

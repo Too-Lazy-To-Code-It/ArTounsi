@@ -1,7 +1,6 @@
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
-    id 'com.google.gms.google-services'
     // END: FlutterFire Configuration
     id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -32,7 +31,6 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         minSdkVersion 23
-
     }
 
     buildTypes {
@@ -47,6 +45,7 @@ android {
 flutter {
     source = "../.."
 }
-dependencies{
+dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.5.1')
 }
+apply plugin: 'com.google.gms.google-services'

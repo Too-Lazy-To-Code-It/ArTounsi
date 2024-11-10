@@ -7,9 +7,9 @@ class CustomSidebar extends StatefulWidget {
   final Function(int) onItemTapped;
 
   const CustomSidebar({
-    Key? key,
+    super.key,
     required this.onItemTapped,
-  }) : super(key: key);
+  });
 
   @override
   _CustomSidebarState createState() => _CustomSidebarState();
