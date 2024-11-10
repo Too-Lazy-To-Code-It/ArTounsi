@@ -1,7 +1,10 @@
 import 'dart:io';
 import 'package:Artounsi/theme/app_theme.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UpdateUser extends StatefulWidget {
   const UpdateUser({super.key});
@@ -12,28 +15,61 @@ class UpdateUser extends StatefulWidget {
 
 class _UpdateUserState extends State<UpdateUser> {
   String? _username;
-  String? _email;
   String? _summary;
-  bool _receiveNotifications = true;
-  bool _enableDarkMode = false;
-  bool _showOnlineStatus = true;
+  bool? _fullTime;
+  bool? _freelance;
+  String? _userId;
 
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   File? _imageFile;
 
-  // Default values
-  final String _defaultUsername = "Ankara Methi";
-  final String _defaultEmail = "ankara.methi@exemple.com";
-  final String _defaultSummary = "Ankara Methi has not yet provided a summary";
+  final user = FirebaseAuth.instance.currentUser!;
+  Map<String, dynamic>? userData;
+  late final SharedPreferences prefs;
+
+  // Controllers for the form fields
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _summaryController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Initialize default values
-    _username = _defaultUsername;
-    _email = _defaultEmail;
-    _summary = _defaultSummary;
+    fetchUserData();
+  }
+
+  @override
+  void dispose() {
+    // Dispose the controllers when the widget is disposed
+    _usernameController.dispose();
+    _summaryController.dispose();
+    super.dispose();
+  }
+
+  Future<void> fetchUserData() async {
+    print("inside fetchUserData");
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+          _usernameController.text = userData?['username'] ?? '';
+          _summaryController.text = userData?['summary'] ?? '';
+          _freelance = userData?['freelance'] ?? false;
+          _fullTime = userData?['fulltime'] ?? false;
+          _userId = querySnapshot.docs.first.id;
+          print("User ID: $_userId");
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   Future<void> _pickImage() async {
@@ -43,6 +79,40 @@ class _UpdateUserState extends State<UpdateUser> {
         _imageFile = File(pickedFile.path);
       });
     }
+  }
+
+  Future<void> updateUserData() async {
+    if(_userId != null)
+      {
+        try {
+          print("user ID is not null : $_userId");
+
+          final userDoc = FirebaseFirestore.instance.collection('users').doc(_userId);
+
+          await userDoc.update({
+            'username': _usernameController.text,
+            'summary': _summaryController.text,
+            'fulltime': _fullTime ?? false,
+            'freelance': _freelance ?? false,
+          });
+
+          print("User data updated successfully");
+          // Optionally show a success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Profile updated successfully!")),
+          );
+        } catch (e) {
+          print("Error updating user data: $e");
+          // Optionally show an error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to update profile")),
+          );
+        }
+      }
+    else
+      {
+        print("_userId is null");
+      }
   }
 
   @override
@@ -70,7 +140,7 @@ class _UpdateUserState extends State<UpdateUser> {
               Container(
                 margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                 child: TextFormField(
-                  initialValue: _username,
+                  controller: _usernameController,
                   decoration: const InputDecoration(
                       border: OutlineInputBorder(), labelText: "Username"),
                   onSaved: (String? value) {
@@ -78,7 +148,7 @@ class _UpdateUserState extends State<UpdateUser> {
                   },
                   validator: (String? value) {
                     if (value!.isEmpty || value.length < 5) {
-                      return "Le username must have at least 5 characters";
+                      return "The username must have at least 5 characters";
                     } else {
                       return null;
                     }
@@ -88,28 +158,7 @@ class _UpdateUserState extends State<UpdateUser> {
               Container(
                 margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                 child: TextFormField(
-                  initialValue: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                      border: OutlineInputBorder(), labelText: "Email"),
-                  onSaved: (String? value) {
-                    _email = value;
-                  },
-                  validator: (String? value) {
-                    RegExp regex = RegExp(
-                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
-                    if (value!.isEmpty || !regex.hasMatch(value)) {
-                      return "Email must have valid form";
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                child: TextFormField(
-                  initialValue: _summary,
+                  controller: _summaryController,
                   keyboardType: TextInputType.multiline,
                   maxLines: 10,
                   decoration: const InputDecoration(
@@ -129,24 +178,11 @@ class _UpdateUserState extends State<UpdateUser> {
                       children: [
                         const Text("Full-time employment"),
                         Switch(
-                          value: _receiveNotifications,
+                          value: _fullTime ?? false,
                           onChanged: (bool value) {
                             setState(() {
-                              _receiveNotifications = value;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text("Contract"),
-                        Switch(
-                          value: _enableDarkMode,
-                          onChanged: (bool value) {
-                            setState(() {
-                              _enableDarkMode = value;
+                              _fullTime = value;
+                              _freelance = !value;
                             });
                           },
                         ),
@@ -157,10 +193,11 @@ class _UpdateUserState extends State<UpdateUser> {
                       children: [
                         const Text("Freelance"),
                         Switch(
-                          value: _showOnlineStatus,
+                          value: _freelance ?? false,
                           onChanged: (bool value) {
                             setState(() {
-                              _showOnlineStatus = value;
+                              _freelance = value;
+                              _fullTime = !value;
                             });
                           },
                         ),
@@ -174,12 +211,13 @@ class _UpdateUserState extends State<UpdateUser> {
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                    MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                   ),
                   child: const Text("Update"),
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
+                      updateUserData();
                       Navigator.pop(context);
                     }
                   },

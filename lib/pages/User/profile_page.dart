@@ -1,4 +1,3 @@
-import 'package:Artounsi/pages/User/Avatar.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,6 +23,7 @@ class _UserPageState extends State<UserPage> {
   }
 
   Future<void> fetchUserData() async {
+    print("inside fetchUserData");
     try {
       // Query Firestore to get the user document by email
       final querySnapshot = await FirebaseFirestore.instance
@@ -31,9 +31,16 @@ class _UserPageState extends State<UserPage> {
           .where('email', isEqualTo: user.email)
           .get();
 
+      print("querySnapshot ${querySnapshot}");
+
+      print("querySnapshot.docs.isNotEmpty ${querySnapshot.docs.isNotEmpty}");
+      print("querySnapshot.docs.first.data() ${querySnapshot.docs.first.data()}");
+
       if (querySnapshot.docs.isNotEmpty) {
         setState(() {
           userData = querySnapshot.docs.first.data();
+          print("userData ${userData}");
+
         });
       } else {
         // Handle the case where the user document was not found
@@ -62,41 +69,19 @@ class _UserPageState extends State<UserPage> {
             children: [
               const SizedBox(width: 20),
               Text(
-                userData?['email'],
+                userData?['email'] ?? 'no email available',
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),
             ],
           ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: ElevatedButton(
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                    AppTheme.primaryColor),
-              ),
-              child: const Text("Avatar"),
-              onPressed: () {
-               // if (_keyForm.currentState!.validate()) {
-                 // _keyForm.currentState!.save();
-                  // Navigator.pushNamed(context, "/mainScreen");
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) =>  AvatarPage(prefs:prefs)),
-                );
-                //  Login();
-               // }
-              },
-            ),
-          ),
-
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(width: 20),
               Text(
-                userData?['username'],
+                userData?['username'] ?? 'no email username',
                 style: TextStyle(color: AppTheme.primaryColor),
               ),
               const SizedBox(width: 4),

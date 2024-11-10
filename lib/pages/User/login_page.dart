@@ -1,5 +1,6 @@
 import 'package:Artounsi/entities/Shop/Cart.dart';
 import 'package:Artounsi/pages/MainScreen/main_screen.dart';
+import 'package:Artounsi/pages/User/session.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,59 +18,20 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     late String? _email;
     late String? _password;
-    final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     final Cart cart = Cart();
     final _emailController = TextEditingController();
     final _passwordController = TextEditingController();
 
     Future Login() async {
-      User? user = FirebaseAuth.instance.currentUser;
-      await user?.reload();
-      if (user != null && user.emailVerified) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Alert"),
-              content: Text("Account Verified"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the alert dialog
-                  },
-                  child: Text("OK"),
-                ),
-              ],
-            );
-          },
-        );
-        await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
-      }
-      else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: Text("Alert"),
-              content: Text("Account Not Verified"),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the alert dialog
-                  },
-                  child: Text("OK"),
-                ),
-              ],
-            );
-          },
-        );
-      }
+     await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
+
       if (_keyForm.currentState!.validate()) {
         _keyForm.currentState!.save();
-        Navigator.pushNamed(context, "/mainScreen");
+        // Navigator.pushNamed(context, "/mainScreen");
        await Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => MainScreen(cart: cart),
+            builder: (context) => Session(),
           ),
         );
       }

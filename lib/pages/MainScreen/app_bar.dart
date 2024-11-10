@@ -60,12 +60,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           icon: const Icon(Icons.logout),
           onPressed: () {
             FirebaseAuth.instance.signOut();
-            Navigator.pushNamed(context, "/loginPage");
+           // Navigator.pushNamed(context, "/loginPage");
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (context) => LoginPage(),
               ),
-            );          },
+            );
+            },
           tooltip: 'Logout',
         ),
       ],

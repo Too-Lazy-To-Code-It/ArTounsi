@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^5.4.4
   shared_preferences: ^2.0.15
   toggle_switch: ^2.0.1
+  firebase_storage: ^12.3.5
 
 
 

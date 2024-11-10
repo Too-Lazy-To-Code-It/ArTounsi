@@ -1,5 +1,4 @@
 import 'package:Artounsi/pages/MainScreen/main_screen.dart';
-import 'package:Artounsi/pages/User/Avatar.dart';
 import 'package:Artounsi/pages/User/confirm_password_page.dart';
 import 'package:Artounsi/pages/User/forgot_password_page.dart';
 import 'package:Artounsi/pages/User/login_page.dart';
