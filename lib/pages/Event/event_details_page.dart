@@ -6,10 +6,10 @@ import '../../entities/Event/Events.dart';
 import '../../entities/Event/Comments.dart';
 import '../../services/Event/CommentService.dart';
 import '../../services/Event/EventService.dart';
-import 'Full_Screen_Img.dart';
 import 'modify_event_page.dart';
 import 'WeatherService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/Event/JoinEvent.dart';
 
 class EventDetailsPage extends StatefulWidget {
   final Events event;
@@ -209,7 +209,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
       try {
         DocumentReference newDocRef = await _commentService.addComment(newComment);
-
         setState(() {
           newComment = Comment(
             id: newDocRef.id,
@@ -367,7 +366,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  widget.event.username, // Dynamically display the username using widget.event.username
+                  widget.event.username,
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -381,7 +380,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
             SizedBox(height: 8),
 
-            // Event Location with Icon
             Row(
               children: [
                 Icon(Icons.location_on, color: Colors.blue),
@@ -417,27 +415,62 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             ),
             SizedBox(height: 24),
 
-            // Join Event Button
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('You have joined the event!')),
+                  bool isUserAlreadyJoined = await joinevent().checkIfUserJoined(widget.event.id);
+
+                  if (isUserAlreadyJoined) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('You have already joined this event.')),
+                    );
+                    return;
+                  }
+
+                  bool? confirmJoin = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Confirm Join Event'),
+                        content: Text('Are you sure you want to join this event?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                            },
+                            child: Text('Join'),
+                          ),
+                        ],
+                      );
+                    },
                   );
+
+                  if (confirmJoin == true) {
+                    await joinevent().joinEvent(widget.event.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('You have joined the event!')),
+                    );
+                  }
                 },
                 child: Text('Join Event'),
               ),
+
+
             ),
             SizedBox(height: 24),
 
-            // Comments Section
             Text(
               'Comments',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 8),
 
-            // Comments List
             Column(
               children: _comments.asMap().entries.map((entry) {
                 int index = entry.key;
@@ -501,10 +534,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       ),
     );
   }
-
-
-
-
 
   Widget _buildCommentItem(BuildContext context, Comment comment, int index) {
     return Card(

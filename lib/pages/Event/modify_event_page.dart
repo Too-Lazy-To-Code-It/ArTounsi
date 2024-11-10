@@ -97,23 +97,22 @@ class _ModifyEventState extends State<ModifyEvent> {
         _isLoading = true; // Set loading state
       });
       try {
-        // Get current username from FirebaseAuth (or any other method you're using)
         String username = FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous';
 
         final updatedEvent = Events(
-          widget.eventRef.id, // Pass the event ID for modification
+          widget.eventRef.id,
           _titleController.text,
-          _existingImageUrl ?? '', // Assuming an existing image URL or empty string
+          _existingImageUrl ?? '',
           _selectedDate,
           _descriptionController.text,
-          _selectedCity ?? '', // Use selected city as location
-          username, // Include the username
+          _selectedCity ?? '',
+          username,
         );
 
         await _eventService.modifyEvent(
-          widget.eventRef.id, // Pass the event ID
+          widget.eventRef.id,
           updatedEvent,
-          newImage: _imagePath != null ? File(_imagePath!) : null, // Pass new image if available
+          newImage: _imagePath != null ? File(_imagePath!) : null,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,7 +126,7 @@ class _ModifyEventState extends State<ModifyEvent> {
         );
       } finally {
         setState(() {
-          _isLoading = false; // Reset loading state
+          _isLoading = false;
         });
       }
     }
@@ -165,7 +164,7 @@ class _ModifyEventState extends State<ModifyEvent> {
         appBar: AppBar(
           title: Text('Modify Event'),
         ),
-        body: _isLoading // Conditional rendering based on loading state
+        body: _isLoading
             ? Center(child: CircularProgressIndicator())
             : Form(
           key: _formKey,

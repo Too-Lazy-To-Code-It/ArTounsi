@@ -58,8 +58,6 @@ class _AddEventState extends State<AddEvent> {
     }
   }
 
-
-
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       if (_imagePath == null) {
@@ -78,18 +76,16 @@ class _AddEventState extends State<AddEvent> {
         _isLoading = true;
       });
       try {
-        // Fetch the current user's username from FirebaseAuth
         User? user = FirebaseAuth.instance.currentUser;
         String username = user != null ? user.displayName ?? 'Anonymous' : 'Anonymous';
-
         final newEvent = Events(
           '',
           _titleController.text,
           '',
           _selectedDate,
           _descriptionController.text,
-          _selectedCity!, // Add selected city here
-          username, // Add username here
+          _selectedCity!,
+          username,
         );
 
         final imageFile = File(_imagePath!);
@@ -105,7 +101,7 @@ class _AddEventState extends State<AddEvent> {
         _titleController.clear();
         _descriptionController.clear();
         setState(() {
-          _selectedCity = null; // Reset selected city
+          _selectedCity = null;
           _imagePath = null;
           _selectedDate = DateTime.now();
         });

@@ -70,7 +70,6 @@ class EventService {
     }
   }
 
-  // Function to delete an event from Firestore
   Future<void> deleteEvent(String eventId) async {
     try {
       DocumentSnapshot doc = await _db.collection('events').doc(eventId).get();
