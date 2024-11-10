@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:Artounsi/pages/User/login_page.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -46,7 +47,17 @@ class _RegisterPageState extends State<RegisterPage> {
     await addUsersDetails(_usernameController.text.trim(), _emailController.text.trim(), _passwordController.text.trim());
     if (userCredential.user != null && !userCredential.user!.emailVerified) {
       await userCredential.user!.sendEmailVerification();
-      print("E-mail de vérification envoyé.");
+      String message =
+          "Check your mail for complete verification ! \n Welcome $_username to ArTounsi";
+
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Information"),
+              content: Text(message),
+            );
+          });
     }
    } on FirebaseAuthException catch (e) {
   if (e.code == 'weak-password') {
@@ -98,7 +109,7 @@ class _RegisterPageState extends State<RegisterPage> {
             GestureDetector(
               onTap: _pickImage,
               child: CircleAvatar(
-                radius: 200,
+                radius: 150,
                 backgroundImage: _imageFile != null
                     ? FileImage(_imageFile!)
                     : const AssetImage('assets/images/img.png'),
@@ -171,17 +182,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
                       await Register();
-                      String message =
-                          "Register Successful ! \n Welcome $_username to ArTounsi";
 
-                      showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: const Text("Information"),
-                              content: Text(message),
-                            );
-                          });
                     }
                   },
                 ),
@@ -219,8 +220,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                   onTap: () {
-                    Navigator.pop(context);
-                  },
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) =>  LoginPage()),
+                    );                  },
                 ),
               ],
             ),

@@ -1,7 +1,9 @@
+import 'package:Artounsi/pages/User/Avatar.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserPage extends StatefulWidget {
   const UserPage({super.key});
@@ -13,6 +15,7 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage> {
   final user = FirebaseAuth.instance.currentUser!;
   Map<String, dynamic>? userData;
+  late final SharedPreferences prefs;
 
   @override
   void initState() {
@@ -65,6 +68,28 @@ class _UserPageState extends State<UserPage> {
               const SizedBox(width: 4),
             ],
           ),
+          Container(
+            margin: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    AppTheme.primaryColor),
+              ),
+              child: const Text("Avatar"),
+              onPressed: () {
+               // if (_keyForm.currentState!.validate()) {
+                 // _keyForm.currentState!.save();
+                  // Navigator.pushNamed(context, "/mainScreen");
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  AvatarPage(prefs:prefs)),
+                );
+                //  Login();
+               // }
+              },
+            ),
+          ),
+
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
@@ -134,6 +159,7 @@ class _UserPageState extends State<UserPage> {
               const SizedBox(width: 10),
             ],
           ),
+
           const SizedBox(height: 20),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),

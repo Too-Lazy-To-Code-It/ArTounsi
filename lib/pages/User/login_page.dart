@@ -23,7 +23,56 @@ class _LoginPageState extends State<LoginPage> {
     final _passwordController = TextEditingController();
 
     Future Login() async {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.reload();
+      if (user != null && user.emailVerified) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Alert"),
+              content: Text("Account Verified"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the alert dialog
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+        await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
+      }
+      else {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Alert"),
+              content: Text("Account Not Verified"),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the alert dialog
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
+      if (_keyForm.currentState!.validate()) {
+        _keyForm.currentState!.save();
+        Navigator.pushNamed(context, "/mainScreen");
+       await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => MainScreen(cart: cart),
+          ),
+        );
+      }
     }
 
     @override
@@ -144,17 +193,9 @@ class _LoginPageState extends State<LoginPage> {
                             AppTheme.primaryColor),
                       ),
                       child: const Text("Login"),
-                      onPressed: () {
-                        if (_keyForm.currentState!.validate()) {
-                          _keyForm.currentState!.save();
-                          // Navigator.pushNamed(context, "/mainScreen");
-                          /*   Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => MainScreen(cart: cart),
-                            ),
-                          );*/
-                          Login();
-                        }
+                      onPressed: () {                          Login();
+
+
                       },
                     ),
                   ),
