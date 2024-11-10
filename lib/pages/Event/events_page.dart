@@ -102,4 +102,5 @@ class _EventPageState extends State<EventPage> {
       ),
     );
   }
+
 }

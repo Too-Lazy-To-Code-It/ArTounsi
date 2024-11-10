@@ -1,18 +1,48 @@
 import 'package:Artounsi/entities/Shop/Cart.dart';
 import 'package:Artounsi/pages/MainScreen/main_screen.dart';
+import 'package:Artounsi/pages/User/session.dart';
 import 'package:Artounsi/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key}) : super(key:key);
 
   @override
-  Widget build(BuildContext context) {
-    late String? _username;
-    late String? _password;
-    final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
-    final Cart cart = Cart();
+  State<LoginPage> createState()=> _LoginPageState();
+  }
 
+class _LoginPageState extends State<LoginPage> {
+  @override
+  Widget build(BuildContext context) {
+    late String? _email;
+    late String? _password;
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    final Cart cart = Cart();
+    final _emailController = TextEditingController();
+    final _passwordController = TextEditingController();
+
+    Future Login() async {
+     await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
+
+      if (_keyForm.currentState!.validate()) {
+        _keyForm.currentState!.save();
+        // Navigator.pushNamed(context, "/mainScreen");
+       await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => Session(),
+          ),
+        );
+      }
+    }
+
+    @override
+    void dispose(){
+      _emailController.dispose();
+      _passwordController.dispose();
+      super.dispose();
+    }
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
       body: Form(
@@ -45,18 +75,19 @@ class LoginPage extends StatelessWidget {
                   Container(
                     margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                     child: TextFormField(
+                      controller: _emailController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        labelText: "Username",
+                        labelText: "Email",
                       ),
                       onSaved: (String? value) {
-                        _username = value;
+                        _email = value;
                       },
                       validator: (String? value) {
-                        if (value == null || value.isEmpty) {
-                          return "Username can't be empty";
-                        } else if (value.length < 5) {
-                          return "Username can't have less than 5 characters";
+                        RegExp regex = RegExp(
+                            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+                        if (value!.isEmpty || !regex.hasMatch(value)) {
+                          return "Email must have valid form";
                         } else {
                           return null;
                         }
@@ -70,6 +101,7 @@ class LoginPage extends StatelessWidget {
                   Container(
                     margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
                     child: TextFormField(
+                      controller: _passwordController,
                       obscureText: true,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
@@ -123,16 +155,9 @@ class LoginPage extends StatelessWidget {
                             AppTheme.primaryColor),
                       ),
                       child: const Text("Login"),
-                      onPressed: () {
-                        if (_keyForm.currentState!.validate()) {
-                          _keyForm.currentState!.save();
-                          // Navigator.pushNamed(context, "/mainScreen");
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => MainScreen(cart: cart),
-                            ),
-                          );
-                        }
+                      onPressed: () {                          Login();
+
+
                       },
                     ),
                   ),

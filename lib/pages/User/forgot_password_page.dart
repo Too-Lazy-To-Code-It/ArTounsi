@@ -1,4 +1,5 @@
 import 'package:Artounsi/theme/app_theme.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
@@ -9,14 +10,46 @@ class ForgotPasswordPage extends StatefulWidget {
 }
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
-  String? _email;
-  String? _code;
+  late String? _email;
+  late String? _code;
+  final _emailcontroller = TextEditingController();
   bool _isVisible = false;
 
-  final GlobalKey<FormState> _emailFormKey =
-      GlobalKey<FormState>(); // Separate key for email form field
-  final GlobalKey<FormState> _codeFormKey =
-      GlobalKey<FormState>(); // Separate key for code form field
+  GlobalKey<FormState> _emailFormKey =
+  GlobalKey<FormState>(); // Separate key for email form field
+  GlobalKey<FormState> _codeFormKey =
+  GlobalKey<FormState>(); // Separate key for code form field
+
+  Future passwordReset() async {
+    try {
+      await FirebaseAuth.instance
+          .sendPasswordResetEmail(email: _emailcontroller.text.trim());
+      showDialog(
+        context: context,
+        builder: (context) {
+          return const AlertDialog(
+            content: Text("Check your email to reset your password"),
+          );
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      print(e);
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: Text(e.toString()),
+          );
+        },
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailcontroller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,6 +69,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             child: Container(
               margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
               child: TextFormField(
+                controller: _emailcontroller,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
@@ -57,37 +91,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ),
           ),
 
-          // Code Form (Initially Hidden)
-          Visibility(
-            visible: _isVisible, // Control visibility of the code input field
-            child: Form(
-              key: _codeFormKey,
-              child: Container(
-                margin: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                child: TextFormField(
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Code",
-                  ),
-                  onSaved: (String? value) {
-                    _code = value;
-                  },
-                  validator: (String? value) {
-                    if (value!.isEmpty) {
-                      return "The code can't be empty";
-                    } else {
-                      return null;
-                    }
-                  },
-                ),
-              ),
-            ),
-          ),
 
           const SizedBox(height: 30),
 
-          // Buttons
+          // Send Mail Button
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -95,7 +102,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 child: const Text("Send Mail"),
                 style: ButtonStyle(
                   backgroundColor:
-                      MaterialStateProperty.all<Color>(AppTheme.primaryColor),
+                  MaterialStateProperty.all<Color>(AppTheme.primaryColor),
                 ),
                 onPressed: () {
                   if (_emailFormKey.currentState!.validate()) {
@@ -103,26 +110,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     setState(() {
                       _isVisible = true; // Show code input after email is valid
                     });
+                    passwordReset();
                   }
                 },
-              ),
-              const SizedBox(width: 30),
-              Visibility(
-                visible:
-                    _isVisible, // Only show the "Enter Code" button if the code field is visible
-                child: ElevatedButton(
-                  child: const Text("Enter Code"),
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(AppTheme.primaryColor),
-                  ),
-                  onPressed: () {
-                    if (_codeFormKey.currentState!.validate()) {
-                      _codeFormKey.currentState!.save();
-                      Navigator.pushNamed(context, "/confirmPasswordPage");
-                    }
-                  },
-                ),
               ),
             ],
           ),
