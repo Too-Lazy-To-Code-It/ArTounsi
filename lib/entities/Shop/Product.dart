@@ -12,7 +12,7 @@ class Product {
   final double rating;
   final int reviewCount;
   final ProductType type;
-  final String? userId;  // New field to store the ID of the user who added the product
+  final String userId;
 
   Product({
     required this.id,
@@ -24,7 +24,7 @@ class Product {
     required this.rating,
     required this.reviewCount,
     required this.type,
-    this.userId,  // Make it optional as some products might not have a specific user
+    required this.userId,
   });
 
   factory Product.fromFirestore(DocumentSnapshot doc) {
@@ -39,7 +39,7 @@ class Product {
       rating: _parseDouble(data['rating']),
       reviewCount: data['reviewCount'] ?? 0,
       type: _parseProductType(data['type']),
-      userId: data['userId'],  // Add this line
+      userId: data['userId'] ?? '',
     );
   }
 
@@ -55,7 +55,7 @@ class Product {
       rating: _parseDouble(data['rating']),
       reviewCount: data['reviewCount'] ?? 0,
       type: _parseProductType(data['type']),
-      userId: data['userId'],  // Add this line
+      userId: data['userId'] ?? '',
     );
   }
 
@@ -69,8 +69,12 @@ class Product {
       'rating': rating,
       'reviewCount': reviewCount,
       'type': type.toString().split('.').last.toLowerCase(),
-      'userId': userId,  // Add this line
+      'userId': userId,
     };
+  }
+
+  bool belongsToUser(String userId) {
+    return this.userId == userId;
   }
 
   static double _parseDouble(dynamic value) {
@@ -80,13 +84,13 @@ class Product {
     return 0.0;
   }
 
-  static ProductType _parseProductType(dynamic value) {
-    if (value is String) {
-      return ProductType.values.firstWhere(
-            (type) => type.toString().split('.').last.toLowerCase() == value.toLowerCase(),
-        orElse: () => ProductType.marketplace,
-      );
+  static ProductType _parseProductType(String? value) {
+    switch (value?.toLowerCase()) {
+      case 'prints':
+        return ProductType.prints;
+      case 'marketplace':
+      default:
+        return ProductType.marketplace;
     }
-    return ProductType.marketplace;
   }
 }

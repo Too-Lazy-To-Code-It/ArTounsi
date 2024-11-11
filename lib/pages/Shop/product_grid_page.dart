@@ -1,117 +1,129 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../entities/Shop/Product.dart';
 import 'product_detail_page.dart';
 
 class ProductGridPage extends StatelessWidget {
   final ProductType productType;
-  final String? userId;
 
-  const ProductGridPage({Key? key, required this.productType, this.userId}) : super(key: key);
+  const ProductGridPage({Key? key, required this.productType}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: _getProductStream(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, userSnapshot) {
+        if (userSnapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
 
-        if (snapshot.hasError) {
-          print('Error fetching products: ${snapshot.error}');
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+        final userId = userSnapshot.data?.uid;
 
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          print('No products found');
-          return Center(child: Text('No products found'));
-        }
+        return StreamBuilder<QuerySnapshot>(
+          stream: _getProductStream(userId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-        final products = snapshot.data!.docs
-            .map((doc) => Product.fromFirestore(doc))
-            .toList();
+            if (snapshot.hasError) {
+              print('Error fetching products: ${snapshot.error}');
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
 
-        print('Fetched ${products.length} products');
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              print('No products found');
+              return Center(child: Text('No products found'));
+            }
 
-        return GridView.builder(
-          padding: const EdgeInsets.all(16.0),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.75,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 16,
-          ),
-          itemCount: products.length,
-          itemBuilder: (context, index) {
-            final product = products[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ProductDetailPage(productId: product.id),
-                  ),
-                );
-              },
-              child: Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                          image: DecorationImage(
-                            image: NetworkImage(product.imageUrl),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
+            final products = snapshot.data!.docs
+                .map((doc) => Product.fromFirestore(doc))
+                .where((product) => productType == ProductType.marketplace || product.belongsToUser(userId ?? ''))
+                .toList();
+
+            print('Fetched ${products.length} products');
+
+            return GridView.builder(
+              padding: const EdgeInsets.all(16.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.75,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductDetailPage(productId: product.id),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            product.name,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '\$${product.price.toStringAsFixed(2)}',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                              image: DecorationImage(
+                                image: NetworkImage(product.imageUrl),
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Row(
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.star, size: 16, color: Colors.amber),
                               Text(
-                                ' ${product.rating.toStringAsFixed(1)}',
-                                style: Theme.of(context).textTheme.bodySmall,
+                                product.name,
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(width: 8),
-                              Icon(Icons.comment, size: 16, color: Colors.grey),
+                              const SizedBox(height: 4),
                               Text(
-                                ' ${product.reviewCount}',
-                                style: Theme.of(context).textTheme.bodySmall,
+                                '\$${product.price.toStringAsFixed(2)}',
+                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: Theme.of(context).primaryColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Icon(Icons.star, size: 16, color: Colors.amber),
+                                  Text(
+                                    ' ${product.rating.toStringAsFixed(1)}',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(Icons.comment, size: 16, color: Colors.grey),
+                                  Text(
+                                    ' ${product.reviewCount}',
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             );
           },
         );
@@ -119,7 +131,7 @@ class ProductGridPage extends StatelessWidget {
     );
   }
 
-  Stream<QuerySnapshot> _getProductStream() {
+  Stream<QuerySnapshot> _getProductStream(String? userId) {
     final productsRef = FirebaseFirestore.instance.collection('Product');
     final query = productsRef.where('type', isEqualTo: productType.toString().split('.').last.toLowerCase());
 

@@ -39,7 +39,7 @@ class _ShopPageState extends State<ShopPage> {
               index: _selectedIndex,
               children: [
                 ProductGridPage(productType: ProductType.marketplace),
-                ProductGridPage(productType: ProductType.prints, userId: _auth.currentUser?.uid),
+                ProductGridPage(productType: ProductType.prints),
               ],
             ),
           ),

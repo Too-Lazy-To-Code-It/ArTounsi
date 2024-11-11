@@ -9,6 +9,7 @@ class CartProvider extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = true;
+  String? _userId;
 
   CartProvider() {
     _initCart();
@@ -18,28 +19,43 @@ class CartProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> _initCart() async {
-    await _fetchCartFromFirestore();
-    _subscribeToCartUpdates();
+    await _setUserId();
+    if (_userId != null) {
+      await _fetchCartFromFirestore();
+      _subscribeToCartUpdates();
+    } else {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _setUserId() async {
+    User? user = _auth.currentUser;
+    if (user != null) {
+      _userId = user.uid;
+    } else {
+      print('No user logged in');
+      _userId = null;
+    }
   }
 
   Future<void> _fetchCartFromFirestore() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) {
-        print('No user logged in');
-        _isLoading = false;
-        notifyListeners();
-        return;
-      }
+    if (_userId == null) {
+      print('No user logged in');
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
 
-      print('Fetching cart for user: ${user.uid}');
-      DocumentSnapshot<Map<String, dynamic>> cartDoc = await _firestore.collection('carts').doc(user.uid).get();
+    try {
+      print('Fetching cart for user: $_userId');
+      DocumentSnapshot<Map<String, dynamic>> cartDoc = await _firestore.collection('carts').doc(_userId).get();
       if (cartDoc.exists && cartDoc.data() != null) {
         print('Cart document exists in Firestore');
         _updateCartFromData(cartDoc.data()!);
       } else {
         print('Cart document does not exist in Firestore');
-        await _createCartInFirestore(user.uid);
+        await _createCartInFirestore();
       }
       _isLoading = false;
       notifyListeners();
@@ -50,24 +66,25 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _createCartInFirestore(String userId) async {
+  Future<void> _createCartInFirestore() async {
+    if (_userId == null) return;
+
     try {
-      await _firestore.collection('carts').doc(userId).set({
+      await _firestore.collection('carts').doc(_userId).set({
         'items': [],
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      print('Created new cart in Firestore for user: $userId');
+      print('Created new cart in Firestore for user: $_userId');
     } catch (e) {
       print('Error creating cart in Firestore: $e');
     }
   }
 
   void _subscribeToCartUpdates() {
-    User? user = _auth.currentUser;
-    if (user == null) return;
+    if (_userId == null) return;
 
-    print('Subscribing to cart updates for user: ${user.uid}');
-    _firestore.collection('carts').doc(user.uid).snapshots().listen((DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    print('Subscribing to cart updates for user: $_userId');
+    _firestore.collection('carts').doc(_userId).snapshots().listen((DocumentSnapshot<Map<String, dynamic>> snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
         print('Received cart update from Firestore');
         _updateCartFromData(snapshot.data()!);
@@ -98,12 +115,11 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<void> _updateFirestore() async {
-    try {
-      User? user = _auth.currentUser;
-      if (user == null) return;
+    if (_userId == null) return;
 
-      print('Updating cart in Firestore for user: ${user.uid}');
-      await _firestore.collection('carts').doc(user.uid).set({
+    try {
+      print('Updating cart in Firestore for user: $_userId');
+      await _firestore.collection('carts').doc(_userId).set({
         'items': _cart.items.map((item) => {
           'product': item.product.toFirestore(),
           'quantity': item.quantity,
@@ -117,6 +133,16 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<void> addToCart(Product product, {int quantity = 1}) async {
+    if (_userId == null) {
+      print('Cannot add product to cart: User not logged in');
+      return;
+    }
+
+    if (product.userId != _userId) {
+      print('Cannot add product to cart: Product does not belong to user');
+      return;
+    }
+
     print('Adding product to cart: ${product.id}, quantity: $quantity');
     _cart.addItem(product, quantity);
     await _updateFirestore();
@@ -124,6 +150,26 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<void> removeFromCart(String productId) async {
+    if (_userId == null) {
+      print('Cannot remove product from cart: User not logged in');
+      return;
+    }
+
+    CartItem? cartItem = _cart.items.firstWhere(
+          (item) => item.product.id == productId,
+      orElse: () => null as CartItem,
+    );
+
+    if (cartItem == null) {
+      print('Cannot remove product from cart: Product not found');
+      return;
+    }
+
+    if (cartItem.product.userId != _userId) {
+      print('Cannot remove product from cart: Product does not belong to user');
+      return;
+    }
+
     print('Removing product from cart: $productId');
     _cart.removeItem(productId);
     await _updateFirestore();
@@ -131,6 +177,26 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<void> updateQuantity(String productId, int newQuantity) async {
+    if (_userId == null) {
+      print('Cannot update quantity: User not logged in');
+      return;
+    }
+
+    CartItem? cartItem = _cart.items.firstWhere(
+          (item) => item.product.id == productId,
+      orElse: () => null as CartItem,
+    );
+
+    if (cartItem == null) {
+      print('Cannot update quantity: Product not found');
+      return;
+    }
+
+    if (cartItem.product.userId != _userId) {
+      print('Cannot update quantity: Product does not belong to user');
+      return;
+    }
+
     print('Updating quantity for product: $productId, new quantity: $newQuantity');
     _cart.updateQuantity(productId, newQuantity);
     await _updateFirestore();
@@ -138,6 +204,11 @@ class CartProvider extends ChangeNotifier {
   }
 
   Future<void> clearCart() async {
+    if (_userId == null) {
+      print('Cannot clear cart: User not logged in');
+      return;
+    }
+
     print('Clearing cart');
     _cart.clear();
     await _updateFirestore();
