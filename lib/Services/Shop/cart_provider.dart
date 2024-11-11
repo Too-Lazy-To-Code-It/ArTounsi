@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../entities/Shop/Cart.dart';
 import '../../entities/Shop/Product.dart';
 
 class CartProvider extends ChangeNotifier {
   final Cart _cart = Cart();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _cartId = 'global_cart';
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = true;
 
   CartProvider() {
@@ -23,14 +24,22 @@ class CartProvider extends ChangeNotifier {
 
   Future<void> _fetchCartFromFirestore() async {
     try {
-      print('Fetching cart from Firestore...');
-      DocumentSnapshot<Map<String, dynamic>> cartDoc = await _firestore.collection('carts').doc(_cartId).get();
+      User? user = _auth.currentUser;
+      if (user == null) {
+        print('No user logged in');
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      print('Fetching cart for user: ${user.uid}');
+      DocumentSnapshot<Map<String, dynamic>> cartDoc = await _firestore.collection('carts').doc(user.uid).get();
       if (cartDoc.exists && cartDoc.data() != null) {
         print('Cart document exists in Firestore');
         _updateCartFromData(cartDoc.data()!);
       } else {
         print('Cart document does not exist in Firestore');
-        await _createCartInFirestore();
+        await _createCartInFirestore(user.uid);
       }
       _isLoading = false;
       notifyListeners();
@@ -41,21 +50,24 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> _createCartInFirestore() async {
+  Future<void> _createCartInFirestore(String userId) async {
     try {
-      await _firestore.collection('carts').doc(_cartId).set({
+      await _firestore.collection('carts').doc(userId).set({
         'items': [],
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      print('Created new cart in Firestore');
+      print('Created new cart in Firestore for user: $userId');
     } catch (e) {
       print('Error creating cart in Firestore: $e');
     }
   }
 
   void _subscribeToCartUpdates() {
-    print('Subscribing to cart updates...');
-    _firestore.collection('carts').doc(_cartId).snapshots().listen((DocumentSnapshot<Map<String, dynamic>> snapshot) {
+    User? user = _auth.currentUser;
+    if (user == null) return;
+
+    print('Subscribing to cart updates for user: ${user.uid}');
+    _firestore.collection('carts').doc(user.uid).snapshots().listen((DocumentSnapshot<Map<String, dynamic>> snapshot) {
       if (snapshot.exists && snapshot.data() != null) {
         print('Received cart update from Firestore');
         _updateCartFromData(snapshot.data()!);
@@ -87,8 +99,11 @@ class CartProvider extends ChangeNotifier {
 
   Future<void> _updateFirestore() async {
     try {
-      print('Updating cart in Firestore...');
-      await _firestore.collection('carts').doc(_cartId).set({
+      User? user = _auth.currentUser;
+      if (user == null) return;
+
+      print('Updating cart in Firestore for user: ${user.uid}');
+      await _firestore.collection('carts').doc(user.uid).set({
         'items': _cart.items.map((item) => {
           'product': item.product.toFirestore(),
           'quantity': item.quantity,

@@ -9,8 +9,8 @@ import 'package:Artounsi/pages/User/update_user.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
-import 'entities/Shop/Cart.dart';
+import 'package:provider/provider.dart';
+import 'Services/Shop/cart_provider.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
@@ -18,13 +18,17 @@ void main() async {
   await Firebase.initializeApp();
   final prefs = await SharedPreferences.getInstance();
 
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => CartProvider(),
+      child: MyApp(),
+    ),
+  );
 }
+
 
 class MyApp extends StatelessWidget {
   final prefs =  SharedPreferences.getInstance();
-  final Cart cart = Cart();
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -37,7 +41,7 @@ class MyApp extends StatelessWidget {
       routes: {
         "/loginPage": (BuildContext context) => LoginPage(),
         "/registerPage": (BuildContext context) => RegisterPage(),
-         "/mainScreen": (BuildContext context) => MainScreen(cart: cart,),
+         "/mainScreen": (BuildContext context) => MainScreen(),
         "/forgotPasswordPage": (BuildContext context) => ForgotPasswordPage(),
         "/confirmPasswordPage": (BuildContext context) => ConfirmPasswordPage(),
         "/userPage": (BuildContext context) => UserPage(),

@@ -5,16 +5,14 @@ import 'product_detail_page.dart';
 
 class ProductGridPage extends StatelessWidget {
   final ProductType productType;
+  final String? userId;
 
-  const ProductGridPage({Key? key, required this.productType}) : super(key: key);
+  const ProductGridPage({Key? key, required this.productType, this.userId}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('Product')
-          .where('type', isEqualTo: productType.toString().split('.').last.toLowerCase())
-          .snapshots(),
+      stream: _getProductStream(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
@@ -119,5 +117,16 @@ class ProductGridPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  Stream<QuerySnapshot> _getProductStream() {
+    final productsRef = FirebaseFirestore.instance.collection('Product');
+    final query = productsRef.where('type', isEqualTo: productType.toString().split('.').last.toLowerCase());
+
+    if (productType == ProductType.prints && userId != null) {
+      return query.where('userId', isEqualTo: userId).snapshots();
+    } else {
+      return query.snapshots();
+    }
   }
 }

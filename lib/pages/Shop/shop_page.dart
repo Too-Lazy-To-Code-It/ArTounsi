@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../entities/Shop/Product.dart';
 import 'product_grid_page.dart';
 import 'add_product_button.dart';
@@ -12,9 +13,9 @@ class ShopPage extends StatefulWidget {
 
 class _ShopPageState extends State<ShopPage> {
   int _selectedIndex = 0;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   void _onProductAdded() {
-    // Refresh the product list or perform any necessary updates
     setState(() {});
   }
 
@@ -29,7 +30,7 @@ class _ShopPageState extends State<ShopPage> {
               children: [
                 _buildTabButton('Marketplace', 0),
                 SizedBox(width: 16),
-                _buildTabButton('Prints', 1),
+                _buildTabButton('My Prints', 1),
               ],
             ),
           ),
@@ -38,7 +39,7 @@ class _ShopPageState extends State<ShopPage> {
               index: _selectedIndex,
               children: [
                 ProductGridPage(productType: ProductType.marketplace),
-                ProductGridPage(productType: ProductType.prints),
+                ProductGridPage(productType: ProductType.prints, userId: _auth.currentUser?.uid),
               ],
             ),
           ),

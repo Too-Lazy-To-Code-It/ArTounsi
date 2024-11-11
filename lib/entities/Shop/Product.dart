@@ -12,6 +12,7 @@ class Product {
   final double rating;
   final int reviewCount;
   final ProductType type;
+  final String? userId;  // New field to store the ID of the user who added the product
 
   Product({
     required this.id,
@@ -23,6 +24,7 @@ class Product {
     required this.rating,
     required this.reviewCount,
     required this.type,
+    this.userId,  // Make it optional as some products might not have a specific user
   });
 
   factory Product.fromFirestore(DocumentSnapshot doc) {
@@ -37,6 +39,7 @@ class Product {
       rating: _parseDouble(data['rating']),
       reviewCount: data['reviewCount'] ?? 0,
       type: _parseProductType(data['type']),
+      userId: data['userId'],  // Add this line
     );
   }
 
@@ -52,6 +55,7 @@ class Product {
       rating: _parseDouble(data['rating']),
       reviewCount: data['reviewCount'] ?? 0,
       type: _parseProductType(data['type']),
+      userId: data['userId'],  // Add this line
     );
   }
 
@@ -65,6 +69,7 @@ class Product {
       'rating': rating,
       'reviewCount': reviewCount,
       'type': type.toString().split('.').last.toLowerCase(),
+      'userId': userId,  // Add this line
     };
   }
 

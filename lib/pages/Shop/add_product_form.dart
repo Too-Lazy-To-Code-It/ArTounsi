@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -61,6 +62,11 @@ class _AddProductFormState extends State<AddProductForm> {
           imageUrl = await _uploadImageToFirebase(_image!);
         }
 
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          throw Exception('No user logged in');
+        }
+
         final newProduct = Product(
           id: '',  // Firestore will generate this
           name: _nameController.text,
@@ -71,6 +77,7 @@ class _AddProductFormState extends State<AddProductForm> {
           rating: 0,
           reviewCount: 0,
           type: _productType,
+          userId: user.uid,  // Add the user ID to the product
         );
 
         await FirebaseFirestore.instance.collection('Product').add(newProduct.toFirestore());
@@ -93,7 +100,6 @@ class _AddProductFormState extends State<AddProductForm> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
