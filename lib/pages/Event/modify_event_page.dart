@@ -4,31 +4,65 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../../entities/Event/Events.dart';
 import '../../services/Event/EventService.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class AddEvent extends StatefulWidget {
+class ModifyEvent extends StatefulWidget {
+  final DocumentReference eventRef;
+
+  ModifyEvent({required this.eventRef});
+
   @override
-  _AddEventState createState() => _AddEventState();
+  _ModifyEventState createState() => _ModifyEventState();
 }
 
-class _AddEventState extends State<AddEvent> {
+class _ModifyEventState extends State<ModifyEvent> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _locationController = TextEditingController();
   final EventService _eventService = EventService();
   String? _imagePath;
   DateTime _selectedDate = DateTime.now();
+  String? _existingImageUrl;
   bool _isLoading = false;
+  bool _hasUnsavedChanges = false;
 
-  final List<String> _tunisianCities = [
-    'Tunis', 'Sfax', 'Sousse', 'Gabès', 'Bizerte', 'Ariana', 'Gafsa',
-    'Monastir', 'Kairouan', 'Ben Arous', 'Tozeur', 'Kasserine', 'Médenine',
-    'Nabeul', 'Mahdia', 'Sidi Bouzid', 'Kébili', 'Jendouba', 'Beja',
-    'Zaghouan', 'Siliana', 'Tataouine', 'Manouba'
+  // List of Tunisian cities for the dropdown
+  final List<String> _cities = [
+    'Tunis', 'Sfax', 'Sousse', 'Kairouan', 'Bizerte', 'Nabeul', 'Gabes', 'Ariana', 'Ben Arous', 'Medenine',
+    'Tozeur', 'Tataouine', 'Sidi Bouzid', 'El Kef', 'Jendouba', 'Manouba', 'Siliana', 'Zaghouan', 'Mahdia', 'Kasserine',
   ];
 
   String? _selectedCity;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEventData();
+  }
+
+  Future<void> _loadEventData() async {
+    DocumentSnapshot doc = await widget.eventRef.get();
+    if (doc.exists && doc.data() != null) {
+      String eventId = doc.id;
+      var event = Events.fromMap(eventId, doc.data() as Map<String, dynamic>);
+
+      setState(() {
+        _titleController.text = event.title;
+        _descriptionController.text = event.description;
+        _selectedDate = event.date;
+        _existingImageUrl = event.imageUrl;
+        _locationController.text = event.location;
+        _selectedCity = event.location;
+        _imagePath = null;
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Event not found or has no data.')),
+      );
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -40,6 +74,7 @@ class _AddEventState extends State<AddEvent> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _hasUnsavedChanges = true;
       });
     }
   }
@@ -48,69 +83,46 @@ class _AddEventState extends State<AddEvent> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
+      print('Image picked: ${pickedFile.path}');
       setState(() {
         _imagePath = pickedFile.path;
+        _hasUnsavedChanges = true;
       });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('No image selected.')),
-      );
     }
   }
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      if (_imagePath == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please select an image.')),
-        );
-        return;
-      }
-      if (_selectedCity == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Please select a location.')),
-        );
-        return;
-      }
       setState(() {
         _isLoading = true;
       });
       try {
-        User? user = FirebaseAuth.instance.currentUser;
-        String username = user != null ? user.displayName ?? 'Anonymous' : 'Anonymous';
-        final newEvent = Events(
-          '',
+        String username = FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous';
+
+        final updatedEvent = Events(
+          widget.eventRef.id,
           _titleController.text,
-          '',
+          _existingImageUrl ?? '',
           _selectedDate,
           _descriptionController.text,
-          _selectedCity!,
+          _selectedCity ?? '',
           username,
         );
 
-        final imageFile = File(_imagePath!);
-        final imageUrl = await _eventService.uploadImage(imageFile);
-        newEvent.imageUrl = imageUrl;
-
-        await _eventService.addEvent(newEvent, imageFile);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Event added successfully!')),
+        await _eventService.modifyEvent(
+          widget.eventRef.id,
+          updatedEvent,
+          newImage: _imagePath != null ? File(_imagePath!) : null,
         );
 
-        _titleController.clear();
-        _descriptionController.clear();
-        setState(() {
-          _selectedCity = null;
-          _imagePath = null;
-          _selectedDate = DateTime.now();
-        });
-
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Event updated successfully!')),
+        );
         Navigator.pop(context, true);
       } catch (e) {
-        print('Error adding event: $e');
+        print('Error modifying event: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to add event: $e')),
+          SnackBar(content: Text('Failed to update event: $e')),
         );
       } finally {
         setState(() {
@@ -120,47 +132,60 @@ class _AddEventState extends State<AddEvent> {
     }
   }
 
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    super.dispose();
+  Future<bool> _onWillPop() async {
+    if (_hasUnsavedChanges) {
+      return (await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Unsaved Changes'),
+          content: Text('You have unsaved changes. Do you want to discard them?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Discard'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancel'),
+            ),
+          ],
+        ),
+      )) ??
+          false;
+    }
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Add Event'),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Form(
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Modify Event'),
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : Form(
           key: _formKey,
           child: ListView(
+            padding: EdgeInsets.all(16.0),
             children: [
               TextFormField(
                 controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: 'Event Title',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: InputDecoration(labelText: 'Event Title'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter an event title';
                   }
                   return null;
                 },
+                onChanged: (_) => _hasUnsavedChanges = true,
               ),
               SizedBox(height: 16),
               TextFormField(
                 controller: _descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'Event Description',
-                  border: OutlineInputBorder(),
-                ),
+                decoration: InputDecoration(labelText: 'Event Description'),
                 maxLines: 3,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -168,29 +193,27 @@ class _AddEventState extends State<AddEvent> {
                   }
                   return null;
                 },
+                onChanged: (_) => _hasUnsavedChanges = true,
               ),
               SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedCity,
-                hint: Text('Select Location'),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Location',
-                ),
-                items: _tunisianCities.map((String city) {
+                decoration: InputDecoration(labelText: 'Event Location (City)'),
+                items: _cities.map((city) {
                   return DropdownMenuItem<String>(
                     value: city,
                     child: Text(city),
                   );
                 }).toList(),
-                onChanged: (newValue) {
+                onChanged: (value) {
                   setState(() {
-                    _selectedCity = newValue;
+                    _selectedCity = value;
+                    _hasUnsavedChanges = true;
                   });
                 },
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'Please select a location';
+                    return 'Please select a city for the event location';
                   }
                   return null;
                 },
@@ -200,8 +223,10 @@ class _AddEventState extends State<AddEvent> {
                 children: [
                   Expanded(
                     child: Text(
-                      _imagePath != null
+                      _imagePath != null && _imagePath!.isNotEmpty
                           ? 'Image selected: ${_imagePath!.split('/').last}'
+                          : _existingImageUrl != null && _existingImageUrl!.isNotEmpty
+                          ? 'Existing image loaded: ${_existingImageUrl!.split('/').last}'
                           : 'No image selected',
                     ),
                   ),
@@ -212,7 +237,7 @@ class _AddEventState extends State<AddEvent> {
                 ],
               ),
               SizedBox(height: 16),
-              if (_imagePath != null)
+              if (_imagePath != null && _imagePath!.isNotEmpty)
                 Container(
                   margin: EdgeInsets.only(top: 16),
                   height: 200,
@@ -221,6 +246,18 @@ class _AddEventState extends State<AddEvent> {
                   ),
                   child: Image.file(
                     File(_imagePath!),
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else if (_existingImageUrl != null && _existingImageUrl!.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.only(top: 16),
+                  height: 200,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: Image.network(
+                    _existingImageUrl!,
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -241,7 +278,7 @@ class _AddEventState extends State<AddEvent> {
               SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text('Add Event'),
+                child: Text('Save Changes'),
               ),
             ],
           ),

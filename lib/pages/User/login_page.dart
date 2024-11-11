@@ -1,5 +1,6 @@
 import 'package:Artounsi/entities/Shop/Cart.dart';
 import 'package:Artounsi/pages/MainScreen/main_screen.dart';
+import 'package:Artounsi/pages/User/session.dart';
 import 'package:Artounsi/theme/app_theme.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,13 +18,23 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     late String? _email;
     late String? _password;
-    final GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
+    GlobalKey<FormState> _keyForm = GlobalKey<FormState>();
     final Cart cart = Cart();
     final _emailController = TextEditingController();
     final _passwordController = TextEditingController();
 
     Future Login() async {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
+     await FirebaseAuth.instance.signInWithEmailAndPassword(email: _emailController.text.trim(), password: _passwordController.text.trim());
+
+      if (_keyForm.currentState!.validate()) {
+        _keyForm.currentState!.save();
+        // Navigator.pushNamed(context, "/mainScreen");
+       await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => Session(),
+          ),
+        );
+      }
     }
 
     @override
@@ -144,17 +155,9 @@ class _LoginPageState extends State<LoginPage> {
                             AppTheme.primaryColor),
                       ),
                       child: const Text("Login"),
-                      onPressed: () {
-                        if (_keyForm.currentState!.validate()) {
-                          _keyForm.currentState!.save();
-                          // Navigator.pushNamed(context, "/mainScreen");
-                          /*   Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => MainScreen(cart: cart),
-                            ),
-                          );*/
-                          Login();
-                        }
+                      onPressed: () {                          Login();
+
+
                       },
                     ),
                   ),
