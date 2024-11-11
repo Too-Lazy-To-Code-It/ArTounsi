@@ -5,7 +5,7 @@ import '../../entities/Shop/Cart.dart';
 import '../../entities/Shop/Product.dart';
 
 class CartProvider extends ChangeNotifier {
-  final Cart _cart = Cart();
+  Cart _cart = Cart();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = true;
@@ -19,24 +19,15 @@ class CartProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> _initCart() async {
-    await _setUserId();
-    if (_userId != null) {
-      await _fetchCartFromFirestore();
-      _subscribeToCartUpdates();
-    } else {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  Future<void> _setUserId() async {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      _userId = user.uid;
-    } else {
-      print('No user logged in');
-      _userId = null;
-    }
+    _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        _userId = user.uid;
+        _fetchCartFromFirestore();
+      } else {
+        _userId = null;
+        _clearLocalCart();
+      }
+    });
   }
 
   Future<void> _fetchCartFromFirestore() async {
@@ -80,24 +71,9 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
-  void _subscribeToCartUpdates() {
-    if (_userId == null) return;
-
-    print('Subscribing to cart updates for user: $_userId');
-    _firestore.collection('carts').doc(_userId).snapshots().listen((DocumentSnapshot<Map<String, dynamic>> snapshot) {
-      if (snapshot.exists && snapshot.data() != null) {
-        print('Received cart update from Firestore');
-        _updateCartFromData(snapshot.data()!);
-        notifyListeners();
-      }
-    }, onError: (error) {
-      print('Error in cart subscription: $error');
-    });
-  }
-
   void _updateCartFromData(Map<String, dynamic> cartData) {
     List<dynamic> items = cartData['items'] ?? [];
-    _cart.clear();
+    _cart = Cart(); // Create a new Cart instance
     print('Updating cart from Firestore data...');
     print('Number of items in Firestore: ${items.length}');
     for (var item in items) {
@@ -112,6 +88,7 @@ class CartProvider extends ChangeNotifier {
       }
     }
     print('Updated cart items: ${_cart.itemCount}');
+    notifyListeners();
   }
 
   Future<void> _updateFirestore() async {
@@ -130,6 +107,12 @@ class CartProvider extends ChangeNotifier {
     } catch (e) {
       print('Error updating Firestore: $e');
     }
+  }
+
+  void _clearLocalCart() {
+    _cart = Cart(); // Create a new empty Cart instance
+    _isLoading = false;
+    notifyListeners();
   }
 
   Future<void> addToCart(Product product, {int quantity = 1}) async {
