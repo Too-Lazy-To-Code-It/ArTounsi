@@ -40,20 +40,8 @@ class Product {
     );
   }
 
-  Map<String, dynamic> toFirestore() {
-    return {
-      'name': name,
-      'price': price,
-      'artist': artist,
-      'imageUrl': imageUrl,
-      'categories': categories,
-      'rating': rating,
-      'reviewCount': reviewCount,
-      'type': type.toString().split('.').last,
-    };
-  }
-
   factory Product.fromMap(Map<String, dynamic> data, {String? id}) {
+    print('Creating Product from map: $data');
     return Product(
       id: id ?? data['id'] ?? '',
       name: data['name'] ?? '',
@@ -67,9 +55,8 @@ class Product {
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toFirestore() {
     return {
-      'id': id,
       'name': name,
       'price': price,
       'artist': artist,
@@ -77,7 +64,7 @@ class Product {
       'categories': categories,
       'rating': rating,
       'reviewCount': reviewCount,
-      'type': type.toString().split('.').last,
+      'type': type.toString().split('.').last.toLowerCase(),
     };
   }
 
@@ -91,9 +78,7 @@ class Product {
   static ProductType _parseProductType(dynamic value) {
     if (value is String) {
       return ProductType.values.firstWhere(
-            (type) =>
-        type.toString().split('.').last.toLowerCase() ==
-            value.toLowerCase(),
+            (type) => type.toString().split('.').last.toLowerCase() == value.toLowerCase(),
         orElse: () => ProductType.marketplace,
       );
     }

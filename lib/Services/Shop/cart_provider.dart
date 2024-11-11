@@ -69,10 +69,17 @@ class CartProvider extends ChangeNotifier {
   void _updateCartFromData(Map<String, dynamic> cartData) {
     List<dynamic> items = cartData['items'] ?? [];
     _cart.clear();
+    print('Updating cart from Firestore data...');
+    print('Number of items in Firestore: ${items.length}');
     for (var item in items) {
       if (item is Map<String, dynamic> && item.containsKey('product') && item.containsKey('quantity')) {
+        print('Processing item: $item');
         Product product = Product.fromMap(item['product']);
-        _cart.addItem(product, item['quantity']);
+        int quantity = item['quantity'];
+        print('Adding to cart: ${product.name}, quantity: $quantity');
+        _cart.addItem(product, quantity);
+      } else {
+        print('Invalid item format: $item');
       }
     }
     print('Updated cart items: ${_cart.itemCount}');
