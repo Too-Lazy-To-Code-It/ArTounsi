@@ -1,20 +1,18 @@
-import 'package:Artounsi/entities/Shop/Cart.dart';
-import 'package:Artounsi/pages/Event/events_page.dart';
-import 'package:Artounsi/pages/Job/job_page.dart';
-import 'package:Artounsi/pages/Learning/learning_page.dart';
-import 'package:Artounsi/pages/Post/home_page.dart';
-import 'package:Artounsi/pages/Shop/shop_page.dart';
-import 'package:Artounsi/pages/User/profile_page.dart';
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import '../../Services/Shop/cart_provider.dart';
+import '../../pages/Event/events_page.dart';
+import '../../pages/Job/job_page.dart';
+import '../../pages/Learning/learning_page.dart';
+import '../../pages/Post/home_page.dart';
+import '../../pages/Shop/shop_page.dart';
+import '../../pages/User/profile_page.dart';
 import 'app_bar.dart';
 import 'bottom_navigation_bar.dart';
 import 'sidebar.dart';
 
 class MainScreen extends StatefulWidget {
-  final Cart cart;
-
-  const MainScreen({super.key, required this.cart});
+  const MainScreen({Key? key}) : super(key: key);
 
   @override
   _MainScreenState createState() => _MainScreenState();
@@ -61,39 +59,45 @@ class _MainScreenState extends State<MainScreen> {
             onPressed: () {},
             tooltip: 'Search',
           ),
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.shopping_cart),
-                onPressed: () {},
-                tooltip: 'Cart',
-              ),
-              if (widget.cart.itemCount > 0)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '${widget.cart.itemCount}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, child) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.shopping_cart),
+                    onPressed: () {
+                      // Navigate to cart page
+                    },
+                    tooltip: 'Cart',
                   ),
-                ),
-            ],
+                  if (cartProvider.itemCount > 0)
+                    Positioned(
+                      right: 0,
+                      top: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${cartProvider.itemCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -111,7 +115,7 @@ class _MainScreenState extends State<MainScreen> {
           HomePage(),
           JobPage(),
           LearningPage(),
-          ShopPage(cart: widget.cart),
+          ShopPage(),
           EventPage(),
           UserPage(),
         ],

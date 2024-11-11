@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'Product.dart';
 
 class CartItem {
@@ -8,7 +7,7 @@ class CartItem {
   CartItem({required this.product, this.quantity = 1});
 }
 
-class Cart extends ChangeNotifier {
+class Cart {
   final List<CartItem> _items = [];
 
   List<CartItem> get items => _items;
@@ -21,12 +20,10 @@ class Cart extends ChangeNotifier {
     } else {
       _items.add(CartItem(product: product, quantity: quantity));
     }
-    notifyListeners();
   }
 
   void removeItem(String productId) {
     _items.removeWhere((item) => item.product.id == productId);
-    notifyListeners();
   }
 
   void updateQuantity(String productId, int newQuantity) {
@@ -37,7 +34,6 @@ class Cart extends ChangeNotifier {
       } else {
         removeItem(productId);
       }
-      notifyListeners();
     }
   }
 
@@ -51,6 +47,5 @@ class Cart extends ChangeNotifier {
 
   void clear() {
     _items.clear();
-    notifyListeners();
   }
 }

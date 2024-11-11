@@ -1,17 +1,14 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:uuid/uuid.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../../entities/Shop/Product.dart';
 
 class AddProductForm extends StatefulWidget {
   final VoidCallback? onProductAdded;
 
-  const AddProductForm({super.key, this.onProductAdded});
+  const AddProductForm({Key? key, this.onProductAdded}) : super(key: key);
 
   @override
   _AddProductFormState createState() => _AddProductFormState();
@@ -25,7 +22,6 @@ class _AddProductFormState extends State<AddProductForm> {
   final _categoriesController = TextEditingController();
   ProductType _productType = ProductType.marketplace;
   File? _image;
-  final _imagePicker = ImagePicker();
   bool _isLoading = false;
 
   @override
@@ -38,30 +34,19 @@ class _AddProductFormState extends State<AddProductForm> {
   }
 
   Future<void> _getImage() async {
-    try {
-      final pickedFile =
-          await _imagePicker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState(() {
-          _image = File(pickedFile.path);
-        });
-      }
-    } catch (e) {
-      print('Error picking image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick image: $e')),
-      );
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
     }
   }
 
   Future<String> _uploadImageToFirebase(File image) async {
-    final String fileName = Uuid().v4();
-    final Reference firebaseStorageRef =
-        FirebaseStorage.instance.ref().child('product_images/$fileName');
-    final UploadTask uploadTask = firebaseStorageRef.putFile(image);
-    final TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-    final String downloadUrl = await taskSnapshot.ref.getDownloadURL();
-    return downloadUrl;
+    final ref = FirebaseStorage.instance.ref().child('product_images/${DateTime.now().toIso8601String()}');
+    final uploadTask = ref.putFile(image);
+    final snapshot = await uploadTask.whenComplete(() {});
+    return await snapshot.ref.getDownloadURL();
   }
 
   Future<void> _submitForm() async {
@@ -77,25 +62,23 @@ class _AddProductFormState extends State<AddProductForm> {
         }
 
         final newProduct = Product(
-          id: '',
+          id: '',  // Firestore will generate this
           name: _nameController.text,
           price: double.parse(_priceController.text),
           artist: _artistController.text,
           imageUrl: imageUrl,
-          categories: _categoriesController.text
-              .split(',')
-              .map((e) => e.trim())
-              .toList(),
+          categories: _categoriesController.text.split(',').map((e) => e.trim()).toList(),
           rating: 0,
           reviewCount: 0,
           type: _productType,
         );
 
-        await FirebaseFirestore.instance
-            .collection('Product')
-            .add(newProduct.toFirestore());
+        await FirebaseFirestore.instance.collection('Product').add(newProduct.toFirestore());
 
-        print('Product added successfully');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Product added successfully')),
+        );
+
         widget.onProductAdded?.call();
         Navigator.of(context).pop();
       } catch (e) {
@@ -128,37 +111,30 @@ class _AddProductFormState extends State<AddProductForm> {
                 TextFormField(
                   controller: _nameController,
                   decoration: InputDecoration(labelText: 'Product Name'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter a name' : null,
+                  validator: (value) => value!.isEmpty ? 'Please enter a name' : null,
                 ),
                 TextFormField(
                   controller: _priceController,
                   decoration: InputDecoration(labelText: 'Price'),
                   keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter a price' : null,
+                  validator: (value) => value!.isEmpty ? 'Please enter a price' : null,
                 ),
                 TextFormField(
                   controller: _artistController,
                   decoration: InputDecoration(labelText: 'Artist'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter an artist' : null,
+                  validator: (value) => value!.isEmpty ? 'Please enter an artist' : null,
                 ),
                 TextFormField(
                   controller: _categoriesController,
-                  decoration: InputDecoration(
-                      labelText: 'Categories (comma-separated)'),
-                  validator: (value) =>
-                      value!.isEmpty ? 'Please enter categories' : null,
+                  decoration: InputDecoration(labelText: 'Categories (comma-separated)'),
+                  validator: (value) => value!.isEmpty ? 'Please enter categories' : null,
                 ),
                 DropdownButtonFormField<ProductType>(
                   value: _productType,
-                  items: ProductType.values
-                      .map((type) => DropdownMenuItem(
-                            value: type,
-                            child: Text(type.toString().split('.').last),
-                          ))
-                      .toList(),
+                  items: ProductType.values.map((type) => DropdownMenuItem(
+                    value: type,
+                    child: Text(type.toString().split('.').last),
+                  )).toList(),
                   onChanged: (value) {
                     setState(() {
                       _productType = value!;
@@ -178,9 +154,7 @@ class _AddProductFormState extends State<AddProductForm> {
                 SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _isLoading ? null : _submitForm,
-                  child: _isLoading
-                      ? CircularProgressIndicator()
-                      : Text('Add Product'),
+                  child: _isLoading ? CircularProgressIndicator() : Text('Add Product'),
                 ),
               ],
             ),

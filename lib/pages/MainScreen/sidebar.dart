@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../Services/Shop/cart_provider.dart';
-import '../Shop/cart_page.dart'; // Import the CartPage
+import '../Shop/cart_page.dart';
 
 class CustomSidebar extends StatelessWidget {
   final Function(int) onItemTapped;
@@ -14,65 +14,56 @@ class CustomSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      child: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  const CircleAvatar(
-                    radius: 30,
-                    backgroundImage:
-                    AssetImage('assets/images/profile_picture.jpg'),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Ankara Methi',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleLarge
-                        ?.copyWith(color: Colors.white),
-                  ),
-                  Text(
-                    'ankara.methi@example.com',
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodyMedium
-                        ?.copyWith(color: Colors.white70),
-                  ),
-                ],
-              ),
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
             ),
-            _buildDrawerItem(context, Icons.home, 'Home', 0),
-            _buildDrawerItem(context, Icons.work, 'Jobs', 1),
-            _buildDrawerItem(context, Icons.school, 'Learning', 2),
-            const Divider(),
-            _buildDrawerItem(context, Icons.shopping_cart, 'Shop', 3,
-                isCart: true),
-            _buildDrawerItem(context, Icons.shopping_bag, 'Cart', 6,
-                isCart: true, onTap: () => _navigateToCart(context)),
-            _buildDrawerItem(context, Icons.event, 'Events', 4),
-            const Divider(),
-            _buildDrawerItem(context, Icons.person, 'Profile', 5),
-            _buildDrawerItem(context, Icons.settings, 'Settings', -1),
-          ],
-        ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Ankara Methi',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white),
+                ),
+                Text(
+                  'ankara.methi@example.com',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+          _buildDrawerItem(context, Icons.home, 'Home', 0),
+          _buildDrawerItem(context, Icons.work, 'Jobs', 1),
+          _buildDrawerItem(context, Icons.school, 'Learning', 2),
+          _buildDrawerItem(context, Icons.shopping_cart, 'Shop', 3),
+          const Divider(),
+          Consumer<CartProvider>(
+            builder: (context, cartProvider, child) {
+              return _buildDrawerItem(context, Icons.shopping_bag, 'Cart', 6, isCart: true, onTap: () => _navigateToCart(context));
+            },
+          ),
+          _buildDrawerItem(context, Icons.event, 'Events', 4),
+          const Divider(),
+          _buildDrawerItem(context, Icons.person, 'Profile', 5),
+          _buildDrawerItem(context, Icons.settings, 'Settings', -1),
+        ],
       ),
     );
   }
 
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, int index,
-      {bool isCart = false, VoidCallback? onTap}) {
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, int index, {bool isCart = false, VoidCallback? onTap}) {
     return Consumer<CartProvider>(
       builder: (context, cartProvider, child) {
-        int itemCount = isCart ? cartProvider.cart.items.length : 0;
+        int itemCount = isCart ? cartProvider.cart.itemCount : 0;
 
         return ListTile(
           leading: Stack(

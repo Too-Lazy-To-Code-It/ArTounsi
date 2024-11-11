@@ -1,14 +1,10 @@
-import 'package:Artounsi/pages/Shop/add_product_button.dart';
 import 'package:flutter/material.dart';
-
-import '../../entities/Shop/Cart.dart';
 import '../../entities/Shop/Product.dart';
 import 'product_grid_page.dart';
+import 'add_product_button.dart';
 
 class ShopPage extends StatefulWidget {
-  final Cart cart;
-
-  const ShopPage({super.key, required this.cart});
+  const ShopPage({Key? key}) : super(key: key);
 
   @override
   _ShopPageState createState() => _ShopPageState();
@@ -28,8 +24,7 @@ class _ShopPageState extends State<ShopPage> {
       body: Column(
         children: [
           Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
               children: [
                 _buildTabButton('Marketplace', 0),
@@ -42,10 +37,8 @@ class _ShopPageState extends State<ShopPage> {
             child: IndexedStack(
               index: _selectedIndex,
               children: [
-                ProductGridPage(
-                    productType: ProductType.marketplace, cart: widget.cart),
-                ProductGridPage(
-                    productType: ProductType.prints, cart: widget.cart),
+                ProductGridPage(productType: ProductType.marketplace),
+                ProductGridPage(productType: ProductType.prints),
               ],
             ),
           ),

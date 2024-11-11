@@ -1,11 +1,9 @@
-// In a new file named cart_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../Services/Shop/cart_provider.dart';
 
 class CartPage extends StatelessWidget {
-  const CartPage({super.key});
+  const CartPage({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +13,9 @@ class CartPage extends StatelessWidget {
       ),
       body: Consumer<CartProvider>(
         builder: (context, cartProvider, child) {
+          if (cartProvider.isLoading) {
+            return Center(child: CircularProgressIndicator());
+          }
           if (cartProvider.cart.items.isEmpty) {
             return Center(child: Text('Your cart is empty'));
           }
@@ -66,7 +67,7 @@ class CartPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total: \$${cartProvider.cart.totalPrice.toStringAsFixed(2)}',
+                  'Total: \$${cartProvider.totalPrice.toStringAsFixed(2)}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(

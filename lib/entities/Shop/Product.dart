@@ -53,6 +53,34 @@ class Product {
     };
   }
 
+  factory Product.fromMap(Map<String, dynamic> data, {String? id}) {
+    return Product(
+      id: id ?? data['id'] ?? '',
+      name: data['name'] ?? '',
+      price: _parseDouble(data['price']),
+      artist: data['artist'] ?? '',
+      imageUrl: data['imageUrl'] ?? '',
+      categories: List<String>.from(data['categories'] ?? []),
+      rating: _parseDouble(data['rating']),
+      reviewCount: data['reviewCount'] ?? 0,
+      type: _parseProductType(data['type']),
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'artist': artist,
+      'imageUrl': imageUrl,
+      'categories': categories,
+      'rating': rating,
+      'reviewCount': reviewCount,
+      'type': type.toString().split('.').last,
+    };
+  }
+
   static double _parseDouble(dynamic value) {
     if (value is double) return value;
     if (value is int) return value.toDouble();
@@ -63,8 +91,8 @@ class Product {
   static ProductType _parseProductType(dynamic value) {
     if (value is String) {
       return ProductType.values.firstWhere(
-        (type) =>
-            type.toString().split('.').last.toLowerCase() ==
+            (type) =>
+        type.toString().split('.').last.toLowerCase() ==
             value.toLowerCase(),
         orElse: () => ProductType.marketplace,
       );

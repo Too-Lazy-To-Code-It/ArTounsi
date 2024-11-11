@@ -6,13 +6,15 @@ import '../../entities/Shop/Product.dart';
 class CartProvider extends ChangeNotifier {
   final Cart _cart = Cart();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _cartId = 'global_cart'; // You might want to replace this with a user-specific ID later
-
-  Cart get cart => _cart;
+  final String _cartId = 'global_cart';
+  bool _isLoading = true;
 
   CartProvider() {
     _initCart();
   }
+
+  Cart get cart => _cart;
+  bool get isLoading => _isLoading;
 
   Future<void> _initCart() async {
     await _fetchCartFromFirestore();
@@ -21,42 +23,64 @@ class CartProvider extends ChangeNotifier {
 
   Future<void> _fetchCartFromFirestore() async {
     try {
-      DocumentSnapshot cartDoc = await _firestore.collection('carts').doc(_cartId).get();
-      if (cartDoc.exists) {
-        Map<String, dynamic> cartData = cartDoc.data() as Map<String, dynamic>;
-        List<dynamic> items = cartData['items'] ?? [];
-        for (var item in items) {
-          Product product = Product.fromFirestore(
-              DocumentSnapshot.fromMap(item['product'], item['product']['id'])
-          );
-          _cart.addItem(product, item['quantity']);
-        }
-        notifyListeners();
+      print('Fetching cart from Firestore...');
+      DocumentSnapshot<Map<String, dynamic>> cartDoc = await _firestore.collection('carts').doc(_cartId).get();
+      if (cartDoc.exists && cartDoc.data() != null) {
+        print('Cart document exists in Firestore');
+        _updateCartFromData(cartDoc.data()!);
+      } else {
+        print('Cart document does not exist in Firestore');
+        await _createCartInFirestore();
       }
+      _isLoading = false;
+      notifyListeners();
     } catch (e) {
       print('Error fetching cart from Firestore: $e');
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> _createCartInFirestore() async {
+    try {
+      await _firestore.collection('carts').doc(_cartId).set({
+        'items': [],
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      print('Created new cart in Firestore');
+    } catch (e) {
+      print('Error creating cart in Firestore: $e');
     }
   }
 
   void _subscribeToCartUpdates() {
-    _firestore.collection('carts').doc(_cartId).snapshots().listen((snapshot) {
-      if (snapshot.exists) {
-        Map<String, dynamic> cartData = snapshot.data() as Map<String, dynamic>;
-        List<dynamic> items = cartData['items'] ?? [];
-        _cart.clear();
-        for (var item in items) {
-          Product product = Product.fromFirestore(
-              DocumentSnapshot.fromMap(item['product'], item['product']['id'])
-          );
-          _cart.addItem(product, item['quantity']);
-        }
+    print('Subscribing to cart updates...');
+    _firestore.collection('carts').doc(_cartId).snapshots().listen((DocumentSnapshot<Map<String, dynamic>> snapshot) {
+      if (snapshot.exists && snapshot.data() != null) {
+        print('Received cart update from Firestore');
+        _updateCartFromData(snapshot.data()!);
         notifyListeners();
       }
+    }, onError: (error) {
+      print('Error in cart subscription: $error');
     });
+  }
+
+  void _updateCartFromData(Map<String, dynamic> cartData) {
+    List<dynamic> items = cartData['items'] ?? [];
+    _cart.clear();
+    for (var item in items) {
+      if (item is Map<String, dynamic> && item.containsKey('product') && item.containsKey('quantity')) {
+        Product product = Product.fromMap(item['product']);
+        _cart.addItem(product, item['quantity']);
+      }
+    }
+    print('Updated cart items: ${_cart.itemCount}');
   }
 
   Future<void> _updateFirestore() async {
     try {
+      print('Updating cart in Firestore...');
       await _firestore.collection('carts').doc(_cartId).set({
         'items': _cart.items.map((item) => {
           'product': item.product.toFirestore(),
@@ -64,30 +88,35 @@ class CartProvider extends ChangeNotifier {
         }).toList(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
+      print('Cart updated in Firestore');
     } catch (e) {
       print('Error updating Firestore: $e');
     }
   }
 
   Future<void> addToCart(Product product, {int quantity = 1}) async {
+    print('Adding product to cart: ${product.id}, quantity: $quantity');
     _cart.addItem(product, quantity);
     await _updateFirestore();
     notifyListeners();
   }
 
   Future<void> removeFromCart(String productId) async {
+    print('Removing product from cart: $productId');
     _cart.removeItem(productId);
     await _updateFirestore();
     notifyListeners();
   }
 
   Future<void> updateQuantity(String productId, int newQuantity) async {
+    print('Updating quantity for product: $productId, new quantity: $newQuantity');
     _cart.updateQuantity(productId, newQuantity);
     await _updateFirestore();
     notifyListeners();
   }
 
   Future<void> clearCart() async {
+    print('Clearing cart');
     _cart.clear();
     await _updateFirestore();
     notifyListeners();

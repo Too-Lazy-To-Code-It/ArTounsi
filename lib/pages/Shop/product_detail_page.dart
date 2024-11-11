@@ -1,19 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-
-import '../../entities/Shop/Cart.dart';
+import 'package:provider/provider.dart';
+import '../../Services/Shop/cart_provider.dart';
 import '../../entities/Shop/Product.dart';
 
 class ProductDetailPage extends StatefulWidget {
   final String productId;
-  final Cart cart;
 
   const ProductDetailPage({
-    super.key,
+    Key? key,
     required this.productId,
-    required this.cart,
-  });
+  }) : super(key: key);
 
   @override
   _ProductDetailPageState createState() => _ProductDetailPageState();
@@ -161,51 +159,51 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                     children: [
                       _isEditing
                           ? TextField(
-                              controller: _nameController,
-                              decoration:
-                                  InputDecoration(labelText: 'Product Name'),
-                            )
+                        controller: _nameController,
+                        decoration:
+                        InputDecoration(labelText: 'Product Name'),
+                      )
                           : Text(
-                              product.name,
-                              style: Theme.of(context).textTheme.headlineSmall,
-                            ),
+                        product.name,
+                        style: Theme.of(context).textTheme.headlineSmall,
+                      ),
                       SizedBox(height: 8),
                       _isEditing
                           ? TextField(
-                              controller: _priceController,
-                              decoration: InputDecoration(labelText: 'Price'),
-                              keyboardType: TextInputType.number,
-                            )
+                        controller: _priceController,
+                        decoration: InputDecoration(labelText: 'Price'),
+                        keyboardType: TextInputType.number,
+                      )
                           : Text(
-                              '\$${product.price.toStringAsFixed(2)}',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                            ),
+                        '\$${product.price.toStringAsFixed(2)}',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleLarge
+                            ?.copyWith(
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
                       SizedBox(height: 16),
                       _isEditing
                           ? TextField(
-                              controller: _artistController,
-                              decoration: InputDecoration(labelText: 'Artist'),
-                            )
+                        controller: _artistController,
+                        decoration: InputDecoration(labelText: 'Artist'),
+                      )
                           : Text(
-                              'Artist: ${product.artist}',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
+                        'Artist: ${product.artist}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       SizedBox(height: 8),
                       _isEditing
                           ? TextField(
-                              controller: _categoriesController,
-                              decoration: InputDecoration(
-                                  labelText: 'Categories (comma-separated)'),
-                            )
+                        controller: _categoriesController,
+                        decoration: InputDecoration(
+                            labelText: 'Categories (comma-separated)'),
+                      )
                           : Text(
-                              'Categories: ${product.categories.join(", ")}',
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
+                        'Categories: ${product.categories.join(", ")}',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                       SizedBox(height: 16),
                       Row(
                         children: [
@@ -216,19 +214,22 @@ class _ProductDetailPageState extends State<ProductDetailPage> {
                       ),
                       SizedBox(height: 24),
                       if (!_isEditing)
-                        ElevatedButton(
-                          onPressed: () {
-                            widget.cart.addItem(product);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content:
-                                      Text('${product.name} added to cart')),
+                        Consumer<CartProvider>(
+                          builder: (context, cartProvider, child) {
+                            return ElevatedButton(
+                              onPressed: () {
+                                cartProvider.addToCart(product);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('${product.name} added to cart')),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                minimumSize: Size(double.infinity, 50),
+                              ),
+                              child: Text('Add to Cart'),
                             );
                           },
-                          style: ElevatedButton.styleFrom(
-                            minimumSize: Size(double.infinity, 50),
-                          ),
-                          child: Text('Add to Cart'),
                         ),
                       if (_isEditing)
                         ElevatedButton(
