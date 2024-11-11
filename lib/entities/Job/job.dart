@@ -1,20 +1,20 @@
 import 'dart:math';
 
-class Project {
+class Job {
   String id;
   String title;
   String description;
   String mainImagePath;
   List<String> additionalImagePaths;
-  String projectLink;
+  String JobLink;
 
-  Project({
+  Job({
     required this.id,
     required this.title,
     required this.description,
     required this.mainImagePath,
     this.additionalImagePaths = const [],
-    this.projectLink = '',
+    this.JobLink = '',
   });
 
   String generateRandomId() {
@@ -24,7 +24,7 @@ class Project {
         10, (_) => chars.codeUnitAt(rnd.nextInt(chars.length))));
   }
 
-  // Convert a Project instance to a Map
+  // Convert a Job instance to a Map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -32,37 +32,37 @@ class Project {
       'description': description,
       'mainImagePath': mainImagePath,
       'additionalImagePaths': additionalImagePaths,
-      'projectLink': projectLink,
+      'JobLink': JobLink,
     };
   }
 
-  // Create a Project instance from a Map
-  factory Project.fromMap(Map<String, dynamic> map) {
-    return Project(
+  // Create a Job instance from a Map
+  factory Job.fromMap(Map<String, dynamic> map) {
+    return Job(
       id: map['id'],
       title: map['title'],
       description: map['description'],
       mainImagePath: map['mainImagePath'],
       additionalImagePaths: List<String>.from(map['additionalImagePaths']),
-      projectLink: map['projectLink'],
+      JobLink: map['JobLink'],
     );
   }
 
-  // Create a copy of the Project with updated fields
-  Project copyWith({
+  // Create a copy of the Job with updated fields
+  Job copyWith({
     String? title,
     String? description,
     String? mainImagePath,
     List<String>? additionalImagePaths,
-    String? projectLink,
+    String? JobLink,
   }) {
-    return Project(
-      id: id,
+    return Job(
+      id: this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       mainImagePath: mainImagePath ?? this.mainImagePath,
       additionalImagePaths: additionalImagePaths ?? this.additionalImagePaths,
-      projectLink: projectLink ?? this.projectLink,
+      JobLink: JobLink ?? this.JobLink,
     );
   }
 }

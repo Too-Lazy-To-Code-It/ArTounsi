@@ -1,20 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
+import 'package:image_picker/image_picker.dart';
 import '../../entities/Event/Events.dart';
 
 class add_event extends StatefulWidget {
-  const add_event({super.key});
-
   @override
-  _add_eventState createState() => _add_eventState();
+  _AddEventState createState() => _AddEventState();
 }
 
-class _add_eventState extends State<add_event> {
+class _AddEventState extends State<add_event> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _imageUrlController = TextEditingController();
+  String? _imagePath;
   DateTime _selectedDate = DateTime.now();
 
   Future<void> _selectDate(BuildContext context) async {
@@ -31,11 +29,21 @@ class _add_eventState extends State<add_event> {
     }
   }
 
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _imagePath = pickedFile.path;
+      });
+    }
+  }
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final newEvent = Event(
         _titleController.text,
-        _imageUrlController.text,
+        _imagePath ?? '',
         _selectedDate,
         _descriptionController.text,
       );
@@ -77,15 +85,20 @@ class _add_eventState extends State<add_event> {
               },
             ),
             SizedBox(height: 16),
-            TextFormField(
-              controller: _imageUrlController,
-              decoration: InputDecoration(labelText: 'Image URL'),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an image URL';
-                }
-                return null;
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _imagePath != null
+                        ? 'Image selected: ${_imagePath!.split('/').last}'
+                        : 'No image selected',
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _pickImage,
+                  child: Text('Select Image'),
+                ),
+              ],
             ),
             SizedBox(height: 16),
             Row(

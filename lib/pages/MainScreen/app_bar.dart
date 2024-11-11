@@ -1,3 +1,5 @@
+import 'package:Artounsi/pages/User/login_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -6,10 +8,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
 
   const CustomAppBar(
-      {super.key,
+      {Key? key,
       required this.title,
       required this.onMenuPressed,
-      this.actions});
+      this.actions})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,8 +31,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                fontWeight: FontWeight.bold,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -56,8 +59,13 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.logout),
           onPressed: () {
+            FirebaseAuth.instance.signOut();
             Navigator.pushNamed(context, "/loginPage");
-          },
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => LoginPage(),
+              ),
+            );          },
           tooltip: 'Logout',
         ),
       ],
