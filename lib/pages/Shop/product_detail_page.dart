@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../entities/Shop/Product.dart';
 import '../../Services/Shop/cart_provider.dart';
+import 'edit_product_page.dart';
+
 
 class ProductDetailPage extends StatelessWidget {
   final String productId;
@@ -86,7 +88,7 @@ class ProductDetailPage extends StatelessWidget {
                           }
 
                           final userId = userSnapshot.data?.uid;
-                          final isOwner = product.belongsToUser(userId ?? '');
+                          final isOwner = product.userId == userId;
 
                           if (isOwner) {
                             return Row(
@@ -94,7 +96,12 @@ class ProductDetailPage extends StatelessWidget {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // TODO: Implement edit functionality
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => EditProductPage(product: product),
+                                        ),
+                                      );
                                     },
                                     child: Text('Edit Product'),
                                   ),
@@ -103,7 +110,7 @@ class ProductDetailPage extends StatelessWidget {
                                 Expanded(
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      // TODO: Implement delete functionality
+                                      _showDeleteConfirmationDialog(context, product);
                                     },
                                     style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                                     child: Text('Delete Product'),
@@ -134,5 +141,47 @@ class ProductDetailPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, Product product) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Product'),
+          content: Text('Are you sure you want to delete this product?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                _deleteProduct(context, product);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteProduct(BuildContext context, Product product) async {
+    try {
+      await FirebaseFirestore.instance.collection('Product').doc(product.id).delete();
+      Navigator.of(context).pop(); // Close the dialog
+      Navigator.of(context).pop(); // Go back to the previous page
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Product deleted successfully')),
+      );
+    } catch (e) {
+      print('Error deleting product: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to delete product')),
+      );
+    }
   }
 }

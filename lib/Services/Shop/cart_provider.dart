@@ -138,11 +138,6 @@ class CartProvider extends ChangeNotifier {
       return;
     }
 
-    if (product.userId != _userId) {
-      print('Cannot add product to cart: Product does not belong to user');
-      return;
-    }
-
     print('Adding product to cart: ${product.id}, quantity: $quantity');
     _cart.addItem(product, quantity);
     await _updateFirestore();
@@ -155,21 +150,6 @@ class CartProvider extends ChangeNotifier {
       return;
     }
 
-    CartItem? cartItem = _cart.items.firstWhere(
-          (item) => item.product.id == productId,
-      orElse: () => null as CartItem,
-    );
-
-    if (cartItem == null) {
-      print('Cannot remove product from cart: Product not found');
-      return;
-    }
-
-    if (cartItem.product.userId != _userId) {
-      print('Cannot remove product from cart: Product does not belong to user');
-      return;
-    }
-
     print('Removing product from cart: $productId');
     _cart.removeItem(productId);
     await _updateFirestore();
@@ -179,21 +159,6 @@ class CartProvider extends ChangeNotifier {
   Future<void> updateQuantity(String productId, int newQuantity) async {
     if (_userId == null) {
       print('Cannot update quantity: User not logged in');
-      return;
-    }
-
-    CartItem? cartItem = _cart.items.firstWhere(
-          (item) => item.product.id == productId,
-      orElse: () => null as CartItem,
-    );
-
-    if (cartItem == null) {
-      print('Cannot update quantity: Product not found');
-      return;
-    }
-
-    if (cartItem.product.userId != _userId) {
-      print('Cannot update quantity: Product does not belong to user');
       return;
     }
 
