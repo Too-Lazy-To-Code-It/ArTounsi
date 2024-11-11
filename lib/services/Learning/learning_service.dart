@@ -44,16 +44,8 @@ class LearningService {
   }
 
   Future<Course> getCourse(String courseId) async {
-    try {
-      DocumentSnapshot doc = await _firestore.collection('courses').doc(courseId).get();
-      if (!doc.exists) {
-        throw Exception("Course not found");
-      }
-      return Course.fromMap({'id': doc.id, ...doc.data() as Map<String, dynamic>});
-    } catch (e) {
-      print("Error getting course: $e");
-      rethrow;
-    }
+    var courseData = await _firestore.collection('courses').doc(courseId).get();
+    return Course.fromMap(courseData.data()!);
   }
 
   Future<String> getCurrentUsername() async {
@@ -64,11 +56,9 @@ class LearningService {
         if (userDoc.exists) {
           return (userDoc.data() as Map<String, dynamic>)['username'] ?? user.email ?? 'Unknown User';
         } else {
-          // If the user document doesn't exist, create it with a default username
           await _firestore.collection('users').doc(user.uid).set({
             'username': user.email ?? 'User${user.uid.substring(0, 5)}',
             'email': user.email,
-            // Add any other default user fields here
           });
           return user.email ?? 'User${user.uid.substring(0, 5)}';
         }
@@ -92,8 +82,6 @@ class LearningService {
         'modules': modules,
       });
       print("Added new course with ID: ${docRef.id}");
-
-      // Refresh the stream
       _firestore.collection('courses').snapshots();
     } catch (e) {
       print("Error adding new course: $e");
@@ -102,24 +90,43 @@ class LearningService {
   }
 
   Future<void> enrollInCourse(Course course) async {
-    try {
-      await ensureAuthenticated();
-      await _firestore.collection('user_progress').add({
-        'userId': _auth.currentUser?.uid,
-        'courseId': course.id,
-        'completedModules': [],
-        'overallProgress': 0.0,
-      });
-      print("Enrolled in course: ${course.id}");
-    } catch (e) {
-      print("Error enrolling in course: $e");
-      rethrow;
+    await ensureAuthenticated();
+    String userId = _auth.currentUser!.uid;
+
+    bool isEnrolled = await isEnrolledInCourse(course.id);
+
+    if (isEnrolled) {
+      throw Exception('You are already enrolled in this course');
     }
+
+    UserProgress userProgress = UserProgress(
+      userId: userId,
+      courseId: course.id,
+      completedModules: [],
+      overallProgress: 0.0,
+    );
+
+    await _firestore.collection('user_progress').add(userProgress.toMap());
+    print("Enrolled in course: ${course.title}");
   }
 
   Future<void> updateModuleProgress(UserProgress progress, String module, bool completed) async {
     try {
       await ensureAuthenticated();
+      String userId = _auth.currentUser!.uid;
+
+      QuerySnapshot progressDocs = await _firestore
+          .collection('user_progress')
+          .where('userId', isEqualTo: userId)
+          .where('courseId', isEqualTo: progress.courseId)
+          .get();
+
+      if (progressDocs.docs.isEmpty) {
+        throw Exception('User progress not found');
+      }
+
+      DocumentReference progressRef = progressDocs.docs.first.reference;
+
       List<String> updatedModules = List.from(progress.completedModules);
       if (completed) {
         updatedModules.add(module);
@@ -127,12 +134,22 @@ class LearningService {
         updatedModules.remove(module);
       }
 
-      double overallProgress = updatedModules.length / progress.completedModules.length;
+      DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(progress.courseId).get();
+      int totalModules = (courseDoc.data() as Map<String, dynamic>)['modules'].length;
 
-      await _firestore.collection('user_progress').doc(progress.userId).update({
+      double newOverallProgress = updatedModules.length / totalModules;
+
+      await progressRef.update({
         'completedModules': updatedModules,
-        'overallProgress': overallProgress,
+        'overallProgress': newOverallProgress,
       });
+
+      // Update the progress object
+      progress.updateProgress(
+        updatedModules: updatedModules,
+        updatedProgress: newOverallProgress,
+      );
+
       print("Updated progress for course: ${progress.courseId}, module: $module");
     } catch (e) {
       print("Error updating module progress: $e");
@@ -140,58 +157,67 @@ class LearningService {
     }
   }
 
-  // Existing fields and methods...
-
-  // Method to delete a course if the current user is the instructor
   Future<void> deleteCourse(String courseId) async {
-  try {
-  await ensureAuthenticated();
-  DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(courseId).get();
+    try {
+      await ensureAuthenticated();
+      DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(courseId).get();
 
-  if (!courseDoc.exists) throw Exception("Course not found");
+      if (!courseDoc.exists) throw Exception("Course not found");
 
-  String instructor = courseDoc['instructor'];
-  String currentUser = await getCurrentUsername();
+      String instructor = courseDoc['instructor'];
+      String currentUser = await getCurrentUsername();
 
-  if (instructor != currentUser) {
-  throw Exception("Only the course instructor can delete this course");
+      if (instructor != currentUser) {
+        throw Exception("Only the course instructor can delete this course");
+      }
+
+      await _firestore.collection('courses').doc(courseId).delete();
+      print("Course deleted successfully: $courseId");
+
+    } catch (e) {
+      print("Error deleting course: $e");
+      rethrow;
+    }
   }
 
-  await _firestore.collection('courses').doc(courseId).delete();
-  print("Course deleted successfully: $courseId");
-
-  } catch (e) {
-  print("Error deleting course: $e");
-  rethrow;
-  }
-  }
-
-  // Method to update a course if the current user is the instructor
   Future<void> updateCourse(String courseId, String title, String description, String imageUrl, List<String> modules) async {
-  try {
-  await ensureAuthenticated();
-  DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(courseId).get();
+    try {
+      await ensureAuthenticated();
+      DocumentSnapshot courseDoc = await _firestore.collection('courses').doc(courseId).get();
 
-  if (!courseDoc.exists) throw Exception("Course not found");
+      if (!courseDoc.exists) throw Exception("Course not found");
 
-  String instructor = courseDoc['instructor'];
-  String currentUser = await getCurrentUsername();
+      String instructor = courseDoc['instructor'];
+      String currentUser = await getCurrentUsername();
 
-  if (instructor != currentUser) {
-  throw Exception("Only the course instructor can update this course");
+      if (instructor != currentUser) {
+        throw Exception("Only the course instructor can update this course");
+      }
+
+      await _firestore.collection('courses').doc(courseId).update({
+        'title': title,
+        'description': description,
+        'imageUrl': imageUrl,
+        'modules': modules,
+      });
+      print("Course updated successfully: $courseId");
+
+    } catch (e) {
+      print("Error updating course: $e");
+      rethrow;
+    }
   }
 
-  await _firestore.collection('courses').doc(courseId).update({
-  'title': title,
-  'description': description,
-  'imageUrl': imageUrl,
-  'modules': modules,
-  });
-  print("Course updated successfully: $courseId");
+  Future<bool> isEnrolledInCourse(String courseId) async {
+    await ensureAuthenticated();
+    String userId = _auth.currentUser!.uid;
 
-  } catch (e) {
-  print("Error updating course: $e");
-  rethrow;
+    QuerySnapshot progressDocs = await _firestore
+        .collection('user_progress')
+        .where('userId', isEqualTo: userId)
+        .where('courseId', isEqualTo: courseId)
+        .get();
+
+    return progressDocs.docs.isNotEmpty;
   }
-  }
-  }
+}
