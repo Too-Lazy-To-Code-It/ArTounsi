@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class AddArtPage extends StatefulWidget {
   const AddArtPage({Key? key}) : super(key: key);
@@ -9,15 +13,58 @@ class AddArtPage extends StatefulWidget {
   _AddArtPageState createState() => _AddArtPageState();
 }
 
+Map<String, dynamic>? userData;
+
+
+
+
 class _AddArtPageState extends State<AddArtPage> {
   final _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _tagsController = TextEditingController();
   final TextEditingController _softwareController = TextEditingController();
   File? _mainArtImage;
+  List<String> _selectedTags = [];
 
+  final List<Map<String, dynamic>> _tagOptions = [
+    {'name': 'Game Art', 'icon': Icons.games},
+    {'name': 'Anime Art', 'icon': Icons.animation},
+    {'name': 'Character Art', 'icon': Icons.person},
+    {'name': 'Landscape Art', 'icon': Icons.landscape},
+    {'name': 'Abstract Art', 'icon': Icons.brush},
+    {'name': 'Portrait Art', 'icon': Icons.face},
+    {'name': 'Concept Art', 'icon': Icons.lightbulb},
+    {'name': 'Digital Painting', 'icon': Icons.palette},
+    {'name': '3D Art', 'icon': Icons.view_in_ar},
+    {'name': 'Pixel Art', 'icon': Icons.grid_on},
+    {'name': 'Fan Art', 'icon': Icons.favorite},
+    {'name': 'Illustration', 'icon': Icons.image},
+  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchUserData();
+  }
+  Future<void> fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+  }
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
@@ -33,58 +80,69 @@ class _AddArtPageState extends State<AddArtPage> {
       appBar: AppBar(
         title: const Text('Add Artwork'),
         centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.black,
       ),
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                _buildTextField(
-                  controller: _titleController,
-                  label: 'Art Title',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a title';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                _buildTextField(
-                  controller: _descriptionController,
-                  label: 'Art Description',
-                  maxLines: 3,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter a description';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16.0),
-                _buildTextField(
-                  controller: _tagsController,
-                  label: 'Tags (Optional)',
-                ),
-                const SizedBox(height: 16.0),
-                _buildTextField(
-                  controller: _softwareController,
-                  label: 'Software Used (Optional)',
-                ),
-                const SizedBox(height: 16.0),
-                _buildImagePicker(),
-                const SizedBox(height: 24.0),
-                ElevatedButton(
-                  onPressed: _submitForm,
-                  child: const Text('Add Artwork'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+      body: Container(
+        color: Colors.black,
+        child: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildTextField(
+                    controller: _titleController,
+                    label: 'Art Title',
+                    icon: Icons.title,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a title';
+                      }
+                      return null;
+                    },
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16.0),
+                  _buildTextField(
+                    controller: _descriptionController,
+                    label: 'Art Description',
+                    icon: Icons.description,
+                    maxLines: 3,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a description';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildMultiSelectChips(),
+                  const SizedBox(height: 16.0),
+                  _buildTextField(
+                    controller: _softwareController,
+                    label: 'Software Used',
+                    icon: Icons.computer,
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16.0),
+                  _buildImagePicker(),
+                  const SizedBox(height: 24.0),
+                  ElevatedButton.icon(
+                    onPressed: _submitForm,
+                    icon: const Icon(Icons.add, color: Colors.black),
+                    label: const Text('Add Artwork', style: TextStyle(color: Colors.black)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -95,6 +153,7 @@ class _AddArtPageState extends State<AddArtPage> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
+    required IconData icon,
     int maxLines = 1,
     String? Function(String?)? validator,
   }) {
@@ -102,13 +161,83 @@ class _AddArtPageState extends State<AddArtPage> {
       controller: controller,
       decoration: InputDecoration(
         labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.white70),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white70),
         ),
-        errorStyle: TextStyle(color: Colors.red),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.white70),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor),
+        ),
+        filled: true,
+        fillColor: Colors.grey[900],
+        errorStyle: TextStyle(color: Colors.red[300]),
       ),
+      style: const TextStyle(color: Colors.white),
       maxLines: maxLines,
       validator: validator,
+    );
+  }
+
+  Widget _buildMultiSelectChips() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Art Categories',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 8.0,
+          children: _tagOptions.map((tag) {
+            return FilterChip(
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(tag['icon'], size: 18, color: _selectedTags.contains(tag['name']) ? Colors.black : Theme.of(context).primaryColor),
+                  const SizedBox(width: 4),
+                  Text(tag['name']),
+                ],
+              ),
+              selected: _selectedTags.contains(tag['name']),
+              onSelected: (bool selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedTags.add(tag['name']);
+                  } else {
+                    _selectedTags.remove(tag['name']);
+                  }
+                });
+              },
+              selectedColor: Theme.of(context).primaryColor,
+              checkmarkColor: Colors.black,
+              backgroundColor: Colors.grey[800],
+              labelStyle: TextStyle(
+                color: _selectedTags.contains(tag['name']) ? Colors.black : Colors.white,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            );
+          }).toList(),
+        ),
+        if (_selectedTags.isEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              'Please select at least one category',
+              style: TextStyle(color: Colors.red[300], fontSize: 12),
+            ),
+          ),
+      ],
     );
   }
 
@@ -116,9 +245,9 @@ class _AddArtPageState extends State<AddArtPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           'Art Image',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -126,32 +255,37 @@ class _AddArtPageState extends State<AddArtPage> {
           child: Container(
             height: 200,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey, width: 1.5),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.grey.shade200,
+              border: Border.all(color: Colors.white70, width: 1.5),
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey[900],
             ),
             child: _mainArtImage != null
                 ? ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.file(
-                      _mainArtImage!,
-                      fit: BoxFit.cover,
-                    ),
-                  )
-                : const Center(
-                    child: Text(
-                      'Tap to upload image',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
+              borderRadius: BorderRadius.circular(12),
+              child: Image.file(
+                _mainArtImage!,
+                fit: BoxFit.cover,
+              ),
+            )
+                : const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_photo_alternate, size: 50, color: Colors.white70),
+                SizedBox(height: 8),
+                Text(
+                  'Tap to upload image',
+                  style: TextStyle(color: Colors.white70),
+                ),
+              ],
+            ),
           ),
         ),
         if (_mainArtImage == null)
-          const Padding(
-            padding: EdgeInsets.only(top: 8.0),
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               'Required main image',
-              style: TextStyle(color: Colors.red),
+              style: TextStyle(color: Colors.red[300], fontSize: 12),
             ),
           ),
       ],
@@ -163,67 +297,117 @@ class _AddArtPageState extends State<AddArtPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Choose Image Source'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: const Text('Camera'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.camera);
-                  },
-                ),
-                const Padding(padding: EdgeInsets.all(8.0)),
-                GestureDetector(
-                  child: const Text('Gallery'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    _pickImage(ImageSource.gallery);
-                  },
-                ),
-              ],
-            ),
+          backgroundColor: Colors.grey[900],
+          title: const Text('Choose Image Source', style: TextStyle(color: Colors.white)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                leading: const Icon(Icons.camera, color: Colors.white70),
+                title: const Text('Camera', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.white70),
+                title: const Text('Gallery', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate() && _mainArtImage != null) {
+  void _submitForm() async {
+    if (_formKey.currentState!.validate() && _mainArtImage != null && _selectedTags.isNotEmpty) {
       _formKey.currentState!.save();
-      // TODO: Implement save art logic here
-      print('Title: ${_titleController.text}');
-      print('Description: ${_descriptionController.text}');
-      print('Tags: ${_tagsController.text}');
-      print('Software Used: ${_softwareController.text}');
-      print('Main Image: ${_mainArtImage?.path}');
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Art added successfully!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      try {
+        // Ensure that userData is fetched and contains the username
+        String authorName = userData?['username'] ?? 'Anonymous';
 
-      // Reset form
-      _titleController.clear();
-      _descriptionController.clear();
-      _tagsController.clear();
-      _softwareController.clear();
-      setState(() {
-        _mainArtImage = null;
-      });
+        // Upload the image to Firebase Storage and get the URL
+        String imageUrl = await _uploadImage(_mainArtImage!);
+
+        // Create a document in Firestore
+        await FirebaseFirestore.instance.collection('artworks').add({
+          'title': _titleController.text,
+          'description': _descriptionController.text,
+          'imageUrl': imageUrl,
+          'softwareUsed': _softwareController.text,
+          'tags': _selectedTags,
+          'createdAt': FieldValue.serverTimestamp(),
+          'authorId': FirebaseAuth.instance.currentUser!.uid,
+          'authorName': authorName,  // Uses fetched username
+          'likes': 0,
+          'views': 0,
+          'comments': [],
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Art added successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+
+        // Reset form
+        _titleController.clear();
+        _descriptionController.clear();
+        _softwareController.clear();
+        setState(() {
+          _mainArtImage = null;
+          _selectedTags = [];
+        });
+      } catch (e) {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-              Text('Please fill in all required fields and select an image'),
+        SnackBar(
+          content: const Text('Please fill in all required fields, select at least one category, and select an image'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
+    }
+  }
+
+
+  Future<String> _uploadImage(File image) async {
+    try {
+      final storageRef = FirebaseStorage.instance.ref();
+      String fileName = 'artworks/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      UploadTask uploadTask = storageRef.child(fileName).putFile(image);
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('Image upload failed: $e');
     }
   }
 
@@ -231,7 +415,6 @@ class _AddArtPageState extends State<AddArtPage> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
-    _tagsController.dispose();
     _softwareController.dispose();
     super.dispose();
   }

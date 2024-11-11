@@ -1,147 +1,133 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'blog_post.dart';
+import 'edit_blog_post.dart';
 
-class BlogPostDetails extends StatefulWidget {
-  final List<Map<String, dynamic>> allPosts;
-  final int initialIndex;
+class BlogPostDetails extends StatelessWidget {
+  final BlogPost post;
+  final bool isAuthor;
 
   const BlogPostDetails({
-    super.key,
-    required this.allPosts,
-    required this.initialIndex,
-  });
+    Key? key,
+    required this.post,
+    required this.isAuthor,
+  }) : super(key: key);
 
-  @override
-  _BlogPostDetailsState createState() => _BlogPostDetailsState();
-}
+  Future<void> _deleteBlogPost(BuildContext context) async {
+    if (!isAuthor) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You can only delete your own posts')),
+      );
+      return;
+    }
 
-class _BlogPostDetailsState extends State<BlogPostDetails> {
-  late PageController _pageController;
-  late int _currentIndex;
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Blog Post'),
+          content: const Text('Are you sure you want to delete this blog post?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
 
-  @override
-  void initState() {
-    super.initState();
-    _currentIndex = widget.initialIndex;
-    _pageController = PageController(initialPage: _currentIndex);
-  }
+    if (confirmDelete == true) {
+      try {
+        // Delete the blog post document from Firestore
+        await FirebaseFirestore.instance
+            .collection('blog_posts')
+            .doc(post.id)
+            .delete();
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
+        // Delete the image from Firebase Storage
+        if (post.imageUrl.isNotEmpty) {
+          try {
+            await FirebaseStorage.instance.refFromURL(post.imageUrl).delete();
+          } catch (e) {
+            print('Error deleting image: $e');
+          }
+        }
+
+        Navigator.of(context).pop(); // Return to the blog list
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error deleting blog post: $e')),
+        );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.allPosts[_currentIndex]['title']),
+        title: Text(post.title),
+        actions: isAuthor ? [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EditBlogPost(post: post),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _deleteBlogPost(context),
+          ),
+        ] : null,
       ),
-      body: PageView.builder(
-        controller: _pageController,
-        itemCount: widget.allPosts.length,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        itemBuilder: (context, index) {
-          final post = widget.allPosts[index];
-          return SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Image.network(
-                  post['imageUrl'],
-                  height: 300,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        post['title'],
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'By ${post['author']} on ${post['date']}',
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'This is the full content of the blog post. In a real application, this would be a longer text with paragraphs, possibly including formatting, images, and other rich content.\n\n'
-                        'For now, we\'ll use this placeholder text to simulate a full blog post. You can replace this with actual content when integrating with a backend or CMS.\n\n'
-                        '${post['excerpt']}\n\n'
-                        'The rest of the blog post would continue here, discussing the topic in more detail, providing examples, and drawing conclusions.',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Icon(Icons.favorite,
-                              color: Theme.of(context).colorScheme.secondary),
-                          const SizedBox(width: 4),
-                          Text('${post['likes']} likes'),
-                          const SizedBox(width: 16),
-                          Icon(Icons.comment,
-                              color: Theme.of(context).colorScheme.secondary),
-                          const SizedBox(width: 4),
-                          Text('${post['comments']} comments'),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Comments',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildCommentsList(),
-                    ],
-                  ),
-                ),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.network(
+              post.imageUrl,
+              height: 300,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-          );
-        },
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    post.title,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'By ${post.authorName} on ${post.date.toString().split(' ')[0]}',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    post.content,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _buildCommentsList() {
-    // This is a dummy list of comments. In a real app, you'd fetch this from an API or database.
-    final List<Map<String, String>> comments = [
-      {'author': 'Alice', 'content': 'Great article! Very insightful.'},
-      {
-        'author': 'Bob',
-        'content': 'I learned a lot from this. Thanks for sharing!'
-      },
-      {
-        'author': 'Charlie',
-        'content': 'Interesting perspective. Id love to see more on this topic.'
-      },
-    ];
-
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: comments.length,
-      itemBuilder: (context, index) {
-        final comment = comments[index];
-        return ListTile(
-          title: Text(comment['author']!),
-          subtitle: Text(comment['content']!),
-        );
-      },
     );
   }
 }
