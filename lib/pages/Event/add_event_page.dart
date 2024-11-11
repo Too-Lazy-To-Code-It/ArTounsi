@@ -5,6 +5,8 @@ import 'dart:io';
 import '../../entities/Event/Events.dart';
 import '../../services/Event/EventService.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class AddEvent extends StatefulWidget {
   @override
   _AddEventState createState() => _AddEventState();
@@ -19,31 +21,11 @@ class _AddEventState extends State<AddEvent> {
   DateTime _selectedDate = DateTime.now();
   bool _isLoading = false;
 
-  // List of Tunisian cities
   final List<String> _tunisianCities = [
-    'Tunis',
-    'Sfax',
-    'Sousse',
-    'Gabès',
-    'Bizerte',
-    'Ariana',
-    'Gafsa',
-    'Monastir',
-    'Kairouan',
-    'Ben Arous',
-    'Tozeur',
-    'Kasserine',
-    'Médenine',
-    'Nabeul',
-    'Mahdia',
-    'Sidi Bouzid',
-    'Kébili',
-    'Jendouba',
-    'Beja',
-    'Zaghouan',
-    'Siliana',
-    'Tataouine',
-    'Manouba'
+    'Tunis', 'Sfax', 'Sousse', 'Gabès', 'Bizerte', 'Ariana', 'Gafsa',
+    'Monastir', 'Kairouan', 'Ben Arous', 'Tozeur', 'Kasserine', 'Médenine',
+    'Nabeul', 'Mahdia', 'Sidi Bouzid', 'Kébili', 'Jendouba', 'Beja',
+    'Zaghouan', 'Siliana', 'Tataouine', 'Manouba'
   ];
 
   String? _selectedCity;
@@ -94,13 +76,16 @@ class _AddEventState extends State<AddEvent> {
         _isLoading = true;
       });
       try {
+        User? user = FirebaseAuth.instance.currentUser;
+        String username = user != null ? user.displayName ?? 'Anonymous' : 'Anonymous';
         final newEvent = Events(
           '',
           _titleController.text,
           '',
           _selectedDate,
           _descriptionController.text,
-          _selectedCity!, // Add selected city here
+          _selectedCity!,
+          username,
         );
 
         final imageFile = File(_imagePath!);
@@ -116,7 +101,7 @@ class _AddEventState extends State<AddEvent> {
         _titleController.clear();
         _descriptionController.clear();
         setState(() {
-          _selectedCity = null; // Reset selected city
+          _selectedCity = null;
           _imagePath = null;
           _selectedDate = DateTime.now();
         });

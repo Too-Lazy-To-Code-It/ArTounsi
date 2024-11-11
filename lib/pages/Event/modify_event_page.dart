@@ -5,6 +5,7 @@ import 'dart:io';
 import '../../entities/Event/Events.dart';
 import '../../services/Event/EventService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ModifyEvent extends StatefulWidget {
   final DocumentReference eventRef;
@@ -53,7 +54,7 @@ class _ModifyEventState extends State<ModifyEvent> {
         _selectedDate = event.date;
         _existingImageUrl = event.imageUrl;
         _locationController.text = event.location;
-        _selectedCity = event.location; // Assuming event location is the city
+        _selectedCity = event.location;
         _imagePath = null;
       });
     } else {
@@ -93,22 +94,25 @@ class _ModifyEventState extends State<ModifyEvent> {
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true; // Set loading state
+        _isLoading = true;
       });
       try {
+        String username = FirebaseAuth.instance.currentUser?.displayName ?? 'Anonymous';
+
         final updatedEvent = Events(
-          widget.eventRef.id, // Pass the event ID for modification
+          widget.eventRef.id,
           _titleController.text,
-          '', // Image URL will be updated
+          _existingImageUrl ?? '',
           _selectedDate,
           _descriptionController.text,
-          _selectedCity ?? '', // Use selected city as location
+          _selectedCity ?? '',
+          username,
         );
 
         await _eventService.modifyEvent(
-          widget.eventRef.id, // Pass the event ID
+          widget.eventRef.id,
           updatedEvent,
-          newImage: _imagePath != null ? File(_imagePath!) : null, // Pass new image if available
+          newImage: _imagePath != null ? File(_imagePath!) : null,
         );
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -122,7 +126,7 @@ class _ModifyEventState extends State<ModifyEvent> {
         );
       } finally {
         setState(() {
-          _isLoading = false; // Reset loading state
+          _isLoading = false;
         });
       }
     }
@@ -160,7 +164,7 @@ class _ModifyEventState extends State<ModifyEvent> {
         appBar: AppBar(
           title: Text('Modify Event'),
         ),
-        body: _isLoading // Conditional rendering based on loading state
+        body: _isLoading
             ? Center(child: CircularProgressIndicator())
             : Form(
           key: _formKey,
@@ -274,7 +278,7 @@ class _ModifyEventState extends State<ModifyEvent> {
               SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _submitForm,
-                child: Text('Update Event'),
+                child: Text('Save Changes'),
               ),
             ],
           ),

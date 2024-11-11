@@ -6,13 +6,14 @@ import '../../entities/Event/Events.dart';
 import '../../entities/Event/Comments.dart';
 import '../../services/Event/CommentService.dart';
 import '../../services/Event/EventService.dart';
-import 'Full_Screen_Img.dart';
 import 'modify_event_page.dart';
 import 'WeatherService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../../services/Event/JoinEvent.dart';
 
 class EventDetailsPage extends StatefulWidget {
-  final Events event;
 
+  final Events event;
   EventDetailsPage({required this.event});
 
   @override
@@ -28,12 +29,44 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
   bool _isEventDeleted = false;
   bool _isWeatherLoading = false;
   Map<String, dynamic> _weatherData = {};
+  Map<String, dynamic>? userData;
+  String? currentUserUsername;
+  int joinedCount = 0;
 
   @override
   void initState() {
     super.initState();
     _loadComments(widget.event.id);
     _fetchWeather(widget.event.location);
+    fetchUserData();
+    _getJoinedCount();
+  }
+
+  Future<void> _getJoinedCount() async {
+    int count = await joinevent().getJoinedCount(widget.event.id);
+    setState(() {
+      joinedCount = count;
+    });
+  }
+
+  Future<void> fetchUserData() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .where('email', isEqualTo: user.email)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        setState(() {
+          userData = querySnapshot.docs.first.data();
+        });
+      } else {
+        print('User document not found');
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
   }
 
   Future<void> _fetchWeather(String location) async {
@@ -43,8 +76,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
     });
 
     try {
-      // Construct the API URL using the provided location
-      final apiKey = '31bcf9db936c49f6ba8c2ea1fe313bfb'; // Your API key
+      final apiKey = 'f5c316762b8e45e7a0a51f4e7862fdd5';
       final apiUrl = 'https://api.weatherbit.io/v2.0/current?city=$location&key=$apiKey';
 
       final response = await http.get(Uri.parse(apiUrl));
@@ -52,9 +84,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-        // Ensure the data array exists and has items
         if (jsonResponse['data'] != null && jsonResponse['data'].isNotEmpty) {
-          // Access the first item in the data array
           final weatherInfo = jsonResponse['data'][0];
 
           setState(() {
@@ -68,7 +98,7 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           });
         } else {
           setState(() {
-            _weatherData = {}; // Clear data if empty
+            _weatherData = {};
           });
         }
       } else {
@@ -86,9 +116,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       _isWeatherLoading = false;
     });
   }
-
-
-
 
   Future<void> _loadComments(String eventId) async {
     try {
@@ -118,9 +145,6 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
       });
     }
   }
-
-
-
 
   Future<void> _deleteEvent() async {
     final eventService = EventService();
@@ -183,16 +207,17 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   Future<void> _addComment() async {
     if (_commentController.text.isNotEmpty) {
+      String username = userData?['username'] ?? 'Unknown User';
+
       Comment newComment = Comment(
         id: '',
-        name: 'John Doe',
+        name: username,
         comment: _commentController.text,
         eventId: widget.event.id,
       );
 
       try {
         DocumentReference newDocRef = await _commentService.addComment(newComment);
-
         setState(() {
           newComment = Comment(
             id: newDocRef.id,
@@ -293,16 +318,31 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    String username = userData?['username'] ?? 'Unknown User';
+
+    bool isOwnerEvent = (username == widget.event.username);
+
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.title),
+        actions: [
+          if (isOwnerEvent) IconButton(
+            icon: Icon(Icons.edit),
+            onPressed: _modifyEvent,
+          ),
+          if (isOwnerEvent) IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: _confirmDeleteEvent,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Event Image with Overlay
             Stack(
               children: [
                 ClipRRect(
@@ -344,54 +384,50 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
             // Organizer Name
             Row(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundImage: AssetImage('assets/images/profile_picture.jpg'),
+                Icon(
+                  Icons.person,
+                  color: Colors.blue,
+                  size: 48,
                 ),
                 SizedBox(width: 8),
                 Text(
-                  'Organizer Name',
+                  'Created by ${widget.event.username}',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
+
             SizedBox(height: 16),
 
-            // Event Description
             Text(
               widget.event.description,
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 8),
 
-            // Event Location with Icon
             Row(
               children: [
                 Icon(Icons.location_on, color: Colors.blue),
                 SizedBox(width: 4),
                 Text(
-                  'Location: ${widget.event.location}',
+                  'Location:',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
               ],
             ),
-            SizedBox(height: 8),
-
-
             _isWeatherLoading
                 ? Center(child: CircularProgressIndicator())
                 : _weatherData.isNotEmpty
-                ? WeatherWidget(weatherData: _weatherData)
+                ? WeatherWidget(
+              weatherData: _weatherData,
+              cityName: widget.event.location,
+            )
                 : Text(
               'Weather data not available.',
               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
             ),
 
-
-
             SizedBox(height: 16),
-
-            // Event Date with Icon
             Row(
               children: [
                 Icon(Icons.calendar_today, color: Colors.blue),
@@ -402,49 +438,96 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
                 ),
               ],
             ),
-            SizedBox(height: 24),
+            SizedBox(height: 16),
 
-            // Join Event Button
+            Row(
+              children: [
+                Icon(Icons.people, color: Colors.blue),
+                SizedBox(width: 4),
+                Text(
+                  '$joinedCount people joined',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            SizedBox(height: 24),
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('You have joined the event!')),
+                  bool isUserAlreadyJoined = await joinevent().checkIfUserJoined(widget.event.id);
+
+                  if (isUserAlreadyJoined) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('You have already joined this event.')),
+                    );
+                    return;
+                  }
+
+                  bool? confirmJoin = await showDialog<bool>(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Confirm Join Event'),
+                        content: Text('Are you sure you want to join this event?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(false);
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop(true);
+                            },
+                            child: Text('Join'),
+                          ),
+                        ],
+                      );
+                    },
                   );
+
+                  if (confirmJoin == true) {
+                    await joinevent().joinEvent(widget.event.id);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('You have joined the event!')),
+                    );
+                  }
                 },
                 child: Text('Join Event'),
               ),
+
+
             ),
             SizedBox(height: 24),
 
-            // Comments Section
             Text(
               'Comments',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             SizedBox(height: 8),
-
-            // Comments List
             Column(
               children: _comments.asMap().entries.map((entry) {
                 int index = entry.key;
                 Comment comment = entry.value;
+                bool isOwnerComm = (username == comment.name);
                 return Card(
                   margin: EdgeInsets.symmetric(vertical: 4),
                   child: ListTile(
                     title: Text(comment.name),
                     subtitle: Text(comment.comment),
-                    trailing: IconButton(
+                    trailing: isOwnerComm
+                        ? IconButton(
                       icon: Icon(Icons.delete, color: Colors.red),
                       onPressed: () => _confirmDeleteComment(index),
-                    ),
+                    )
+                        : null,
                   ),
                 );
               }).toList(),
             ),
             SizedBox(height: 16),
 
-            // Add Comment Section
             TextField(
               controller: _commentController,
               decoration: InputDecoration(
@@ -465,34 +548,8 @@ class _EventDetailsPageState extends State<EventDetailsPage> {
           ],
         ),
       ),
-      floatingActionButton: Stack(
-        children: [
-          Positioned(
-            bottom: 70,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _confirmDeleteEvent,
-              child: Icon(Icons.delete),
-              backgroundColor: Colors.red,
-            ),
-          ),
-          Positioned(
-            bottom: 7,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: _modifyEvent,
-              child: Icon(Icons.edit),
-              backgroundColor: Colors.blue,
-            ),
-          ),
-        ],
-      ),
     );
   }
-
-
-
-
 
   Widget _buildCommentItem(BuildContext context, Comment comment, int index) {
     return Card(

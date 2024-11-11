@@ -6,22 +6,10 @@ class Events {
   String imageUrl;
   DateTime date;
   String description;
-  String location; // New field for location
+  String location;
+  String username; // Add the username field
 
-  Events(this.id, this.title, this.imageUrl, this.date, this.description, this.location);
-
-  factory Events.fromMap(String id, Map<String, dynamic> map) {
-    return Events(
-      id,
-      map['title'] ?? 'Untitled Event',
-      map['imageUrl'] ?? '',
-      map['date'] is Timestamp
-          ? (map['date'] as Timestamp).toDate()
-          : DateTime.tryParse(map['date'] ?? '') ?? DateTime.now(),
-      map['description'] ?? 'No description available',
-      map['location'] ?? 'No location specified', // Add location with a default value
-    );
-  }
+  Events(this.id, this.title, this.imageUrl, this.date, this.description, this.location, this.username);
 
   Map<String, dynamic> toMap() {
     return {
@@ -29,7 +17,21 @@ class Events {
       'imageUrl': imageUrl,
       'date': date,
       'description': description,
-      'location': location, // Include location in the map
+      'location': location,
+      'username': username, // Include the username here
     };
   }
+
+  factory Events.fromMap(String id, Map<String, dynamic> map) {
+    return Events(
+      id,
+      map['title'],
+      map['imageUrl'],
+      (map['date'] as Timestamp).toDate(),
+      map['description'],
+      map['location'],
+      map['username'], // Add username to the factory method
+    );
+  }
 }
+
