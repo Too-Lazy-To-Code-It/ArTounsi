@@ -1,9 +1,8 @@
-// File: lib/entities/learning/user_progress.dart
 class UserProgress {
   final String userId;
   final String courseId;
-  final List<String> completedModules;
-  final double overallProgress;
+  List<String> completedModules;
+  double overallProgress;
 
   UserProgress({
     required this.userId,
@@ -28,5 +27,10 @@ class UserProgress {
       'completedModules': completedModules,
       'overallProgress': overallProgress,
     };
+  }
+
+  void updateProgress({required List<String> updatedModules, required double updatedProgress}) {
+    completedModules = updatedModules;
+    overallProgress = updatedProgress;
   }
 }

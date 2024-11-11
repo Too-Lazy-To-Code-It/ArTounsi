@@ -1,6 +1,6 @@
 // File: lib/pages/Learning/progress_tab.dart
 import 'package:flutter/material.dart';
-import '../../services/learning_service.dart';
+import '../../services/Learning/learning_service.dart';
 import '../../entities/learning/user_progress.dart';
 import 'progress_card.dart';
 

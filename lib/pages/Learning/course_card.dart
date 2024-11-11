@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../entities/learning/course.dart';
-import '../../services/learning_service.dart';
+import '../../services/Learning/learning_service.dart';
 import 'course_details.dart';
-import '../../services/image_upload_service.dart';
+import '../../services/Learning//image_upload_service.dart';
 
 class CourseCard extends StatefulWidget {
   final Course course;
@@ -17,11 +17,20 @@ class _CourseCardState extends State<CourseCard> {
   final LearningService _learningService = LearningService();
   final ImageUploadService _imageUploadService = ImageUploadService();
   late Course _course;
+  bool _isEnrolled = false;
 
   @override
   void initState() {
     super.initState();
     _course = widget.course;
+    _checkEnrollmentStatus();
+  }
+
+  void _checkEnrollmentStatus() async {
+    bool enrolled = await _learningService.isEnrolledInCourse(_course.id);
+    setState(() {
+      _isEnrolled = enrolled;
+    });
   }
 
   @override
@@ -71,8 +80,8 @@ class _CourseCardState extends State<CourseCard> {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       ElevatedButton(
-                        child: Text('Enroll'),
-                        onPressed: () => _enrollInCourse(context),
+                        child: Text(_isEnrolled ? 'Enrolled' : 'Enroll'),
+                        onPressed: _isEnrolled ? null : () => _enrollInCourse(context),
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(18),
@@ -106,7 +115,7 @@ class _CourseCardState extends State<CourseCard> {
                     ],
                   );
                 }
-                return Container(); // Hide buttons if the current user is not the instructor
+                return Container();
               },
             ),
           ],
@@ -159,6 +168,9 @@ class _CourseCardState extends State<CourseCard> {
   void _enrollInCourse(BuildContext context) async {
     try {
       await _learningService.enrollInCourse(_course);
+      setState(() {
+        _isEnrolled = true;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Successfully enrolled in ${_course.title}')),
       );
@@ -228,7 +240,7 @@ class _CourseCardState extends State<CourseCard> {
                                 imageUrl: updatedImageUrl,
                                 modules: updatedModules,
                                 instructor: _course.instructor,
-                              );  // Update the course with the new details
+                              );
                             });
                             Navigator.pop(context);
                           }
@@ -250,7 +262,6 @@ class _CourseCardState extends State<CourseCard> {
       },
     );
   }
-
 
   void _deleteCourse(BuildContext context) {
     showDialog(

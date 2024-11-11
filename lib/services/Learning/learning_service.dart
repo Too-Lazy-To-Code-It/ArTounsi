@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../entities/learning/course.dart';
-import '../entities/learning/user_progress.dart';
+import '../../entities/learning/course.dart';
+import '../../entities/learning/user_progress.dart';
 
 class LearningService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

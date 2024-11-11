@@ -11,7 +11,8 @@ class LearningPage extends StatelessWidget {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: TabBar(
+          title: Text('Learning Management'),
+          bottom: TabBar(
             tabs: [
               Tab(icon: Icon(Icons.school), text: 'Courses'),
               Tab(icon: Icon(Icons.trending_up), text: 'Progress'),
@@ -21,8 +22,6 @@ class LearningPage extends StatelessWidget {
             unselectedLabelColor: Colors.grey,
             indicatorSize: TabBarIndicatorSize.label,
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
         ),
         body: TabBarView(
           children: [

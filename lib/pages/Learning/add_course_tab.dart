@@ -1,7 +1,7 @@
 // File: lib/pages/Learning/add_course_tab.dart
 import 'package:flutter/material.dart';
-import '../../services/learning_service.dart';
-import '../../services/image_upload_service.dart';
+import '../../services/Learning/learning_service.dart';
+import '../../services/Learning//image_upload_service.dart';
 
 class AddCourseTab extends StatefulWidget {
   @override
